@@ -170,6 +170,14 @@ function runEpilogue(background) {
 									showStaticLite(6, 25, 4, 1);
     								globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, 'theEnd');
     								setTimeout(() => {
+
+                let background = document.getElementById('background');
+                background.style.opacity = '0';
+                let leftborder = document.getElementById('leftborder');
+                leftborder.style.opacity = '0';
+                let rightborder = document.getElementById('rightborder');
+                rightborder.style.opacity = '0';
+
     									let gameEndScreen = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, 'blackPixel');
     									gameEndScreen.scaleX = 999;
     									gameEndScreen.scaleY = 999;
@@ -220,7 +228,7 @@ function runEpilogue(background) {
 																	targets: gameObjectsTemp.endText5,
 																	alpha: 1,
 																	duration: 1000,
-																	delay: 300,
+																	delay: 600,
 																	onComplete: () => {
 																		gameObjectsTemp.lastText = globalScene.add.text(100, 530, "Thank you for playing", {fontFamily: 'Times New Roman', fontSize: 48, color: '#ffffff', align: 'center'});
 																		gameObjectsTemp.lastText.setOrigin(0, 0.5);
@@ -232,12 +240,21 @@ function runEpilogue(background) {
 																			delay: 3500
 																		});
 																		setTimeout(() => {
-																			gameObjectsTemp.dText = globalScene.add.text(100, 600, 'Latest news at Bluesky!', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.dText = globalScene.add.text(100, 585, 'Latest news at:', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
 																			gameObjectsTemp.dText.setOrigin(0, 0.5);
-																			gameObjectsTemp.dText.alpha = 0.05;
+																			gameObjectsTemp.dText.alpha = 1;
+
+																			gameObjectsTemp.dText2 = globalScene.add.text(100, 630, 'Bluesky', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.dText2.setOrigin(0, 0.5);
+																			gameObjectsTemp.dText2.alpha = 0.05;
+
+																			gameObjectsTemp.dText3 = globalScene.add.text(100, 670, 'Twitter', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.dText3.setOrigin(0, 0.5);
+																			gameObjectsTemp.dText3.alpha = 0.05;
+
 																			globalScene.tweens.add({
-																				targets: gameObjectsTemp.dText,
-																				alpha: 0.6,
+																				targets: [gameObjectsTemp.dText, gameObjectsTemp.dText2, gameObjectsTemp.dText3],
+																				alpha: 0.7,
 																				duration: 2000
 																			});
 																		    let bsky = new Button(
@@ -249,7 +266,7 @@ function runEpilogue(background) {
 																		        {
 																		            "ref": "whitePixel",
 																		            "x": 195,
-																		            "y": 600,
+																		            "y": 630,
 																		            scaleX: 350,
 																		            scaleY: 28,
 																		            alpha: 0.001
@@ -257,14 +274,38 @@ function runEpilogue(background) {
 																		    );
 
 																		    bsky.setOnHoverFunc(() => {
-																		    	gameObjectsTemp.dText.alpha = 1;
+																		    	gameObjectsTemp.dText2.alpha = 1;
 																		    });
 																		    bsky.setOnHoverOutFunc(() => {
-																		    	gameObjectsTemp.dText.alpha = 0.65;
-																		    })
+																		    	gameObjectsTemp.dText2.alpha = 0.7;
+																		    });
 
 
-																			gameObjectsTemp.replayText = globalScene.add.text(100, 650, 'REPLAY', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																		    let twtr = new Button(
+																		        globalScene,
+																		        undefined,
+																		        () => {
+																		        	window.open("https://x.com/TsaiMaxim");
+																		        },
+																		        {
+																		            "ref": "whitePixel",
+																		            "x": 195,
+																		            "y": 670,
+																		            scaleX: 350,
+																		            scaleY: 28,
+																		            alpha: 0.001
+																		        }
+																		    );
+
+																		    twtr.setOnHoverFunc(() => {
+																		    	gameObjectsTemp.dText3.alpha = 1;
+																		    });
+																		    twtr.setOnHoverOutFunc(() => {
+																		    	gameObjectsTemp.dText3.alpha = 0.7;
+																		    });
+
+
+																			gameObjectsTemp.replayText = globalScene.add.text(100, 720, 'REPLAY', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
 																			gameObjectsTemp.replayText.setOrigin(0, 0.5);
 																			gameObjectsTemp.replayText.alpha = 0.05;
 																			globalScene.tweens.add({
@@ -326,9 +367,9 @@ function runEpilogue(background) {
 																		        {
 																		            "ref": "whitePixel",
 																		            "x": 195,
-																		            "y": 650,
+																		            "y": 720,
 																		            scaleX: 350,
-																		            scaleY: 28,
+																		            scaleY: 30,
 																		            alpha: 0.001
 																		        }
 																		    );
@@ -337,10 +378,10 @@ function runEpilogue(background) {
 																		    	gameObjectsTemp.replayText.alpha = 1;
 																		    });
 																		    replay.setOnHoverOutFunc(() => {
-																		    	gameObjectsTemp.replayText.alpha = 0.65;
+																		    	gameObjectsTemp.replayText.alpha = 0.7;
 																		    })
 
-																		}, 4500);
+																		}, 2500);
 																	}
 																});
 													    	}
