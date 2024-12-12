@@ -165,6 +165,7 @@ function runEpilogue(background) {
 						        duration: 350,
 						        onComplete: () => {
 						        	playSound('doorslam');
+									sdkWrapperGameplayStop();
 									zoomTemp(1.04);
 									showStaticLite(6, 25, 4, 1);
     								globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, 'theEnd');
@@ -180,12 +181,14 @@ function runEpilogue(background) {
 									    	duration: 1000,
 									    	delay: 300,
 									    	onComplete: () => {
+
 									    		if (useSDK) {
 												    const div = document.getElementById('banner-container-end');
 												    gameVars.showingBannerBot = true;
 												    div.style.bottom = "0px";
 									    		}
 											    sdkWrapperRequestResponsiveBanner('banner-container-end')
+											
 											    gameObjectsTemp.endText2 = globalScene.add.text(100, 140, "Art by Theresa Kao", {fontFamily: 'Times New Roman', fontSize: 30, color: '#ffffff', align: 'left'});
 											    gameObjectsTemp.endText2.alpha = 0;
 											    globalScene.tweens.add({
@@ -217,9 +220,8 @@ function runEpilogue(background) {
 																	targets: gameObjectsTemp.endText5,
 																	alpha: 1,
 																	duration: 1000,
-																	delay: 800,
+																	delay: 300,
 																	onComplete: () => {
-																		sdkWrapperGameplayStop();
 																		gameObjectsTemp.lastText = globalScene.add.text(100, 530, "Thank you for playing", {fontFamily: 'Times New Roman', fontSize: 48, color: '#ffffff', align: 'center'});
 																		gameObjectsTemp.lastText.setOrigin(0, 0.5);
 																		gameObjectsTemp.lastText.alpha = 0;
@@ -230,7 +232,7 @@ function runEpilogue(background) {
 																			delay: 3500
 																		});
 																		setTimeout(() => {
-																			gameObjectsTemp.dText = globalScene.add.text(100, 580, 'Donations accepted at adayofjoy.itch.io/exhibit-of-sorrows', {fontFamily: 'Times New Roman', fontSize: 19, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.dText = globalScene.add.text(100, 600, 'Latest news at Bluesky!', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
 																			gameObjectsTemp.dText.setOrigin(0, 0.5);
 																			gameObjectsTemp.dText.alpha = 0.05;
 																			globalScene.tweens.add({
@@ -238,28 +240,106 @@ function runEpilogue(background) {
 																				alpha: 0.6,
 																				duration: 2000
 																			});
-																		    let donations = new Button(
+																		    let bsky = new Button(
 																		        globalScene,
 																		        undefined,
 																		        () => {
-																		        	window.open("https://adayofjoy.itch.io/exhibit-of-sorrows/purchase");
+																		        	window.open("https://bsky.app/profile/maximtsai.bsky.social");
 																		        },
 																		        {
 																		            "ref": "whitePixel",
 																		            "x": 195,
-																		            "y": 580,
+																		            "y": 600,
 																		            scaleX: 350,
 																		            scaleY: 28,
 																		            alpha: 0.001
 																		        }
 																		    );
 
-																		    donations.setOnHoverFunc(() => {
+																		    bsky.setOnHoverFunc(() => {
 																		    	gameObjectsTemp.dText.alpha = 1;
 																		    });
-																		    donations.setOnHoverOutFunc(() => {
+																		    bsky.setOnHoverOutFunc(() => {
 																		    	gameObjectsTemp.dText.alpha = 0.65;
 																		    })
+
+
+																			gameObjectsTemp.replayText = globalScene.add.text(100, 650, 'REPLAY', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.replayText.setOrigin(0, 0.5);
+																			gameObjectsTemp.replayText.alpha = 0.05;
+																			globalScene.tweens.add({
+																				targets: gameObjectsTemp.replayText,
+																				alpha: 0.6,
+																				duration: 2000
+																			});
+																		    let replay = new Button(
+																		        globalScene,
+																		        undefined,
+																		        () => {
+
+																					sdkCommercialBreak(() => {}, () => {
+																							gameVars = {
+																							baseSway: .025,
+																							gameStarted: !1,
+																							gameConstructed: !1,
+																							mousedown: !1,
+																							mouseposx: 0,
+																							mouseposy: 0,
+																							prevMouseposx: 0,
+																							prevMouseposy: 0,
+																							mouseaccx: 0,
+																							mouseaccy: 0,
+																							lastmousedown: {
+																								x: 0,
+																								y: 0
+																							},
+																							width: 1220,
+																							halfWidth: 610,
+																							height: 920,
+																							halfHeight: 460,
+																							horrorPoint: !1,
+																							darkPoint: !1,
+																							isFrozen: !1,
+																							lastLoadingWelcomeRef: null,
+																							walkSlow: !1,
+																							initialExtraDark: 0,
+																							masterAudio: 1,
+																							smallWindow: !1
+																						},
+																						oneTimeScares = {},
+																						gameObjectsTemp = {},
+																						gameVarsTemp = {
+																							darkFlickerCountdown: 1e3
+																						},
+																						gameObjects = {
+																							buttonList: [],
+																							draggedObj: null,
+																							loadingWelcomes: [],
+																							noteList: [],
+																							starPressSequence: []
+																						},
+																						updateFuncList = [],
+																						location.reload();
+																					})
+																					
+																		        },
+																		        {
+																		            "ref": "whitePixel",
+																		            "x": 195,
+																		            "y": 650,
+																		            scaleX: 350,
+																		            scaleY: 28,
+																		            alpha: 0.001
+																		        }
+																		    );
+
+																		    replay.setOnHoverFunc(() => {
+																		    	gameObjectsTemp.replayText.alpha = 1;
+																		    });
+																		    replay.setOnHoverOutFunc(() => {
+																		    	gameObjectsTemp.replayText.alpha = 0.65;
+																		    })
+
 																		}, 4500);
 																	}
 																});

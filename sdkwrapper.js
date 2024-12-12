@@ -44,6 +44,12 @@ function sdkWrapperClearAllBanners() {
     }
 }
 
+function sdkCommercialBreak() {
+	if (useSDK) {
+		
+	}
+}
+
 function sdkWrapperResizeBanners() {
     if (useSDK) {
         var divTop = document.getElementById('banner-container-top');
