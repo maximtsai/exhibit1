@@ -1,5 +1,5 @@
-function updateInfoText(e, t = 3500, a) {
-	gameObjects.infoText.setText("\n " + e + " \n"), a && (gameObjects.infoText.setOrigin(0, .5), gameObjects.infoText.x = gameVars.halfWidth - 360), gameVarsTemp.updateTextAnim && gameVarsTemp.updateTextAnim.isPlaying() && gameVarsTemp.updateTextAnim.stop(), gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.timeline({
+function updateInfoText(e, t = 3200, a) {
+	gameObjects.infoText.setText("\n " + e + " \n"), a && (gameObjects.infoText.setOrigin(0, .5), gameObjects.infoText.x = gameVars.halfWidth - 360, gameObjects.infoText.y = gameVars.halfHeight + 220),  gameVarsTemp.updateTextAnim && gameVarsTemp.updateTextAnim.isPlaying() && gameVarsTemp.updateTextAnim.stop(), gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.timeline({
 		targets: gameObjects.infoText,
 		tweens: [{
 			alpha: 1,
@@ -351,7 +351,7 @@ function setupGameplayButtons(e) {
 					gameObjectsTemp.cantPressMusicBox = !1
 				}, 450), setTimeout(() => {
 					gameObjects.sounds.gladiator0.stop(), gameObjects.musicBoxNote.alpha = 0, gameObjects.musicBoxNote2.alpha = 0, gameObjects.sounds.gladiator1.stop(), gameObjects.sounds.gladiator2.stop()
-				}, 120), gameObjectsTemp.boxBroken) gameVars.darkPoint ? updateInfoText("The music box is... broken?") : (gameVarsTemp.brokeMusicBox = !0, updateInfoText("You broke it, the music box won't turn on now."));
+				}, 120), gameObjectsTemp.boxBroken) gameVars.darkPoint ? updateInfoText("The music box is... broken?") : (gameVarsTemp.brokeMusicBox = !0, updateInfoText("The music box won't turn on now."));
 			else if (gameObjectsTemp.stoppedMusic)
 			if (playSound("stopmusic"), gameObjects.musicBoxStand.rotation = .012, globalScene.tweens.add({
 					targets: gameObjects.musicBoxStand,
@@ -482,7 +482,7 @@ function onTurnOnPower() {
 
 function initDarkSequence(e) {
 	addDarkToExhibit(), enableMoveLeftButton(), gameVars.baseSway = .03, enableFlashlight(!0), gameVars.darkPoint = !0, messageBus.publish("startDarkSequence"), gameObjects.moveRightBtn.setOnMouseUpFunc(() => {
-		updateInfoText("It's too dark to go forward. \n You should EXIT.", 5e3)
+		updateInfoText("It's too dark to go forward. \n Head left to EXIT.", 5e3)
 	})
 }
 
