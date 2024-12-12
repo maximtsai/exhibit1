@@ -44,9 +44,9 @@ function sdkWrapperClearAllBanners() {
     }
 }
 
-function sdkCommercialBreak() {
+function sdkCommercialBreak(onStart, onFinish) {
 	if (useSDK) {
-		
+		onFinish();
 	}
 }
 
