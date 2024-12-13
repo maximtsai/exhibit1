@@ -18,6 +18,8 @@ function setupRoomFaucet(e, a, o) {
             atlas: "buttons",
             ref: "glow",
             x: 0,
+            scaleX: 1.15,
+            scaleY: 1.15,
             y: gameVars.halfHeight,
             alpha: .001
         },

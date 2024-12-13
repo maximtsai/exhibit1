@@ -18,40 +18,40 @@ function setupRoomPump(e, o, a) {
         alpha: .05,
         x: 0,
         y: -9999,
-        scaleX: 1.6,
-        scaleY: 1.6
+        scaleX: 1.75,
+        scaleY: 1.75
     }, {
         atlas: "buttons",
         ref: "glow",
         alpha: .8,
-        scaleX: 1.75,
-        scaleY: 1.75
+        scaleX: 1.85,
+        scaleY: 1.8
     }, {
         atlas: "buttons",
         ref: "glow",
         alpha: 1,
-        scaleX: 1.75,
-        scaleY: 1.75
+        scaleX: 1.85,
+        scaleY: 1.8
     }), gameObjects.roomPumpObjs.frames = e.add.image(0, 245, "roomPump", "framesFloaty1"), a.add(gameObjects.roomPumpObjs.frames), gameObjects.roomPumpObjs.frames.alpha = 0, gameObjects.roomPumpObjs.pumpBtn = new Button(globalScene, gameObjects.roomPumpObjs.roomContainer, pumpReleased, {
         atlas: "buttons",
         ref: "glow",
         alpha: .05,
         x: -240,
         y: 505,
-        scaleX: 1.45,
-        scaleY: .86
+        scaleX: 1.6,
+        scaleY: 1
     }, {
         atlas: "buttons",
         ref: "glow",
         alpha: .8,
-        scaleX: 1.5,
-        scaleY: .88
+        scaleX: 1.7,
+        scaleY: 1.1
     }, {
         atlas: "buttons",
         ref: "glow",
         alpha: .001,
-        scaleX: 1.5,
-        scaleY: .88
+        scaleX: 1.7,
+        scaleY: 1.1
     }), gameObjects.roomPumpObjs.pumpBtn.setOnMouseDownFunc(pumpPressed), gameObjects.roomPumpObjs.extraGlow = e.add.image(-240, 505, "buttons", "glow"), gameObjects.roomPumpObjs.extraGlow.scaleX = 1.95, gameObjects.roomPumpObjs.extraGlow.scaleY = 1.45, gameObjects.roomPumpObjs.extraGlow.alpha = 0, gameObjects.roomPumpObjs.roomContainer.add(gameObjects.roomPumpObjs.extraGlow), gameObjects.roomPumpObjs.placard = new Button(e, a, () => {
         gameVars.horrorPoint ? gameObjects.roomPumpObjs.roomComplete ? updateInfoText("Industrial air pump") : updateInfoText("Mr. Floaty") : gameVars.darkPoint ? updateInfoText("He liked balloons, how they float, how they pop") : updateInfoText("Mr. Floaty")
     }, {

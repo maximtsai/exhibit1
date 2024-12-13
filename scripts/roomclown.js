@@ -11,15 +11,15 @@ function setupRoomClown1(e, o, a) {
         x: 12,
         y: gameVars.halfHeight + 73,
         alpha: .001,
-        scaleX: .15,
-        scaleY: .15
+        scaleX: .155,
+        scaleY: .155
     }, {
         atlas: "roomClown",
         ref: "noseglow",
         alpha: 1,
-        scaleX: .155,
-        scaleY: .155
-    }), gameObjects.roomClown1.nose.setScale(45, 30), l = messageBus.subscribe("exhibitMove", e => {
+        scaleX: .158,
+        scaleY: .158
+    }), gameObjects.roomClown1.nose.setScale(145, 30), l = messageBus.subscribe("exhibitMove", e => {
         if (e === o) {
             l.unsubscribe();
             let e = gameObjects.clownWelcomePic.x,
