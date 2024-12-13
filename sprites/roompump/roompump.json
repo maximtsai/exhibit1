@@ -9,6 +9,20 @@
 			},
 			"frames": [
 				{
+					"filename": "pumplines",
+					"frame": {
+						"x": 1752,
+						"y": 1752,
+						"w": 206,
+						"h": 84
+					},
+					"sourceSize": {
+						"w": 206,
+						"h": 84
+					},
+					"rotated": false
+				},
+				{
 					"filename": "balloonFloaty1",
 					"frame": {
 						"x": 0,

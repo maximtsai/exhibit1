@@ -89,7 +89,12 @@ function onPreloadComplete(a) {
         fontSize: 20,
         color: "#ffffff",
         align: "center"
-    }), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 90, "For the best experience, play with headphones", {
+    }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 110, "EXHIBIT OF SORROWS", {
+        fontFamily: "Times New Roman",
+        fontSize: 46,
+        color: "#777777",
+        align: "center"
+    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 90, "For the best experience, play with headphones", {
         fontFamily: "Times New Roman",
         fontSize: 22,
         color: "#ffffff",
@@ -161,7 +166,7 @@ function onLoadAnimComplete(a) {
             }
         }]
     }), a.tweens.timeline({
-        targets: [gameObjectsTemp.headphones, gameObjectsTemp.headphoneText, gameObjectsTemp.warningText],
+        targets: [gameObjectsTemp.headphones, gameObjectsTemp.headphoneText, gameObjectsTemp.warningText, gameObjectsTemp.exhibitText],
         tweens: [{
             alpha: .5,
             duration: 250
@@ -183,12 +188,12 @@ function startGame(a) {
             duration: 3e3
         }]
     }), a.tweens.timeline({
-        targets: [gameObjectsTemp.headphones, gameObjectsTemp.headphoneText, gameObjectsTemp.warningText],
+        targets: [gameObjectsTemp.headphones, gameObjectsTemp.headphoneText, gameObjectsTemp.warningText, gameObjectsTemp.exhibitText],
         tweens: [{
             alpha: 0,
             duration: 260,
             onComplete() {
-                gameObjectsTemp.headphones.destroy(), gameObjectsTemp.headphoneText.destroy(), gameObjectsTemp.warningText.destroy()
+                gameObjectsTemp.headphones.destroy(), gameObjectsTemp.headphoneText.destroy(), gameObjectsTemp.warningText.destroy(), gameObjectsTemp.exhibitText.destroy()
             }
         }]
     }), gameObjects.clickBlocker = new Button(a, gameObjects.loadingCntr, () => {
