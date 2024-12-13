@@ -57,7 +57,27 @@ class Exhibit {
         // TEMPORARY HACK
         gameVarsTemp.hasMoved = true;
         if (this.needCleanup) {
-            updateInfoTextSoft('Clean up the room first.', 2250);
+            if (gameVarsTemp.needSecondClue) {
+                if (this.currentScene === 13) {
+                    updateInfoTextSoft('Unturn the handle', 2000);
+                } else if (this.currentScene === 6) {
+                    updateInfoTextSoft('Unstretch her hand', 2000);
+                } else if (this.currentScene === 5) {
+                    updateInfoTextSoft('Uncount the fingers', 2000);
+                } else if (this.currentScene === 3) {
+                    updateInfoTextSoft('Turn off the tap', 2000);
+                } else if (this.currentScene === 2) {
+                    updateInfoTextSoft('Deflate him', 2000);
+                } else {
+                    updateInfoTextSoft('Clean up the room first.', 2250);
+                }
+            } else {
+                updateInfoTextSoft('Clean up the room first.', 2250);
+                setTimeout(() => {
+                    gameVarsTemp.needSecondClue = true;
+                }, 1000)
+            }
+
             return;
         }
         if (gameVars.darkPoint && this.currentScene >= 3) {

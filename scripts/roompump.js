@@ -53,7 +53,7 @@ function setupRoomPump(e, o, a) {
         scaleX: 1.7,
         scaleY: 1.1
     }), gameObjects.roomPumpObjs.pumpBtn.setOnMouseDownFunc(pumpPressed), gameObjects.roomPumpObjs.extraGlow = e.add.image(-240, 505, "buttons", "glow"), gameObjects.roomPumpObjs.extraGlow.scaleX = 1.95, gameObjects.roomPumpObjs.extraGlow.scaleY = 1.45, gameObjects.roomPumpObjs.extraGlow.alpha = 0, gameObjects.roomPumpObjs.roomContainer.add(gameObjects.roomPumpObjs.extraGlow), gameObjects.roomPumpObjs.placard = new Button(e, a, () => {
-        gameVars.horrorPoint ? gameObjects.roomPumpObjs.roomComplete ? updateInfoText("Industrial air pump") : updateInfoText("Mr. Floaty") : gameVars.darkPoint ? updateInfoText("He liked balloons, how they float, how they pop") : updateInfoText("Mr. Floaty")
+        gameVars.horrorPoint ? gameObjects.roomPumpObjs.roomComplete ? updateInfoText("Pop.") : updateInfoText("Mr. Floaty") : gameVars.darkPoint ? updateInfoText("He liked balloons,\nhow they float, how they pop") : updateInfoText("Mr. Floaty")
     }, {
         atlas: "buttons",
         ref: "placard",

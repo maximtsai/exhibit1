@@ -446,13 +446,13 @@
 					"filename": "spinner",
 					"frame": {
 						"x": 0,
-						"y": 3134,
-						"w": 284,
-						"h": 54
+						"y": 3132,
+						"w": 288,
+						"h": 58
 					},
 					"sourceSize": {
 						"w": 284,
-						"h": 54
+						"h": 58
 					},
 					"rotated": false
 				},

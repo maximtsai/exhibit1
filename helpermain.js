@@ -482,7 +482,7 @@ function onTurnOnPower() {
 
 function initDarkSequence(e) {
 	addDarkToExhibit(), enableMoveLeftButton(), gameVars.baseSway = .03, enableFlashlight(!0), gameVars.darkPoint = !0, messageBus.publish("startDarkSequence"), gameObjects.moveRightBtn.setOnMouseUpFunc(() => {
-		updateInfoText("It's too dark to go forward. \n Head left to EXIT.", 5e3)
+		updateInfoText("It's too dark to go forward. \n<- Head left to EXIT.", 5e3)
 	})
 }
 

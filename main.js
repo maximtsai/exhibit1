@@ -91,7 +91,7 @@ function onPreloadComplete(a) {
         align: "center"
     }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 110, "EXHIBIT OF SORROWS", {
         fontFamily: "Times New Roman",
-        fontSize: 46,
+        fontSize: 36,
         color: "#777777",
         align: "center"
     }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 90, "For the best experience, play with headphones", {
