@@ -66,6 +66,8 @@ let game;
 setTimeout(() => {game = new Phaser.Game(config)}, 20)
 
 function preload() {
+    let gameDiv = document.getElementById('preload-notice');
+    gameDiv.innerHTML = "";
     handleBorders();
     sdkWrapperGameLoadingStart(), game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), this.load.image("headphones", "sprites/headphones.png")
 }
@@ -100,6 +102,14 @@ function onPreloadComplete(a) {
 }
 
 function onLoadComplete(a) {
+    if (!document.location.href.includes('itch') && !document.location.href.includes('localhost:8124')) {
+        // Stops execution of rest of game
+        let gameDiv = document.getElementById('preload-notice');
+        let invalidSite = document.location.href.substring(0, 25);
+        gameDiv.innerHTML = invalidSite + "...\nis an invalid site.\n\n" + "Try the game on itch.io!";
+        return;
+    }
+
     sdkWrapperGameLoadingStop(), a.tweens.timeline({
         targets: [gameObjectsTemp.loadingText],
         tweens: [{
@@ -182,7 +192,7 @@ function startGame(a) {
             }
         }]
     }), gameObjects.clickBlocker = new Button(a, gameObjects.loadingCntr, () => {
-        console.log("blocked game")
+        console.log("beginning game")
     }, {
         ref: "transparent_pixel",
         atlas: "loadingSS",
@@ -484,7 +494,8 @@ function playSound(d, a, e = 1) {
     let b = "";
     void 0 !== a && (b = Math.floor(Math.random() * a) + 1);
     let c = d + b;
-    gameObjects.sounds[c].volume = e * gameVars.masterAudio, gameObjects.sounds[c].play()
+    gameObjects.sounds[c].volume = e * gameVars.masterAudio, gameObjects.sounds[c].play();
+    return gameObjects.sounds[c];
 }
 
 function tweenVolume(a, b, c = 1500) {
@@ -494,7 +505,8 @@ function tweenVolume(a, b, c = 1500) {
             volume: b * gameVars.masterAudio,
             duration: c
         }]
-    })
+    });
+    return gameObjects.sounds[a];
 }
 
 function playSoundOnce(a, b, c = 1) {
@@ -638,8 +650,41 @@ function disableMoveButtons() {
     gameObjects.moveLeftBtn.setState("disable"), gameObjects.moveRightBtn.setState("disable")
 }
 
-function enableMoveButtons() {
-    0 !== gameObjects.exhibit.getCurrentScene() && gameObjects.moveLeftBtn.setState("normal"), gameObjects.moveRightBtn.setState("normal")
+function enableMoveButtons(showFlash = false) {
+    0 !== gameObjects.exhibit.getCurrentScene() && gameObjects.moveLeftBtn.setState("normal");
+    gameObjects.moveRightBtn.setState("normal");
+
+    if (showFlash) {
+        let flashDur = 1000;
+        let scaleMult = 1;
+        if (gameVars.shownFirstFlash) {
+            flashDur = 900;
+            scaleMult = 0.9;
+            gameObjects.moveRightFlash.alpha = 0.9;
+        } else {
+            gameObjects.moveRightFlash.alpha = 1;
+        }
+        gameObjects.moveRightFlash.scaleX = 1;
+        gameObjects.moveRightFlash.scaleY = 1;
+
+        gameVars.shownFirstFlash = true;
+
+
+        globalScene.tweens.add({
+            targets: gameObjects.moveRightFlash,
+            alpha: 0,
+            ease: 'Quad.easeOut',
+            duration: flashDur
+        });
+
+        globalScene.tweens.add({
+            targets: gameObjects.moveRightFlash,
+            scaleX: 2.1 * scaleMult,
+            scaleY: 3 * scaleMult,
+            ease: 'Quart.easeOut',
+            duration: flashDur
+        });
+    }
 }
 
 function disableMoveRightButton() {
@@ -688,7 +733,11 @@ function setupMoveButtons(a) {
     }, {
         atlas: "buttons",
         ref: "move_btn_disable"
-    }), gameObjects.moveRightBtnHighlight = globalScene.add.image(gameObjects.moveRightBtn.getPosX(), gameObjects.moveRightBtn.getPosY(), "buttons", "move_btn_glow"), gameObjects.moveRightBtnHighlight.alpha = 0, gameObjects.moveRightBtnHighlight.state = "brightening"
+    }), gameObjects.moveRightBtnHighlight = globalScene.add.image(gameObjects.moveRightBtn.getPosX(), gameObjects.moveRightBtn.getPosY(), "buttons", "move_btn_glow"), gameObjects.moveRightBtnHighlight.alpha = 0, gameObjects.moveRightBtnHighlight.state = "brightening";
+
+    gameObjects.moveRightFlash = globalScene.add.image(gameObjects.moveRightBtn.getPosX(), gameObjects.moveRightBtn.getPosY() + 63, "buttons", "move_btn_normal");
+    gameObjects.moveRightFlash.setOrigin(0.38, 0.635);
+    gameObjects.moveRightFlash.alpha = 0;
 }
 
 function tempFreeze(a = 1e3) {

@@ -261,7 +261,7 @@ function runEpilogue(background) {
 																		        globalScene,
 																		        undefined,
 																		        () => {
-																		        	window.open("https://bsky.app/profile/maximtsai.bsky.social");
+																		        	window.open("https://bsky.app/profile/adayofjoy.itch.io");
 																		        },
 																		        {
 																		            "ref": "whitePixel",

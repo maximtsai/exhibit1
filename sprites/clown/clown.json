@@ -51,6 +51,20 @@
 					"rotated": false
 				},
 				{
+					"filename": "clownnoseflash",
+					"frame": {
+						"x": 3338,
+						"y": 3354,
+						"w": 136,
+						"h": 94
+					},
+					"sourceSize": {
+						"w": 136,
+						"h": 94
+					},
+					"rotated": false
+				},
+				{
 					"filename": "clownlarge1",
 					"frame": {
 						"x": 2911,

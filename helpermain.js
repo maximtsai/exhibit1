@@ -50,11 +50,11 @@ function onStandClick(e) {
 		ref: t,
 		x: 0,
 		y: gameVars.halfHeight
-	}), a ? (gameObjects.standDisplay.setAlpha(1), gameObjects.standDisplay.setScale(1), gameObjectsTemp.voidGlow = e.add.image(0, gameVars.halfHeight, "buttons", "stand_void_glow"), gameObjectsTemp.voidGlow.alpha = .95, gameObjects.gameCtnr1.add(gameObjectsTemp.voidGlow), addToUpdateFuncList(animateVoidGlow), playSound("void", 0.6), gameObjects.museumStand.setState("disable"), gameObjects.standArrow.destroy(), gameObjects.entrance.entryLights1.alpha = 0, gameObjects.entrance.entryLights2.alpha = 0, removeFromUpdateFuncList(flipEntryLights), gameObjects.standDisplay.tweenScale({
+	}), a ? (gameObjects.standDisplay.setAlpha(1), gameObjects.standDisplay.setScale(1), gameObjectsTemp.voidGlow = e.add.image(0, gameVars.halfHeight, "buttons", "stand_void_glow"), gameObjectsTemp.voidGlow.alpha = .95, gameObjects.gameCtnr1.add(gameObjectsTemp.voidGlow), addToUpdateFuncList(animateVoidGlow), playSound("void", undefined, 0.7), gameObjects.museumStand.setState("disable"), gameObjects.standArrow.destroy(), gameObjects.entrance.entryLights1.alpha = 0, gameObjects.entrance.entryLights2.alpha = 0, removeFromUpdateFuncList(flipEntryLights), gameObjects.standDisplay.tweenScale({
 		scaleX: 1.15,
 		scaleY: 1.22,
 		alpha: 1,
-		duration: 3500,
+		duration: 3300,
 		onComplete: () => {
 			gameVars.canCloseStand = !0, onStandDisplayClick(e, !0), gameObjectsTemp.voidGlow.destroy(), removeFromUpdateFuncList(animateVoidGlow), gameObjects.sounds.void.stop(), updateInfoText("==>\n==>\n==>")
 		}
@@ -89,7 +89,7 @@ function onStandDisplayClick(e, t = !1) {
 		duration: t ? 0 : 225,
 		ease: "Cubic.easeOut",
 		onComplete: () => {
-			enableMoveButtons(), gameObjects.undoCreditsButton.reappear(), gameObjects.standDisplay.destroy()
+			enableMoveButtons(!gameVars.horrorPoint), gameObjects.undoCreditsButton.reappear(), gameObjects.standDisplay.destroy()
 		}
 	}))
 }
@@ -509,7 +509,7 @@ function createKey(e, t, a, s, o = !0, c) {
 	let n;
 	return playSound("keyfound"), (n = new Button(globalScene, s, () => {
 		n.destroy(), o ? playSound("keyget") : playSound("keygetred"), tempFreeze(500), gameObjects.exhibit.setCantMoveIdx(a, !1), setTimeout(() => {
-			enableMoveButtons(), c && c()
+			enableMoveButtons(true), c && c()
 		}, 100)
 	}, {
 		atlas: "buttons",

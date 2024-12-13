@@ -1,0 +1,1 @@
+uglifyjs messageBus.js button.js hand.js exhibit.js pointer.js guidearrow.js roomentrance.js roompump.js roomfaucet.js roomhandy.js roomflower.js roomstretch.js roomjack.js roomclown.js roomfinal.js -o loadup.js -c -m

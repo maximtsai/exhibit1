@@ -46,8 +46,9 @@ function sdkWrapperClearAllBanners() {
 
 function sdkCommercialBreak(onStart, onFinish) {
 	if (useSDK) {
-		onFinish();
-	}
+	} else {
+                onFinish();
+    }
 }
 
 function sdkWrapperResizeBanners() {

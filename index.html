@@ -9,23 +9,7 @@
     <script src="https://sdk.crazygames.com/crazygames-sdk-v1.js"></script>
     <script src="phaser.min.js"></script>
     <script src="sdkwrapper.js"></script>
-    <script src="scripts/messageBus.js"></script>
-    <script src="scripts/button.js"></script>
-    <script src="scripts/hand.js"></script>
-    <script src="scripts/exhibit.js"></script>
-    <script src="scripts/pointer.js"></script>
-    <script src="scripts/guidearrow.js"></script>
-    <script src="scripts/roomentrance.js"></script>
-    <script src="scripts/roompump.js"></script>
-    <script src="scripts/roomfaucet.js"></script>
-
-    <script src="scripts/roomhandy.js"></script>
-    <script src="scripts/roomflower.js"></script>
-
-    <script src="scripts/roomstretch.js"></script>
-    <script src="scripts/roomjack.js"></script>
-    <script src="scripts/roomclown.js"></script>
-    <script src="scripts/roomfinal.js"></script>
+    <script src="scripts/loadup.js"></script>
     <script src="helpermain.js"></script>
 
     <noscript>Enable JavaScript to play this game.</noscript>
@@ -98,15 +82,29 @@
         #phaser-app {
             margin: 0 auto;
         }
+        #preload-notice {
+            color: grey;
+            text-align: center;
+            vertical-align: middle;
+            white-space: pre-line;
+            z-index: 10000;
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, 0%);
+            cursor: pointer;
+
+        }
     </style>
 
 </head>
 <body>
-    <div id="banner-container-top" style="position: absolute; width: 500px; height: 50px; z-index: 10; left: calc(50% - 250px)"></div>
-    <div id="banner-container-end" style="position: absolute; width: 600px; height: 90px; z-index: 10; bottom: 999px; left: calc(50% - 300px)"></div>
+    <div id="banner-container-top" style="position: absolute; display: none; width: 500px; height: 50px; z-index: 10; left: calc(50% - 250px)"></div>
+    <div id="banner-container-end" style="position: absolute; display: none; width: 600px; height: 90px; z-index: 10; bottom: 999px; left: calc(50% - 300px)"></div>
     <div id="background"></div>
     <div id="leftborder"></div>
     <div id="rightborder"></div>
     <script src="main.js"></script>
+
+    <div id="preload-notice" onclick="location.href='https://adayofjoy.itch.io/exhibit-of-sorrows'">Loading Preloader ...</div>
 </body>
 </html>
