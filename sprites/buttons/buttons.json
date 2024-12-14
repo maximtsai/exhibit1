@@ -194,7 +194,7 @@
 					"filename": "move_btn_glow",
 					"frame": {
 						"x": 2990,
-						"y": 1110,
+						"y": 1130,
 						"w": 120,
 						"h": 500
 					},
@@ -208,13 +208,13 @@
 					"filename": "move_btn_normal",
 					"frame": {
 						"x": 2564,
-						"y": 2509,
+						"y": 2489,
 						"w": 110,
-						"h": 480
+						"h": 560
 					},
 					"sourceSize": {
 						"w": 110,
-						"h": 480
+						"h": 560
 					},
 					"rotated": false
 				},
@@ -222,13 +222,13 @@
 					"filename": "move_btn_over",
 					"frame": {
 						"x": 2990,
-						"y": 1612,
+						"y": 1602,
 						"w": 120,
-						"h": 500
+						"h": 560
 					},
 					"sourceSize": {
 						"w": 120,
-						"h": 500
+						"h": 560
 					},
 					"rotated": false
 				},
@@ -236,13 +236,13 @@
 					"filename": "move_btn_press",
 					"frame": {
 						"x": 2990,
-						"y": 2114,
+						"y": 2104,
 						"w": 120,
-						"h": 500
+						"h": 560
 					},
 					"sourceSize": {
 						"w": 120,
-						"h": 500
+						"h": 560
 					},
 					"rotated": false
 				},

@@ -84,7 +84,7 @@ function onPreloadComplete(a) {
         fontSize: 38,
         color: "#ffffff",
         align: "center"
-    }), gameObjectsTemp.loadingText.setOrigin(.5, .5), gameObjectsTemp.loadingText.setDepth(1), gameObjectsTemp.loadingBarBacking = a.add.image(gameVars.halfWidth, gameVars.height - 30, "whitePixel"), gameObjectsTemp.loadingBarBacking.alpha = .25, gameObjectsTemp.loadingBarBacking.scaleY = 3, gameObjectsTemp.loadingBarBacking.scaleX = 100, gameObjectsTemp.loadingBarBacking.setDepth(1), gameObjectsTemp.loadingBar = a.add.image(gameVars.halfWidth, gameVars.height - 30, "whitePixel"), gameObjectsTemp.loadingBar.scaleY = 3, gameObjectsTemp.loadingBar.setDepth(1), gameObjectsTemp.warningText = a.add.text(gameVars.halfWidth, gameVars.height - 185, "Warning: This game contains content some players may find disturbing", {
+    }), gameObjectsTemp.loadingText.setOrigin(.5, .5), gameObjectsTemp.loadingText.setDepth(1), gameObjectsTemp.loadingBarBacking = a.add.image(gameVars.halfWidth, gameVars.height - 230, "whitePixel"), gameObjectsTemp.loadingBarBacking.alpha = .25, gameObjectsTemp.loadingBarBacking.scaleY = 4, gameObjectsTemp.loadingBarBacking.scaleX = 200, gameObjectsTemp.loadingBarBacking.setDepth(1), gameObjectsTemp.loadingBar = a.add.image(gameVars.halfWidth, gameVars.height - 230, "whitePixel"), gameObjectsTemp.loadingBar.scaleY = 4, gameObjectsTemp.loadingBar.setDepth(1), gameObjectsTemp.warningText = a.add.text(gameVars.halfWidth, gameVars.height - 185, "Warning: This game contains content some players may find disturbing", {
         fontFamily: "Times New Roman",
         fontSize: 20,
         color: "#ffffff",
@@ -655,40 +655,42 @@ function disableMoveButtons() {
     gameObjects.moveLeftBtn.setState("disable"), gameObjects.moveRightBtn.setState("disable")
 }
 
+function showMoveRightFlash() {
+    let flashDur = 1000;
+    let scaleMult = 1;
+    if (gameVars.shownFirstFlash) {
+        flashDur = 900;
+        scaleMult = 0.9;
+        gameObjects.moveRightFlash.alpha = 0.9;
+    } else {
+        gameObjects.moveRightFlash.alpha = 1;
+    }
+    gameObjects.moveRightFlash.scaleX = 1;
+    gameObjects.moveRightFlash.scaleY = 1;
+    gameVars.shownFirstFlash = true;
+
+    globalScene.tweens.add({
+        targets: gameObjects.moveRightFlash,
+        alpha: 0,
+        ease: 'Quad.easeOut',
+        duration: flashDur
+    });
+
+    globalScene.tweens.add({
+        targets: gameObjects.moveRightFlash,
+        scaleX: 2.1 * scaleMult,
+        scaleY: 3 * scaleMult,
+        ease: 'Quart.easeOut',
+        duration: flashDur
+    });
+}
+
 function enableMoveButtons(showFlash = false) {
     0 !== gameObjects.exhibit.getCurrentScene() && gameObjects.moveLeftBtn.setState("normal");
     gameObjects.moveRightBtn.setState("normal");
 
     if (showFlash) {
-        let flashDur = 1000;
-        let scaleMult = 1;
-        if (gameVars.shownFirstFlash) {
-            flashDur = 900;
-            scaleMult = 0.9;
-            gameObjects.moveRightFlash.alpha = 0.9;
-        } else {
-            gameObjects.moveRightFlash.alpha = 1;
-        }
-        gameObjects.moveRightFlash.scaleX = 1;
-        gameObjects.moveRightFlash.scaleY = 1;
-
-        gameVars.shownFirstFlash = true;
-
-
-        globalScene.tweens.add({
-            targets: gameObjects.moveRightFlash,
-            alpha: 0,
-            ease: 'Quad.easeOut',
-            duration: flashDur
-        });
-
-        globalScene.tweens.add({
-            targets: gameObjects.moveRightFlash,
-            scaleX: 2.1 * scaleMult,
-            scaleY: 3 * scaleMult,
-            ease: 'Quart.easeOut',
-            duration: flashDur
-        });
+        showMoveRightFlash();
     }
 }
 
@@ -740,8 +742,8 @@ function setupMoveButtons(a) {
         ref: "move_btn_disable"
     }), gameObjects.moveRightBtnHighlight = globalScene.add.image(gameObjects.moveRightBtn.getPosX(), gameObjects.moveRightBtn.getPosY(), "buttons", "move_btn_glow"), gameObjects.moveRightBtnHighlight.alpha = 0, gameObjects.moveRightBtnHighlight.state = "brightening";
 
-    gameObjects.moveRightFlash = globalScene.add.image(gameObjects.moveRightBtn.getPosX(), gameObjects.moveRightBtn.getPosY() + 63, "buttons", "move_btn_normal");
-    gameObjects.moveRightFlash.setOrigin(0.38, 0.635);
+    gameObjects.moveRightFlash = globalScene.add.image(gameObjects.moveRightBtn.getPosX(), gameObjects.moveRightBtn.getPosY() + 55, "buttons", "move_btn_normal");
+    gameObjects.moveRightFlash.setOrigin(0.38, 0.59);
     gameObjects.moveRightFlash.alpha = 0;
 }
 

@@ -95,6 +95,7 @@ function onStandDisplayClick(e, t = !1) {
 }
 
 function onCreditsClick(e) {
+	showMoveRightFlash();
 	gameObjects.creditsButton.disappear(), gameObjects.entrance.welcomeBtn.disappear(), e.tweens.add({
 		targets: gameObjects.entrance.creditsMenu,
 		alpha: 1,
@@ -108,7 +109,7 @@ function onCreditsClick(e) {
 
 function undoCreditsClick(e) {
 	if (oneTimeScares.creditsScareCount || (oneTimeScares.creditsScareCount = 0), 0 === oneTimeScares.creditsScareCount) oneTimeScares.creditsScare = !0;
-	else if (4 === oneTimeScares.creditsScareCount) {
+	else if (3 === oneTimeScares.creditsScareCount) {
 		let t = e.add.image(gameVars.halfWidth, gameVars.halfHeight, "menu", "face1");
 		t.scaleX = 2, t.scaleY = 2, e.tweens.add({
 			targets: t,
@@ -309,7 +310,7 @@ function onExitClick(e) {
 		duration: 2950
 	})) : void(gameVarsTemp.doorFailed ? (gameObjects.generalDarkness.alpha = 1, gameObjects.exitDoor.setState("disable"), setTimeout(() => {
 		gameObjects.generalDarkness.alpha = 0
-	}, 50)) : gameVars.darkPoint ? updateInfoText("Turn on the lights first", 3e3) : updateInfoText("You just arrived. Why not look around?", 3500))
+	}, 50)) : gameVars.darkPoint ? updateInfoText("Turn on the lights first", 3e3) : updateInfoText("You just arrived\nExibits to the right! ->", 3500))
 }
 
 function setupGameplayButtons(e) {
@@ -412,8 +413,8 @@ function setupGameplayButtons(e) {
 		atlas: "buttons",
 		ref: "glow",
 		alpha: .9
-	}), gameObjects.musicBox = globalScene.add.image(345, gameVars.height - 340, "buttons", "musicBox"), gameObjects.gameCtnr0.add(gameObjects.musicBox), gameObjects.musicBoxHandle = globalScene.add.image(gameObjects.musicBox.x, gameObjects.musicBox.y + 31, "buttons", "musicBoxHandle"), gameObjects.gameCtnr0.add(gameObjects.musicBoxHandle), gameObjects.musicBoxStand = globalScene.add.image(345, gameVars.height - 27, "buttons", "boxStand"), gameObjects.musicBoxStand.setOrigin(.5, 1), gameObjects.gameCtnr0.add(gameObjects.musicBoxStand), gameObjects.clownWelcomePic = globalScene.add.image(-378, gameVars.height - 273, "menu", "framesEnter1"), gameObjects.clownWelcomePic.scaleX = .85, gameObjects.clownWelcomePic.scaleY = .85, gameObjects.gameCtnr1.add(gameObjects.clownWelcomePic), gameObjects.creditsButton = new Button(e, gameObjects.gameCtnr1, () => {
-		onCreditsClick(e)
+	}), gameObjects.musicBox = globalScene.add.image(345, gameVars.height - 340, "buttons", "musicBox"), gameObjects.gameCtnr0.add(gameObjects.musicBox), gameObjects.musicBoxHandle = globalScene.add.image(gameObjects.musicBox.x, gameObjects.musicBox.y + 31, "buttons", "musicBoxHandle"), gameObjects.gameCtnr0.add(gameObjects.musicBoxHandle), gameObjects.musicBoxStand = globalScene.add.image(345, gameVars.height - 27, "buttons", "boxStand"), gameObjects.musicBoxStand.setOrigin(.5, 1), gameObjects.gameCtnr0.add(gameObjects.musicBoxStand), gameObjects.clownWelcomePic = globalScene.add.sprite(-378, gameVars.height - 273, "menu", "framesEnter2"), gameObjects.clownWelcomePic.scaleX = .85, gameObjects.clownWelcomePic.scaleY = .85, gameObjects.gameCtnr1.add(gameObjects.clownWelcomePic), gameObjects.creditsButton = new Button(e, gameObjects.gameCtnr1, () => {
+		onCreditsClick(e);
 	}, {
 		atlas: "menu",
 		ref: "credits_normal",
@@ -441,6 +442,11 @@ function setupGameplayButtons(e) {
 		scaleY: 330,
 		alpha: .001
 	}), gameObjects.undoCreditsButton.disappear()
+	setTimeout(() => {
+		gameObjects.clownWelcomePic.setFrame('framesEnter1');
+		playSound('click4', undefined, 0.25)
+	}, 3600)
+
 }
 
 function setupInstructionsStand(e) {
