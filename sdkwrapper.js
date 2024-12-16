@@ -1,53 +1,51 @@
-let useSDK = !1;
-let crazysdk = null;
-
-function sdkWrapperInit() {
-    if (useSDK) {
-        crazysdk = window.CrazyGames.CrazySDK.getInstance();
-        crazysdk.init()
-    }
-}
+let useSDK = true;
 
 function sdkWrapperGameLoadingStart() {
     if (useSDK) {
-        crazysdk.sdkGameLoadingStart()
+        window.CrazyGames.SDK.game.loadingStart();
     }
 }
 
 function sdkWrapperRequestResponsiveBanner(name) {
     if (useSDK) {
-        crazysdk.requestResponsiveBanner([name])
+        window.CrazyGames.SDK.banner.requestResponsiveBanner(name);
     }
 }
 
 function sdkWrapperGameLoadingStop() {
     if (useSDK) {
-        crazysdk.sdkGameLoadingStop()
+        window.CrazyGames.SDK.game.loadingStop();
     }
 }
 
 function sdkWrapperGameplayStart() {
     if (useSDK) {
-        crazysdk.gameplayStart()
+        window.CrazyGames.SDK.game.gameplayStart();
     }
 }
 
 function sdkWrapperGameplayStop() {
     if (useSDK) {
-        crazysdk.gameplayStop()
+        window.CrazyGames.SDK.game.gameplayStop();
     }
 }
 
 function sdkWrapperClearAllBanners() {
     if (useSDK) {
-        crazysdk.clearAllBanners()
+        window.CrazyGames.SDK.banner.clearAllBanners();
     }
 }
 
 function sdkCommercialBreak(onStart, onFinish) {
 	if (useSDK) {
+        const callbacks = {
+            adFinished: () => {onFinish()},
+            adError: (error, errorData) => {onFinish()},
+            adStarted: () => {onStart()},
+        };
+        window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);
 	} else {
-                onFinish();
+        onFinish();
     }
 }
 

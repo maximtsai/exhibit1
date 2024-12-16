@@ -1,5 +1,4 @@
 var currentResize;
-sdkWrapperInit();
 let pixelWidth = 1210;
 let pixelHeight = 920;
 let config = {
@@ -63,19 +62,53 @@ let config = {
     phaserGame, selfMe;
 
 let game;
+let preloadCompleted = false;
+let sdkIsLoaded = false;
+let PhaserScene;
+async function loadSDK() {
+    await window.CrazyGames.SDK.init().then(() => {
+        sdkIsLoaded = true;
+        if (PhaserScene) {
+            sdkWrapperGameLoadingStart();
+        }
+        beginLoadIfAllReady();
+        // initUser();
+    });
+}
+loadSDK();
+
 setTimeout(() => {game = new Phaser.Game(config)}, 20)
 
 function preload() {
+    PhaserScene = this;
     let gameDiv = document.getElementById('preload-notice');
     gameDiv.innerHTML = "";
     handleBorders();
-    sdkWrapperGameLoadingStart(), game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), 
+    if (sdkIsLoaded) {
+        sdkWrapperGameLoadingStart();
+    }
+    game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), 
     this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"), 
     this.load.image("headphones", "sprites/headphones.png")
 }
 
 function create() {
-    onPreloadComplete(this)
+    preloadCompleted = true;
+    beginLoadIfAllReady();
+    setTimeout(() => {
+        if (!sdkIsLoaded) {
+            // TODO: Test and make sure game still runs even if SDK isn't loaded up
+            useSDK = false;
+            sdkIsLoaded = true;
+            beginLoadIfAllReady();
+        }
+    }, 10000)
+}
+
+function beginLoadIfAllReady() {
+    if (preloadCompleted && sdkIsLoaded) {
+        onPreloadComplete(PhaserScene)
+    }
 }
 
 function onPreloadComplete(a) {
@@ -113,7 +146,7 @@ function onPreloadComplete(a) {
 }
 
 function onLoadComplete(a) {
-    if (!document.location.href.includes('itch') && !document.location.href.includes('localhost:8124')) {
+    if (!document.location.href.includes('crazy') && !document.location.href.includes('juegos')) {
         // Stops execution of rest of game
         let gameDiv = document.getElementById('preload-notice');
         let invalidSite = document.location.href.substring(0, 25);
