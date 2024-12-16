@@ -106,7 +106,7 @@ function onPreloadComplete(a) {
         fontSize: 22,
         color: "#ffffff",
         align: "center"
-    }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 155, "EXHIBIT OF SORROWS", {
+    }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 155, "", {
         fontFamily: "Times New Roman",
         fontSize: 36,
         color: "#777777",

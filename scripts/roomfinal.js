@@ -196,21 +196,21 @@ function runEpilogue(background) {
 									    		}
 											    sdkWrapperRequestResponsiveBanner('banner-container-end')
 											
-											    gameObjectsTemp.endText2 = globalScene.add.text(100, 140, "Art by Theresa Kao", {fontFamily: 'Times New Roman', fontSize: 30, color: '#ffffff', align: 'left'});
+											    gameObjectsTemp.endText2 = globalScene.add.text(100, 130, "Art by Theresa Kao", {fontFamily: 'Times New Roman', fontSize: 30, color: '#ffffff', align: 'left'});
 											    gameObjectsTemp.endText2.alpha = 0;
 											    globalScene.tweens.add({
 								        			targets: gameObjectsTemp.endText2,
 											    	alpha: 1,
 											    	duration: 900,
 											    	onComplete: () => {
-													    gameObjectsTemp.endText3 = globalScene.add.text(100, 200, "Special Helpers: @hby_stuff, Ester Tsai, Yuan Lin, Peikun Tsai", {fontFamily: 'Times New Roman', fontSize: 30, color: '#ffffff', align: 'left'});
+													    gameObjectsTemp.endText3 = globalScene.add.text(100, 180, "Special Helpers: @hby_stuff, Ester Tsai, Yuan Lin, Peikun Tsai", {fontFamily: 'Times New Roman', fontSize: 30, color: '#ffffff', align: 'left'});
 													    gameObjectsTemp.endText3.alpha = 0;
 													    globalScene.tweens.add({
 										        			targets: gameObjectsTemp.endText3,
 													    	alpha: 1,
 													    	duration: 900,
 													    	onComplete: () => {
-																let finalText = "Random game trivia:\n\n";
+																let finalText = "Random game trivia:\n";
 																finalText += "- Engine used: Phaser 3\n";
 																finalText += "- Development Time: 4 months\n";
 																finalText += "- Number of Image Files: ~320\n";
@@ -218,7 +218,7 @@ function runEpilogue(background) {
 																finalText += "- Trickiest thing to draw: Jack in the Box's neck\n";
 																// finalText += "- Click the stars in the Welcome lobby in the order '1, 3, 2, 1, 5' to unlock developer notes\n";
 
-																gameObjectsTemp.endText5 = globalScene.add.text(100, 380, finalText, {fontFamily: 'Times New Roman', fontSize: 26, color: '#ffffff', align: 'left'});
+																gameObjectsTemp.endText5 = globalScene.add.text(100, 330, finalText, {fontFamily: 'Times New Roman', fontSize: 26, color: '#ffffff', align: 'left'});
 																gameObjectsTemp.endText5.setOrigin(0, 0.5);
 																gameObjectsTemp.endText5.alpha = 0;
 																globalScene.tweens.add({
@@ -226,25 +226,25 @@ function runEpilogue(background) {
 																	alpha: 1,
 																	duration: 900,
 																	onComplete: () => {
-																		gameObjectsTemp.lastText = globalScene.add.text(100, 530, "Thank you for playing", {fontFamily: 'Times New Roman', fontSize: 48, color: '#ffffff', align: 'center'});
+																		gameObjectsTemp.lastText = globalScene.add.text(100, 450, "Thank you for playing", {fontFamily: 'Times New Roman', fontSize: 48, color: '#ffffff', align: 'center'});
 																		gameObjectsTemp.lastText.setOrigin(0, 0.5);
 																		gameObjectsTemp.lastText.alpha = 0;
 																		globalScene.tweens.add({
 																			targets: gameObjectsTemp.lastText,
 																			alpha: 1,
 																			duration: 2500,
-																			delay: 2500
+																			delay: 1000
 																		});
 																		setTimeout(() => {
-																			gameObjectsTemp.dText = globalScene.add.text(100, 585, 'Latest news at:', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.dText = globalScene.add.text(100, 525, 'Latest news at:', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
 																			gameObjectsTemp.dText.setOrigin(0, 0.5);
 																			gameObjectsTemp.dText.alpha = 1;
 
-																			gameObjectsTemp.dText2 = globalScene.add.text(100, 630, 'Bluesky', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.dText2 = globalScene.add.text(100, 570, 'Bluesky', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
 																			gameObjectsTemp.dText2.setOrigin(0, 0.5);
 																			gameObjectsTemp.dText2.alpha = 0.05;
 
-																			gameObjectsTemp.dText3 = globalScene.add.text(100, 670, 'Twitter', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.dText3 = globalScene.add.text(100, 610, 'Twitter', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
 																			gameObjectsTemp.dText3.setOrigin(0, 0.5);
 																			gameObjectsTemp.dText3.alpha = 0.05;
 
@@ -262,7 +262,7 @@ function runEpilogue(background) {
 																		        {
 																		            "ref": "whitePixel",
 																		            "x": 195,
-																		            "y": 630,
+																		            "y": gameObjectsTemp.dText2.y,
 																		            scaleX: 350,
 																		            scaleY: 28,
 																		            alpha: 0.001
@@ -286,7 +286,7 @@ function runEpilogue(background) {
 																		        {
 																		            "ref": "whitePixel",
 																		            "x": 195,
-																		            "y": 670,
+																		            "y": gameObjectsTemp.dText3.y,
 																		            scaleX: 350,
 																		            scaleY: 28,
 																		            alpha: 0.001
@@ -301,7 +301,7 @@ function runEpilogue(background) {
 																		    });
 
 
-																			gameObjectsTemp.replayText = globalScene.add.text(100, 720, 'REPLAY', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.replayText = globalScene.add.text(100, 660, 'REPLAY', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
 																			gameObjectsTemp.replayText.setOrigin(0, 0.5);
 																			gameObjectsTemp.replayText.alpha = 0.05;
 																			globalScene.tweens.add({
@@ -314,7 +314,12 @@ function runEpilogue(background) {
 																		        undefined,
 																		        () => {
 
-																					sdkCommercialBreak(() => {}, () => {
+																					sdkCommercialBreak(() => {
+																						if (gameObjectsTemp.currMusic) {
+																							gameObjectsTemp.currMusic.setVolume(0);
+																						}
+																					
+																					}, () => {
 																							gameVars = {
 																							baseSway: .025,
 																							gameStarted: !1,
@@ -363,7 +368,7 @@ function runEpilogue(background) {
 																		        {
 																		            "ref": "whitePixel",
 																		            "x": 195,
-																		            "y": 720,
+																		            "y": gameObjectsTemp.replayText.y,
 																		            scaleX: 350,
 																		            scaleY: 30,
 																		            alpha: 0.001
@@ -377,7 +382,7 @@ function runEpilogue(background) {
 																		    	gameObjectsTemp.replayText.alpha = 0.7;
 																		    })
 
-																		}, 2500);
+																		}, 1000);
 																	}
 																});
 													    	}
@@ -387,10 +392,10 @@ function runEpilogue(background) {
 									    	}
 									    })
 									    if (!gameObjectsTemp.boxBroken) {
-									    	playSound('gladiator0');
+									    	gameObjectsTemp.currMusic = playSound('gladiator0');
                        						gameObjects.sounds['gladiator0'].volume = 1;
 									    } else {
-									    	tweenVolume('gladiatorx', 0.6);
+									    	gameObjectsTemp.currMusic = tweenVolume('gladiatorx', 0.6);
 									    }
     								}, 325);
 						        }
