@@ -186,8 +186,7 @@ function runEpilogue(background) {
 									    globalScene.tweens.add({
 						        			targets: gameObjectsTemp.endText,
 									    	alpha: 1,
-									    	duration: 1000,
-									    	delay: 300,
+									    	duration: 900,
 									    	onComplete: () => {
 
 									    		if (useSDK) {
@@ -202,16 +201,14 @@ function runEpilogue(background) {
 											    globalScene.tweens.add({
 								        			targets: gameObjectsTemp.endText2,
 											    	alpha: 1,
-											    	duration: 1000,
-											    	delay: 600,
+											    	duration: 900,
 											    	onComplete: () => {
 													    gameObjectsTemp.endText3 = globalScene.add.text(100, 200, "Special Helpers: @hby_stuff, Ester Tsai, Yuan Lin, Peikun Tsai", {fontFamily: 'Times New Roman', fontSize: 30, color: '#ffffff', align: 'left'});
 													    gameObjectsTemp.endText3.alpha = 0;
 													    globalScene.tweens.add({
 										        			targets: gameObjectsTemp.endText3,
 													    	alpha: 1,
-													    	duration: 1000,
-													    	delay: 600,
+													    	duration: 900,
 													    	onComplete: () => {
 																let finalText = "Random game trivia:\n\n";
 																finalText += "- Engine used: Phaser 3\n";
@@ -227,8 +224,7 @@ function runEpilogue(background) {
 																globalScene.tweens.add({
 																	targets: gameObjectsTemp.endText5,
 																	alpha: 1,
-																	duration: 1000,
-																	delay: 600,
+																	duration: 900,
 																	onComplete: () => {
 																		gameObjectsTemp.lastText = globalScene.add.text(100, 530, "Thank you for playing", {fontFamily: 'Times New Roman', fontSize: 48, color: '#ffffff', align: 'center'});
 																		gameObjectsTemp.lastText.setOrigin(0, 0.5);
@@ -237,7 +233,7 @@ function runEpilogue(background) {
 																			targets: gameObjectsTemp.lastText,
 																			alpha: 1,
 																			duration: 2500,
-																			delay: 3500
+																			delay: 2500
 																		});
 																		setTimeout(() => {
 																			gameObjectsTemp.dText = globalScene.add.text(100, 585, 'Latest news at:', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
@@ -255,7 +251,7 @@ function runEpilogue(background) {
 																			globalScene.tweens.add({
 																				targets: [gameObjectsTemp.dText, gameObjectsTemp.dText2, gameObjectsTemp.dText3],
 																				alpha: 0.7,
-																				duration: 2000
+																				duration: 1500
 																			});
 																		    let bsky = new Button(
 																		        globalScene,

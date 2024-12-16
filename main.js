@@ -97,7 +97,7 @@ function onPreloadComplete(a) {
         color: "#777777",
         align: "center"
     }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), 
-    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"), 
+    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup").setAlpha(0), 
     gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"), 
     gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"), 
     gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
@@ -121,10 +121,12 @@ function onLoadComplete(a) {
         return;
     }
 
+    gameObjectsTemp.popup.alpha = 1;
+    gameObjectsTemp.popup.rotation = 0.01;
     a.tweens.add({
         targets: gameObjectsTemp.popup,
-        alpha: 0,
-        ease: "Quad.easeOut",
+        y: gameVars.halfHeight + 25,
+        ease: "Cubic.easeOut",
         duration: 150,
         onComplete: () => {
             gameObjectsTemp.popup.destroy();
@@ -602,10 +604,13 @@ function update(w, s) {
         handleViewShift(), handleViewShiftLoading();
         let t = 0,
             l = (t = gameVarsTemp.loadAmt < .8 ? .6 * gameVarsTemp.loadAmt : gameVarsTemp.loadAmt < .999 ? .6 * gameVarsTemp.loadAmt + (gameVarsTemp.loadAmt - .8) * 1.98 : gameVarsTemp.loadAmt) * gameObjectsTemp.loadingBarBacking.scaleX - gameObjectsTemp.loadingBar.scaleX;
-        if (1 === gameVarsTemp.loadAmt && (l += 12), gameObjectsTemp.loadingBar.scaleX = Math.min(gameObjectsTemp.loadingBarBacking.scaleX, gameObjectsTemp.loadingBar.scaleX + .05 * l), gameObjectsTemp.popup.y = gameVars.halfHeight + 25 - (gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.0055), gameObjectsTemp.funlid.rotation = gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.00007, gameObjectsTemp.loadingBar.scaleX >= gameObjectsTemp.loadingBarBacking.scaleX && !gameVarsTemp.loadAnimComplete && (gameVarsTemp.loadAnimComplete = !0, onLoadAnimComplete(this)), gameObjectsTemp.loadingWelcome && gameVars.gameStarted) {
+        if (1 === gameVarsTemp.loadAmt && (l += 12), gameObjectsTemp.loadingBar.scaleX = Math.min(gameObjectsTemp.loadingBarBacking.scaleX, gameObjectsTemp.loadingBar.scaleX + .05 * l), gameObjectsTemp.funlid.rotation = gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.00007, gameObjectsTemp.loadingBar.scaleX >= gameObjectsTemp.loadingBarBacking.scaleX && !gameVarsTemp.loadAnimComplete && (gameVarsTemp.loadAnimComplete = !0, onLoadAnimComplete(this)), gameObjectsTemp.loadingWelcome && gameVars.gameStarted) {
             let m = gameObjectsTemp.loadingWelcome.rotation * (1 + gameObjectsTemp.loadingWelcome.rotation) * 4e3;
             gameObjects.loadingCntr.shakeAccX = -0.4 * gameObjects.loadingCntr.swayX + (Math.random() - .5) * m, gameObjects.loadingCntr.shakeAccY = -0.4 * gameObjects.loadingCntr.swayY + (Math.random() - .5) * m, gameObjects.loadingCntr.swayX += gameObjects.loadingCntr.shakeAccX, gameObjects.loadingCntr.swayY += gameObjects.loadingCntr.shakeAccY
         }
+            if (gameObjectsTemp.popup.rotation == 0) {
+                gameObjectsTemp.popup.y = gameVars.halfHeight + 22 - (gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.006)
+            }
         return
     }
     if (handleViewShift(), gameVars.darkPoint) {

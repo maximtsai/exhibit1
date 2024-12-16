@@ -231,7 +231,7 @@ function fingerPress() {
         gameObjects.roomHandyObjs.dollPicture.setFrame('handy5');
     } else if (gameObjects.roomHandyObjs.fingerState === 11) {
         gameObjects.roomHandyObjs.dollPicture.setFrame('handy3');
-    } else if (gameObjects.roomHandyObjs.fingerState === 7) {
+    } else if (gameObjects.roomHandyObjs.fingerState === 8) {
         gameObjects.roomHandyObjs.dollPicture.setFrame('handy2');
     }
     if (gameVars.horrorPoint)
