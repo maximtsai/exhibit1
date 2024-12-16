@@ -106,15 +106,15 @@ function onPreloadComplete(a) {
         fontSize: 22,
         color: "#ffffff",
         align: "center"
-    }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 140, "EXHIBIT OF SORROWS", {
+    }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 155, "EXHIBIT OF SORROWS", {
         fontFamily: "Times New Roman",
         fontSize: 36,
         color: "#777777",
         align: "center"
     }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), 
-    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"), 
-    gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"), 
-    gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"), 
+    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 25, "popup"), 
+    gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 20, "funbox"), 
+    gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 85, "funlid"), 
     gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
         fontFamily: "Times New Roman",
         fontSize: 22,
@@ -160,7 +160,7 @@ function beginLoadIfAllReady() {
 }
 
 function onLoadComplete(a) {
-    if (!document.location.href.includes('crazy') && !document.location.href.includes('juegos')) {
+    if (!document.location.href.includes('crazy') && !document.location.href.includes('juegos') && !document.location.href.includes('localhost')) {
         // Stops execution of rest of game
         let gameDiv = document.getElementById('preload-notice');
         let invalidSite = document.location.href.substring(0, 25);
@@ -656,7 +656,7 @@ function update(w, s) {
             gameObjects.loadingCntr.shakeAccX = -0.4 * gameObjects.loadingCntr.swayX + (Math.random() - .5) * m, gameObjects.loadingCntr.shakeAccY = -0.4 * gameObjects.loadingCntr.swayY + (Math.random() - .5) * m, gameObjects.loadingCntr.swayX += gameObjects.loadingCntr.shakeAccX, gameObjects.loadingCntr.swayY += gameObjects.loadingCntr.shakeAccY
         }
             if (gameObjectsTemp.popup.rotation == 0) {
-                gameObjectsTemp.popup.y = gameVars.halfHeight + 22 - (gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.006)
+                gameObjectsTemp.popup.y = gameVars.halfHeight + 17 - (gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.006)
             }
         return
     }
