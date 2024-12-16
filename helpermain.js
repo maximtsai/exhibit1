@@ -251,7 +251,7 @@ function onExitClick(e) {
 					ease: "Cubic.easeIn",
 					onComplete: () => {
 						new Button(e, gameObjects.gameCtnr0, () => {
-							updateInfoText("Locked. Perhaps there is another EXIT elsewhere", 4800)
+							updateInfoText("Locked. But now that the lights\nare on, I can head RIGHT ->", 4800)
 						}, {
 							ref: "blackPixel",
 							x: -3,
@@ -445,7 +445,7 @@ function setupGameplayButtons(e) {
 	setTimeout(() => {
 		gameObjects.clownWelcomePic.setFrame('framesEnter1');
 		playSound('click4', undefined, 0.25)
-	}, 3600)
+	}, 3900)
 
 }
 

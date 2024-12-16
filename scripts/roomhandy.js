@@ -150,8 +150,7 @@ function setupRoomHandy(e, a, o) {
         fingerState: 0,
         dollImages: []
     }, gameObjects.roomHandyObjs.dollArms = e.add.image(0, gameVars.height - 260, "roomHandy", "arms"), o.add(gameObjects.roomHandyObjs.dollArms), gameObjects.roomHandyObjs.dollBody = e.add.image(0, gameVars.height - 260, "roomHandy", "dollBody"), o.add(gameObjects.roomHandyObjs.dollBody), 
-gameObjects.roomHandyObjs.dollPicture = e.add.sprite(0, 200, "handy1").setVisible(false), o.add(gameObjects.roomHandyObjs.dollPicture),
-gameObjects.roomHandyObjs.dollPicture2 = e.add.sprite(0, 200, "handy2").setVisible(false), o.add(gameObjects.roomHandyObjs.dollPicture2),
+gameObjects.roomHandyObjs.dollPicture = e.add.sprite(4, 188, "roomHandy", "handy1").setVisible(false), o.add(gameObjects.roomHandyObjs.dollPicture),
     setHandyDollImage("dollNeutral"), o.add(gameObjects.roomHandyObjs.doll), gameObjects.roomHandyObjs.leftHand = e.add.image(-285, 359, "roomHandy", "lefthand1"), gameObjects.roomHandyObjs.rightHand = e.add.image(290, 359, "roomHandy", "righthand1"), o.add(gameObjects.roomHandyObjs.leftHand), o.add(gameObjects.roomHandyObjs.rightHand), initFingerButton(), gameObjects.roomHandyObjs.placard = new Button(e, o, () => {
         gameVars.horrorPoint ? gameObjects.roomHandyObjs.roomComplete ? gameObjects.roomHandyObjs.playedOneTimeText ? updateInfoText("Mr.            ") : (gameObjects.roomHandyObjs.playedOneTimeText = !0, updateInfoText("Mr. Handy"), setTimeout(() => {
             updateInfoText("Mr. H̵a̵n̸d̸ "), setTimeout(() => {
@@ -226,9 +225,14 @@ function initFingerButton() {
 
 function fingerPress() {
     let e = gameObjects.roomHandyObjs.fingerState + 1;
-    if (gameObjects.roomHandyObjs.fingerState === 17) {
-    	gameObjects.roomHandyObjs.dollPicture.setVisible(false);
-		gameObjects.roomHandyObjs.dollPicture2.setVisible(true);
+    if (gameObjects.roomHandyObjs.fingerState === 16) {
+    	gameObjects.roomHandyObjs.dollPicture.setFrame('handy4');
+    } else if (gameObjects.roomHandyObjs.fingerState === 18) {
+        gameObjects.roomHandyObjs.dollPicture.setFrame('handy5');
+    } else if (gameObjects.roomHandyObjs.fingerState === 11) {
+        gameObjects.roomHandyObjs.dollPicture.setFrame('handy3');
+    } else if (gameObjects.roomHandyObjs.fingerState === 7) {
+        gameObjects.roomHandyObjs.dollPicture.setFrame('handy2');
     }
     if (gameVars.horrorPoint)
         if (0 === gameObjects.roomHandyObjs.fingerState && tweenVolume("gladiatorx", .5), gameObjects.roomHandyObjs.listOfButtonPos.length > gameObjects.roomHandyObjs.fingerState + 1)

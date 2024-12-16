@@ -72,7 +72,7 @@ function setupRoomPump(e, o, a) {
         e === o ? setTimeout(() => {
         	gameObjects.roomPumpObjs.shouldUpdate = !0;
             setTimeout(() => {
-	            if (gameObjects.roomPumpObjs.pumpAmt < 8) {
+	            if (gameObjects.roomPumpObjs.pumpAmt < 8 && (!gameVars.darkPoint || gameVars.horrorPoint)) {
 	            	gameObjects.roomPumpObjs.pumplines.visible = true;
 	            	setTimeout(() => {
 		            	gameObjects.roomPumpObjs.pumplines.visible = false;
@@ -98,7 +98,7 @@ function setupRoomPump(e, o, a) {
 		            	}, 350)
 	            	}, 350)
 	            }
-	        }, 6000)
+	        }, 4500)
 
     }, 0) : setTimeout(() => {
             gameObjects.roomPumpObjs.shouldUpdate = !1;

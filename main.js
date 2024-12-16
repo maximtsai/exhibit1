@@ -11,7 +11,7 @@ let config = {
             height: 920
         },
         antialias: !0,
-        transparent: !0,
+        transparent: true,
         scene: {
             preload: preload,
             create: create,
@@ -69,7 +69,9 @@ function preload() {
     let gameDiv = document.getElementById('preload-notice');
     gameDiv.innerHTML = "";
     handleBorders();
-    sdkWrapperGameLoadingStart(), game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), this.load.image("headphones", "sprites/headphones.png")
+    sdkWrapperGameLoadingStart(), game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), 
+    this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"), 
+    this.load.image("headphones", "sprites/headphones.png")
 }
 
 function create() {
@@ -79,14 +81,14 @@ function create() {
 function onPreloadComplete(a) {
     sdkWrapperResizeBanners(), setTimeout(() => {
         sdkWrapperRequestResponsiveBanner("banner-container-top"), gameVars.showingBannerTop = !0
-    }, 50), setupHand(a), globalScene = a, gameObjectsTemp.loadingBg = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel"), gameObjectsTemp.loadingBg.scaleX = 1e3, gameObjectsTemp.loadingBg.scaleY = 1e3, gameObjects.loadingCntr.add(gameObjectsTemp.loadingBg), gameObjectsTemp.loadingText = a.add.text(gameVars.halfWidth, gameVars.halfHeight - 50, "LOADING", {
+    }, 50), setupHand(a), globalScene = a, gameObjectsTemp.loadingBg = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel"), gameObjectsTemp.loadingBg.scaleX = 1e3, gameObjectsTemp.loadingBg.scaleY = 1e3, gameObjects.loadingCntr.add(gameObjectsTemp.loadingBg), gameObjectsTemp.loadingText = a.add.text(gameVars.halfWidth, gameVars.halfHeight + 155, "LOADING", {
         fontFamily: "Times New Roman",
         fontSize: 38,
         color: "#ffffff",
         align: "center"
-    }), gameObjectsTemp.loadingText.setOrigin(.5, .5), gameObjectsTemp.loadingText.setDepth(1), gameObjectsTemp.loadingBarBacking = a.add.image(gameVars.halfWidth, gameVars.height - 230, "whitePixel"), gameObjectsTemp.loadingBarBacking.alpha = .25, gameObjectsTemp.loadingBarBacking.scaleY = 4, gameObjectsTemp.loadingBarBacking.scaleX = 200, gameObjectsTemp.loadingBarBacking.setDepth(1), gameObjectsTemp.loadingBar = a.add.image(gameVars.halfWidth, gameVars.height - 230, "whitePixel"), gameObjectsTemp.loadingBar.scaleY = 4, gameObjectsTemp.loadingBar.setDepth(1), gameObjectsTemp.warningText = a.add.text(gameVars.halfWidth, gameVars.height - 185, "Warning: This game contains content some players may find disturbing", {
+    }), gameObjectsTemp.loadingText.setOrigin(.5, .5), gameObjectsTemp.loadingText.setDepth(1), gameObjectsTemp.loadingBarBacking = a.add.image(gameVars.halfWidth, gameVars.height - 260, "whitePixel"), gameObjectsTemp.loadingBarBacking.alpha = .25, gameObjectsTemp.loadingBarBacking.scaleY = 4, gameObjectsTemp.loadingBarBacking.scaleX = 200, gameObjectsTemp.loadingBarBacking.setDepth(1), gameObjectsTemp.loadingBar = a.add.image(gameVars.halfWidth, gameVars.height - 260, "whitePixel"), gameObjectsTemp.loadingBar.scaleY = 4, gameObjectsTemp.loadingBar.setDepth(1), gameObjectsTemp.warningText = a.add.text(gameVars.halfWidth, gameVars.height - 188, "Warning: Contains spooky and intense scenes", {
         fontFamily: "Times New Roman",
-        fontSize: 20,
+        fontSize: 22,
         color: "#ffffff",
         align: "center"
     }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 110, "EXHIBIT OF SORROWS", {
@@ -94,7 +96,11 @@ function onPreloadComplete(a) {
         fontSize: 36,
         color: "#777777",
         align: "center"
-    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 90, "For the best experience, play with headphones", {
+    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), 
+    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"), 
+    gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"), 
+    gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"), 
+    gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
         fontFamily: "Times New Roman",
         fontSize: 22,
         color: "#ffffff",
@@ -103,7 +109,7 @@ function onPreloadComplete(a) {
         gameVarsTemp.loadAmt = a
     }), a.load.on("complete", () => {
         onLoadComplete(a)
-    }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"), a.load.multiatlas("roomClown", "sprites/clown/clown.json"), a.load.multiatlas("flashScreens", "sprites/flashscreens/flashscreens.json"), a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), a.load.audio("loadingMusic", "audio/loadingmusic.mp3"), a.load.audio("click1", "audio/click1.mp3"), a.load.audio("click2", "audio/click2.mp3"), a.load.audio("click3", "audio/click3.mp3"), a.load.audio("click4", "audio/click4.mp3"), a.load.audio("airpump", "audio/airpump.mp3"), a.load.audio("doorslam", "audio/doorslam.mp3"), a.load.audio("dooropen", "audio/dooropen.mp3"), a.load.audio("dooropen2", "audio/dooropen2.mp3"), a.load.audio("squeakopen", "audio/squeakopen.mp3"), a.load.audio("lidslam", "audio/lidslam.mp3"), a.load.audio("creepysfx", "audio/creepysfx.mp3"), a.load.audio("void", "audio/void.mp3"), a.load.audio("metalgrind1", "audio/metalgrind1.mp3"), a.load.audio("metalgrind2", "audio/metalgrind2.mp3"), a.load.audio("metalgrind3", "audio/metalgrind3.mp3"), a.load.audio("metalgrind4", "audio/metalgrind4.mp3"), a.load.audio("metalsqueak1", "audio/metalsqueak1.mp3"), a.load.audio("metalsqueak2", "audio/metalsqueak2.mp3"), a.load.audio("keyfound", "audio/keyfound.mp3"), a.load.audio("keyget", "audio/keyget.mp3"), a.load.audio("keygetred", "audio/keygetred.mp3"), a.load.audio("deepbell1", "audio/deepbell1.mp3"), a.load.audio("deepbell2", "audio/deepbell2.mp3"), a.load.audio("deepbell3", "audio/deepbell3.mp3"), a.load.audio("deepbell4", "audio/deepbell4.mp3"), a.load.audio("deepbell5", "audio/deepbell5.mp3"), a.load.audio("fan1", "audio/fan1.mp3"), a.load.audio("fan2", "audio/fan2.mp3"), a.load.audio("nyaha", "audio/nyaha.mp3"), a.load.audio("muffle1", "audio/muffle1.mp3"), a.load.audio("muffle2", "audio/muffle2.mp3"), a.load.audio("muffle3", "audio/muffle3.mp3"), a.load.audio("muffle4", "audio/muffle4.mp3"), a.load.audio("muffle5", "audio/muffle5.mp3"), a.load.audio("muffle6", "audio/muffle6.mp3"), a.load.audio("muffle7", "audio/muffle7.mp3"), a.load.audio("muffle8", "audio/muffle8.mp3"), a.load.audio("splurt", "audio/splurt.mp3"), a.load.audio("watergurgle", "audio/watergurgle.mp3"), a.load.audio("a7", "audio/notes/a7.mp3"), a.load.audio("b7", "audio/notes/b7.mp3"), a.load.audio("c7", "audio/notes/c7.mp3"), a.load.audio("c7b", "audio/notes/c7b.mp3"), a.load.audio("d7", "audio/notes/d7.mp3"), a.load.audio("e7", "audio/notes/e7.mp3"), a.load.audio("e7b", "audio/notes/e7b.mp3"), a.load.audio("f7", "audio/notes/f7.mp3"), a.load.audio("f7b", "audio/notes/f7b.mp3"), a.load.audio("g6", "audio/notes/g6.mp3"), a.load.audio("g6s", "audio/notes/g6s.mp3"), a.load.audio("g7", "audio/notes/g7.mp3"), a.load.audio("c8", "audio/notes/c8.mp3"), a.load.audio("rubber1", "audio/rubber1.mp3"), a.load.audio("rubber2", "audio/rubber2.mp3"), a.load.audio("rubber3", "audio/rubber3.mp3"), a.load.audio("rubber4", "audio/rubber4.mp3"), a.load.audio("rubber5", "audio/rubber5.mp3"), a.load.audio("rubber6", "audio/rubber6.mp3"), a.load.audio("rubber7", "audio/rubber7.mp3"), a.load.audio("rubber8", "audio/rubber8.mp3"), a.load.audio("tear1", "audio/tear1.mp3"), a.load.audio("tear2", "audio/tear2.mp3"), a.load.audio("tear3", "audio/tear3.mp3"), a.load.audio("tear4", "audio/tear4.mp3"), a.load.audio("tear5", "audio/tear5.mp3"), a.load.audio("tear6", "audio/tear6.mp3"), a.load.audio("sing1", "audio/sing1.mp3"), a.load.audio("glassbreak", "audio/glassbreak.mp3"), a.load.audio("flickeron", "audio/flickeron.mp3"), a.load.audio("horrortrack1", "audio/horrortrack1.mp3"), a.load.audio("groundthud2", "audio/groundthud2.mp3"), a.load.audio("emerge1", "audio/emerge1.mp3"), a.load.audio("emerge2", "audio/emerge2.mp3"), a.load.audio("squeak1", "audio/squeak1.mp3"), a.load.audio("squeak2", "audio/squeak2.mp3"), a.load.audio("squeak3", "audio/squeak3.mp3"), a.load.audio("stopmusic", "audio/stopmusic.mp3"), a.load.audio("gladiator0", "audio/gladiator0.mp3"), a.load.audio("gladiator1", "audio/gladiator1.mp3"), a.load.audio("gladiator2", "audio/gladiator2.mp3"), a.load.audio("gladiatorx", "audio/gladiatorx.mp3"), a.load.audio("pumpamb", "audio/pumpamb.mp3"), a.load.audio("shout1", "audio/shout1.mp3"), a.load.audio("shout2", "audio/shout2.mp3"), a.load.audio("shout3", "audio/shout3.mp3"), a.load.audio("shout4", "audio/shout4.mp3"), a.load.audio("shout5", "audio/shout5.mp3"), a.load.audio("clownlaugh1", "audio/clownlaugh1.mp3"), a.load.audio("clownlaugh2", "audio/clownlaugh2.mp3"), a.load.audio("clownlaughfinal", "audio/clownlaughfinal.mp3"), a.load.image("handy1", "sprites/handy1.png"), a.load.image("handy2", "sprites/handy2.png"), a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
+    }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"), a.load.multiatlas("roomClown", "sprites/clown/clown.json"), a.load.multiatlas("flashScreens", "sprites/flashscreens/flashscreens.json"), a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), a.load.audio("loadingMusic", "audio/loadingmusic.mp3"), a.load.audio("click1", "audio/click1.mp3"), a.load.audio("click2", "audio/click2.mp3"), a.load.audio("click3", "audio/click3.mp3"), a.load.audio("click4", "audio/click4.mp3"), a.load.audio("airpump", "audio/airpump.mp3"), a.load.audio("doorslam", "audio/doorslam.mp3"), a.load.audio("dooropen", "audio/dooropen.mp3"), a.load.audio("dooropen2", "audio/dooropen2.mp3"), a.load.audio("squeakopen", "audio/squeakopen.mp3"), a.load.audio("lidslam", "audio/lidslam.mp3"), a.load.audio("creepysfx", "audio/creepysfx.mp3"), a.load.audio("void", "audio/void.mp3"), a.load.audio("metalgrind1", "audio/metalgrind1.mp3"), a.load.audio("metalgrind2", "audio/metalgrind2.mp3"), a.load.audio("metalgrind3", "audio/metalgrind3.mp3"), a.load.audio("metalgrind4", "audio/metalgrind4.mp3"), a.load.audio("metalsqueak1", "audio/metalsqueak1.mp3"), a.load.audio("metalsqueak2", "audio/metalsqueak2.mp3"), a.load.audio("keyfound", "audio/keyfound.mp3"), a.load.audio("keyget", "audio/keyget.mp3"), a.load.audio("keygetred", "audio/keygetred.mp3"), a.load.audio("deepbell1", "audio/deepbell1.mp3"), a.load.audio("deepbell2", "audio/deepbell2.mp3"), a.load.audio("deepbell3", "audio/deepbell3.mp3"), a.load.audio("deepbell4", "audio/deepbell4.mp3"), a.load.audio("deepbell5", "audio/deepbell5.mp3"), a.load.audio("fan1", "audio/fan1.mp3"), a.load.audio("fan2", "audio/fan2.mp3"), a.load.audio("nyaha", "audio/nyaha.mp3"), a.load.audio("muffle1", "audio/muffle1.mp3"), a.load.audio("muffle2", "audio/muffle2.mp3"), a.load.audio("muffle3", "audio/muffle3.mp3"), a.load.audio("muffle4", "audio/muffle4.mp3"), a.load.audio("muffle5", "audio/muffle5.mp3"), a.load.audio("muffle6", "audio/muffle6.mp3"), a.load.audio("muffle7", "audio/muffle7.mp3"), a.load.audio("muffle8", "audio/muffle8.mp3"), a.load.audio("splurt", "audio/splurt.mp3"), a.load.audio("watergurgle", "audio/watergurgle.mp3"), a.load.audio("a7", "audio/notes/a7.mp3"), a.load.audio("b7", "audio/notes/b7.mp3"), a.load.audio("c7", "audio/notes/c7.mp3"), a.load.audio("c7b", "audio/notes/c7b.mp3"), a.load.audio("d7", "audio/notes/d7.mp3"), a.load.audio("e7", "audio/notes/e7.mp3"), a.load.audio("e7b", "audio/notes/e7b.mp3"), a.load.audio("f7", "audio/notes/f7.mp3"), a.load.audio("f7b", "audio/notes/f7b.mp3"), a.load.audio("g6", "audio/notes/g6.mp3"), a.load.audio("g6s", "audio/notes/g6s.mp3"), a.load.audio("g7", "audio/notes/g7.mp3"), a.load.audio("c8", "audio/notes/c8.mp3"), a.load.audio("rubber1", "audio/rubber1.mp3"), a.load.audio("rubber2", "audio/rubber2.mp3"), a.load.audio("rubber3", "audio/rubber3.mp3"), a.load.audio("rubber4", "audio/rubber4.mp3"), a.load.audio("rubber5", "audio/rubber5.mp3"), a.load.audio("rubber6", "audio/rubber6.mp3"), a.load.audio("rubber7", "audio/rubber7.mp3"), a.load.audio("rubber8", "audio/rubber8.mp3"), a.load.audio("tear1", "audio/tear1.mp3"), a.load.audio("tear2", "audio/tear2.mp3"), a.load.audio("tear3", "audio/tear3.mp3"), a.load.audio("tear4", "audio/tear4.mp3"), a.load.audio("tear5", "audio/tear5.mp3"), a.load.audio("tear6", "audio/tear6.mp3"), a.load.audio("sing1", "audio/sing1.mp3"), a.load.audio("glassbreak", "audio/glassbreak.mp3"), a.load.audio("flickeron", "audio/flickeron.mp3"), a.load.audio("horrortrack1", "audio/horrortrack1.mp3"), a.load.audio("groundthud2", "audio/groundthud2.mp3"), a.load.audio("emerge1", "audio/emerge1.mp3"), a.load.audio("emerge2", "audio/emerge2.mp3"), a.load.audio("squeak1", "audio/squeak1.mp3"), a.load.audio("squeak2", "audio/squeak2.mp3"), a.load.audio("squeak3", "audio/squeak3.mp3"), a.load.audio("stopmusic", "audio/stopmusic.mp3"), a.load.audio("gladiator0", "audio/gladiator0.mp3"), a.load.audio("gladiator1", "audio/gladiator1.mp3"), a.load.audio("gladiator2", "audio/gladiator2.mp3"), a.load.audio("gladiatorx", "audio/gladiatorx.mp3"), a.load.audio("pumpamb", "audio/pumpamb.mp3"), a.load.audio("shout1", "audio/shout1.mp3"), a.load.audio("shout2", "audio/shout2.mp3"), a.load.audio("shout3", "audio/shout3.mp3"), a.load.audio("shout4", "audio/shout4.mp3"), a.load.audio("shout5", "audio/shout5.mp3"), a.load.audio("clownlaugh1", "audio/clownlaugh1.mp3"), a.load.audio("clownlaugh2", "audio/clownlaugh2.mp3"), a.load.audio("clownlaughfinal", "audio/clownlaughfinal.mp3"), a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
 }
 
 function onLoadComplete(a) {
@@ -115,14 +121,27 @@ function onLoadComplete(a) {
         return;
     }
 
+    a.tweens.add({
+        targets: gameObjectsTemp.popup,
+        alpha: 0,
+        ease: "Quad.easeOut",
+        duration: 150,
+        onComplete: () => {
+            gameObjectsTemp.popup.destroy();
+        }
+    })
+
     sdkWrapperGameLoadingStop(), a.tweens.timeline({
-        targets: [gameObjectsTemp.loadingText],
+        targets: [gameObjectsTemp.loadingText, gameObjectsTemp.funlid, gameObjectsTemp.funbox],
         tweens: [{
+            delay: 100,
             alpha: 0,
             duration: 150
         }],
         onComplete() {
-            gameObjectsTemp.loadingText.destroy()
+            gameObjectsTemp.loadingText.destroy();
+            gameObjectsTemp.funlid.destroy();
+            gameObjectsTemp.funbox.destroy();
         }
     }), gameObjectsTemp.brightLight = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 50, "loadingSS", "bright_light"), gameObjectsTemp.brightLight.scaleX = 1, gameObjectsTemp.brightLight.scaleY = 1, gameObjectsTemp.brightLight.alpha = 0, gameObjects.loadingCntr.add(gameObjectsTemp.brightLight), gameObjectsTemp.loadingWelcome = makeWelcomeImage("loading_welcome"), gameObjects.loadingCntr.add(gameObjectsTemp.loadingWelcome), gameObjectsTemp.loadingWelcome.rotation = 0, gameObjectsTemp.loadingWelcome.alpha = 0, gameObjectsTemp.loadingWelcome.scaleX = .8, gameObjectsTemp.loadingWelcome.scaleY = .8, a.tweens.timeline({
         targets: [gameObjectsTemp.loadingWelcome],
@@ -583,7 +602,7 @@ function update(w, s) {
         handleViewShift(), handleViewShiftLoading();
         let t = 0,
             l = (t = gameVarsTemp.loadAmt < .8 ? .6 * gameVarsTemp.loadAmt : gameVarsTemp.loadAmt < .999 ? .6 * gameVarsTemp.loadAmt + (gameVarsTemp.loadAmt - .8) * 1.98 : gameVarsTemp.loadAmt) * gameObjectsTemp.loadingBarBacking.scaleX - gameObjectsTemp.loadingBar.scaleX;
-        if (1 === gameVarsTemp.loadAmt && (l += 12), gameObjectsTemp.loadingBar.scaleX = Math.min(gameObjectsTemp.loadingBarBacking.scaleX, gameObjectsTemp.loadingBar.scaleX + .05 * l), gameObjectsTemp.loadingBar.scaleX >= gameObjectsTemp.loadingBarBacking.scaleX && !gameVarsTemp.loadAnimComplete && (gameVarsTemp.loadAnimComplete = !0, onLoadAnimComplete(this)), gameObjectsTemp.loadingWelcome && gameVars.gameStarted) {
+        if (1 === gameVarsTemp.loadAmt && (l += 12), gameObjectsTemp.loadingBar.scaleX = Math.min(gameObjectsTemp.loadingBarBacking.scaleX, gameObjectsTemp.loadingBar.scaleX + .05 * l), gameObjectsTemp.popup.y = gameVars.halfHeight + 25 - (gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.0055), gameObjectsTemp.funlid.rotation = gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.00007, gameObjectsTemp.loadingBar.scaleX >= gameObjectsTemp.loadingBarBacking.scaleX && !gameVarsTemp.loadAnimComplete && (gameVarsTemp.loadAnimComplete = !0, onLoadAnimComplete(this)), gameObjectsTemp.loadingWelcome && gameVars.gameStarted) {
             let m = gameObjectsTemp.loadingWelcome.rotation * (1 + gameObjectsTemp.loadingWelcome.rotation) * 4e3;
             gameObjects.loadingCntr.shakeAccX = -0.4 * gameObjects.loadingCntr.swayX + (Math.random() - .5) * m, gameObjects.loadingCntr.shakeAccY = -0.4 * gameObjects.loadingCntr.swayY + (Math.random() - .5) * m, gameObjects.loadingCntr.swayX += gameObjects.loadingCntr.shakeAccX, gameObjects.loadingCntr.swayY += gameObjects.loadingCntr.shakeAccY
         }
@@ -656,11 +675,11 @@ function disableMoveButtons() {
 }
 
 function showMoveRightFlash() {
-    let flashDur = 1000;
+    let flashDur = 1150;
     let scaleMult = 1;
     if (gameVars.shownFirstFlash) {
         flashDur = 900;
-        scaleMult = 0.9;
+        scaleMult = 0.65;
         gameObjects.moveRightFlash.alpha = 0.9;
     } else {
         gameObjects.moveRightFlash.alpha = 1;
@@ -670,6 +689,7 @@ function showMoveRightFlash() {
     gameVars.shownFirstFlash = true;
 
     globalScene.tweens.add({
+        delay: 0,
         targets: gameObjects.moveRightFlash,
         alpha: 0,
         ease: 'Quad.easeOut',
@@ -677,9 +697,10 @@ function showMoveRightFlash() {
     });
 
     globalScene.tweens.add({
+        delay: 0,
         targets: gameObjects.moveRightFlash,
-        scaleX: 2.1 * scaleMult,
-        scaleY: 3 * scaleMult,
+        scaleX: 2.6 * scaleMult,
+        scaleY: 3.7 * scaleMult,
         ease: 'Quart.easeOut',
         duration: flashDur
     });

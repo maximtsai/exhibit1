@@ -9,6 +9,76 @@
 			},
 			"frames": [
 				{
+					"filename": "handy1",
+					"frame": {
+						"x": 2343,
+						"y": 2267,
+						"w": 294,
+						"h": 280
+					},
+					"sourceSize": {
+						"w": 294,
+						"h": 280
+					},
+					"rotated": false
+				},
+				{
+					"filename": "handy2",
+					"frame": {
+						"x": 2343,
+						"y": 2557,
+						"w": 294,
+						"h": 280
+					},
+					"sourceSize": {
+						"w": 294,
+						"h": 280
+					},
+					"rotated": false
+				},
+				{
+					"filename": "handy3",
+					"frame": {
+						"x": 1988,
+						"y": 2691,
+						"w": 294,
+						"h": 280
+					},
+					"sourceSize": {
+						"w": 294,
+						"h": 280
+					},
+					"rotated": false
+				},
+				{
+					"filename": "handy4",
+					"frame": {
+						"x": 2652,
+						"y": 2267,
+						"w": 294,
+						"h": 280
+					},
+					"sourceSize": {
+						"w": 294,
+						"h": 280
+					},
+					"rotated": false
+				},
+				{
+					"filename": "handy5",
+					"frame": {
+						"x": 2652,
+						"y": 2557,
+						"w": 294,
+						"h": 280
+					},
+					"sourceSize": {
+						"w": 294,
+						"h": 280
+					},
+					"rotated": false
+				},
+				{
 					"filename": "arms",
 					"frame": {
 						"x": 0,

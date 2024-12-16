@@ -99,9 +99,6 @@ function setupRoomEntrance(e, t, a) {
             onComplete: () => {
             	if (gameObjects.exhibit.currentScene === 1) {
             		let sfx = playSound('nyaha', undefined, 0.05);
-            		if (sfx) {
-            			sfx.detune = -190;
-            		}
             	}
 				globalScene.tweens.add({
 		            targets: asdfJack,

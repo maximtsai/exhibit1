@@ -21,6 +21,54 @@ function setupRoomClown1(e, o, a) {
         scaleY: .158
     }), gameObjects.roomClown1.nose.setScale(145, 30), l = messageBus.subscribe("exhibitMove", e => {
         if (e === o) {
+
+            setTimeout(() => {
+                if (gameVars.firstNosePressed) {
+                    return;
+                }
+                let clownNoseFlash = globalScene.add.image(gameVars.halfWidth + 22, gameVars.halfHeight + 68, "roomClown", "clownnoseflash");
+                clownNoseFlash.setScale(0.27, 0.37).setRotation(-0.35);
+
+                globalScene.tweens.add({
+                    targets: clownNoseFlash,
+                    alpha: 0,
+                    duration: 700,
+                    completeDelay: 2000,
+                    onComplete: () => {
+                        if (!gameVars.firstNosePressed) {
+                            clownNoseFlash.alpha = 0.7;
+                            clownNoseFlash.scaleX = 0.27;
+                            clownNoseFlash.scaleY = 0.37;
+                            globalScene.tweens.add({
+                                targets: clownNoseFlash,
+                                alpha: 0,
+                                ease: 'Quad.easeOut',
+                                duration: 800,
+                                onComplete: () => {
+                                    clownNoseFlash.destroy();
+                                }
+                            });
+                            globalScene.tweens.add({
+                                targets: clownNoseFlash,
+                                scaleX: 0.6,
+                                scaleY: 0.83,
+                                ease: 'Cubic.easeOut',
+                                duration: 800,
+                            });
+                        } else {
+                            clownNoseFlash.destroy();
+                        }
+                    }
+                });
+                globalScene.tweens.add({
+                    targets: clownNoseFlash,
+                    scaleX: 0.6,
+                    scaleY: 0.83,
+                    ease: 'Cubic.easeOut',
+                    duration: 700,
+                });
+            }, 1500)
+
             l.unsubscribe();
             let e = gameObjects.clownWelcomePic.x,
                 o = gameObjects.clownWelcomePic.y,
@@ -121,6 +169,7 @@ function nosePress1(e, o) {
             }, 50)
         }, 350)
     })
+    gameVars.firstNosePressed = true;
 }
 
 function nosePress2(e, o) {
@@ -208,10 +257,10 @@ function nosePress3(e, o) {
         playSound("keyfound");
         let e = globalScene.add.image(gameVars.halfWidth + 20, 600, "buttons", "key_yellow");
         setTimeout(() => {
-            gameObjects.roomClown3.clownTemp = globalScene.add.image(-100, gameVars.halfHeight - 46, "roomClown", "clownlarge2"), gameObjects.roomClown3.clownTemp.scaleX = 1.5, o.add(gameObjects.roomClown3.clownTemp), setTimeout(() => {
+            gameObjects.roomClown3.clownTemp = globalScene.add.image(-100, gameVars.halfHeight - 46, "roomClown", "clownlarge2"), gameObjects.roomClown3.clownTemp.scaleX = 1.5, gameObjects.roomClown3.clownTemp.alpha = 0.5, o.add(gameObjects.roomClown3.clownTemp), setTimeout(() => {
                 gameObjects.roomClown3.clownTemp.x = 20
             }, 0), setTimeout(() => {
-            	let clownNoseFlash = globalScene.add.image(gameVars.halfWidth + 38, gameVars.halfHeight - 144, "roomClown", "clownnoseflash");
+            	let clownNoseFlash = globalScene.add.image(gameVars.halfWidth + 38, gameVars.halfHeight - 148, "roomClown", "clownnoseflash");
 
 		        globalScene.tweens.add({
 		            targets: clownNoseFlash,
