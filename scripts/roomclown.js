@@ -260,7 +260,7 @@ function nosePress3(e, o) {
             gameObjects.roomClown3.clownTemp = globalScene.add.image(-100, gameVars.halfHeight - 46, "roomClown", "clownlarge2"), gameObjects.roomClown3.clownTemp.scaleX = 1.5, gameObjects.roomClown3.clownTemp.alpha = 0.5, o.add(gameObjects.roomClown3.clownTemp), setTimeout(() => {
                 gameObjects.roomClown3.clownTemp.x = 20
             }, 0), setTimeout(() => {
-            	let clownNoseFlash = globalScene.add.image(gameVars.halfWidth + 39, gameVars.halfHeight - 151, "roomClown", "clownnoseflash");
+            	let clownNoseFlash = globalScene.add.image(gameVars.halfWidth + 39, gameVars.halfHeight - 153, "roomClown", "clownnoseflash");
 
 		        globalScene.tweens.add({
 		            targets: clownNoseFlash,
