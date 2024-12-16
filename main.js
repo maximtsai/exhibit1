@@ -68,9 +68,6 @@ let PhaserScene;
 async function loadSDK() {
     await window.CrazyGames.SDK.init().then(() => {
         sdkIsLoaded = true;
-        if (PhaserScene) {
-            sdkWrapperGameLoadingStart();
-        }
         beginLoadIfAllReady();
         // initUser();
     });
@@ -93,28 +90,12 @@ function preload() {
 }
 
 function create() {
-    preloadCompleted = true;
-    beginLoadIfAllReady();
-    setTimeout(() => {
-        if (!sdkIsLoaded) {
-            // TODO: Test and make sure game still runs even if SDK isn't loaded up
-            useSDK = false;
-            sdkIsLoaded = true;
-            beginLoadIfAllReady();
-        }
-    }, 10000)
-}
-
-function beginLoadIfAllReady() {
-    if (preloadCompleted && sdkIsLoaded) {
-        onPreloadComplete(PhaserScene)
-    }
+    onPreloadComplete(PhaserScene)
 }
 
 function onPreloadComplete(a) {
-    sdkWrapperResizeBanners(), setTimeout(() => {
-        sdkWrapperRequestResponsiveBanner("banner-container-top"), gameVars.showingBannerTop = !0
-    }, 50), setupHand(a), globalScene = a, gameObjectsTemp.loadingBg = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel"), gameObjectsTemp.loadingBg.scaleX = 1e3, gameObjectsTemp.loadingBg.scaleY = 1e3, gameObjects.loadingCntr.add(gameObjectsTemp.loadingBg), gameObjectsTemp.loadingText = a.add.text(gameVars.halfWidth, gameVars.halfHeight + 155, "LOADING", {
+    preloadCompleted = true;
+    setupHand(a), globalScene = a, gameObjectsTemp.loadingBg = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel"), gameObjectsTemp.loadingBg.scaleX = 1e3, gameObjectsTemp.loadingBg.scaleY = 1e3, gameObjects.loadingCntr.add(gameObjectsTemp.loadingBg), gameObjectsTemp.loadingText = a.add.text(gameVars.halfWidth, gameVars.halfHeight + 155, "LOADING", {
         fontFamily: "Times New Roman",
         fontSize: 38,
         color: "#ffffff",
@@ -142,7 +123,39 @@ function onPreloadComplete(a) {
         gameVarsTemp.loadAmt = a
     }), a.load.on("complete", () => {
         onLoadComplete(a)
-    }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"), a.load.multiatlas("roomClown", "sprites/clown/clown.json"), a.load.multiatlas("flashScreens", "sprites/flashscreens/flashscreens.json"), a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), a.load.audio("loadingMusic", "audio/loadingmusic.mp3"), a.load.audio("click1", "audio/click1.mp3"), a.load.audio("click2", "audio/click2.mp3"), a.load.audio("click3", "audio/click3.mp3"), a.load.audio("click4", "audio/click4.mp3"), a.load.audio("airpump", "audio/airpump.mp3"), a.load.audio("doorslam", "audio/doorslam.mp3"), a.load.audio("dooropen", "audio/dooropen.mp3"), a.load.audio("dooropen2", "audio/dooropen2.mp3"), a.load.audio("squeakopen", "audio/squeakopen.mp3"), a.load.audio("lidslam", "audio/lidslam.mp3"), a.load.audio("creepysfx", "audio/creepysfx.mp3"), a.load.audio("void", "audio/void.mp3"), a.load.audio("metalgrind1", "audio/metalgrind1.mp3"), a.load.audio("metalgrind2", "audio/metalgrind2.mp3"), a.load.audio("metalgrind3", "audio/metalgrind3.mp3"), a.load.audio("metalgrind4", "audio/metalgrind4.mp3"), a.load.audio("metalsqueak1", "audio/metalsqueak1.mp3"), a.load.audio("metalsqueak2", "audio/metalsqueak2.mp3"), a.load.audio("keyfound", "audio/keyfound.mp3"), a.load.audio("keyget", "audio/keyget.mp3"), a.load.audio("keygetred", "audio/keygetred.mp3"), a.load.audio("deepbell1", "audio/deepbell1.mp3"), a.load.audio("deepbell2", "audio/deepbell2.mp3"), a.load.audio("deepbell3", "audio/deepbell3.mp3"), a.load.audio("deepbell4", "audio/deepbell4.mp3"), a.load.audio("deepbell5", "audio/deepbell5.mp3"), a.load.audio("fan1", "audio/fan1.mp3"), a.load.audio("fan2", "audio/fan2.mp3"), a.load.audio("nyaha", "audio/nyaha.mp3"), a.load.audio("muffle1", "audio/muffle1.mp3"), a.load.audio("muffle2", "audio/muffle2.mp3"), a.load.audio("muffle3", "audio/muffle3.mp3"), a.load.audio("muffle4", "audio/muffle4.mp3"), a.load.audio("muffle5", "audio/muffle5.mp3"), a.load.audio("muffle6", "audio/muffle6.mp3"), a.load.audio("muffle7", "audio/muffle7.mp3"), a.load.audio("muffle8", "audio/muffle8.mp3"), a.load.audio("splurt", "audio/splurt.mp3"), a.load.audio("watergurgle", "audio/watergurgle.mp3"), a.load.audio("a7", "audio/notes/a7.mp3"), a.load.audio("b7", "audio/notes/b7.mp3"), a.load.audio("c7", "audio/notes/c7.mp3"), a.load.audio("c7b", "audio/notes/c7b.mp3"), a.load.audio("d7", "audio/notes/d7.mp3"), a.load.audio("e7", "audio/notes/e7.mp3"), a.load.audio("e7b", "audio/notes/e7b.mp3"), a.load.audio("f7", "audio/notes/f7.mp3"), a.load.audio("f7b", "audio/notes/f7b.mp3"), a.load.audio("g6", "audio/notes/g6.mp3"), a.load.audio("g6s", "audio/notes/g6s.mp3"), a.load.audio("g7", "audio/notes/g7.mp3"), a.load.audio("c8", "audio/notes/c8.mp3"), a.load.audio("rubber1", "audio/rubber1.mp3"), a.load.audio("rubber2", "audio/rubber2.mp3"), a.load.audio("rubber3", "audio/rubber3.mp3"), a.load.audio("rubber4", "audio/rubber4.mp3"), a.load.audio("rubber5", "audio/rubber5.mp3"), a.load.audio("rubber6", "audio/rubber6.mp3"), a.load.audio("rubber7", "audio/rubber7.mp3"), a.load.audio("rubber8", "audio/rubber8.mp3"), a.load.audio("tear1", "audio/tear1.mp3"), a.load.audio("tear2", "audio/tear2.mp3"), a.load.audio("tear3", "audio/tear3.mp3"), a.load.audio("tear4", "audio/tear4.mp3"), a.load.audio("tear5", "audio/tear5.mp3"), a.load.audio("tear6", "audio/tear6.mp3"), a.load.audio("sing1", "audio/sing1.mp3"), a.load.audio("glassbreak", "audio/glassbreak.mp3"), a.load.audio("flickeron", "audio/flickeron.mp3"), a.load.audio("horrortrack1", "audio/horrortrack1.mp3"), a.load.audio("groundthud2", "audio/groundthud2.mp3"), a.load.audio("emerge1", "audio/emerge1.mp3"), a.load.audio("emerge2", "audio/emerge2.mp3"), a.load.audio("squeak1", "audio/squeak1.mp3"), a.load.audio("squeak2", "audio/squeak2.mp3"), a.load.audio("squeak3", "audio/squeak3.mp3"), a.load.audio("stopmusic", "audio/stopmusic.mp3"), a.load.audio("gladiator0", "audio/gladiator0.mp3"), a.load.audio("gladiator1", "audio/gladiator1.mp3"), a.load.audio("gladiator2", "audio/gladiator2.mp3"), a.load.audio("gladiatorx", "audio/gladiatorx.mp3"), a.load.audio("pumpamb", "audio/pumpamb.mp3"), a.load.audio("shout1", "audio/shout1.mp3"), a.load.audio("shout2", "audio/shout2.mp3"), a.load.audio("shout3", "audio/shout3.mp3"), a.load.audio("shout4", "audio/shout4.mp3"), a.load.audio("shout5", "audio/shout5.mp3"), a.load.audio("clownlaugh1", "audio/clownlaugh1.mp3"), a.load.audio("clownlaugh2", "audio/clownlaugh2.mp3"), a.load.audio("clownlaughfinal", "audio/clownlaughfinal.mp3"), a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
+    }), 
+
+    beginLoadIfAllReady();
+    // setTimeout(() => {
+    //     if (!sdkIsLoaded) {
+    //         // TODO: Test and make sure game still runs even if SDK isn't loaded up
+    //         useSDK = false;
+    //         sdkIsLoaded = true;
+    //         beginLoadIfAllReady();
+    //     }
+    // }, 10000)
+
+}
+
+function beginLoadIfAllReady() {
+    if (preloadCompleted && sdkIsLoaded) {
+        let a = PhaserScene;
+        sdkWrapperGameLoadingStart();
+        sdkWrapperResizeBanners();
+        setTimeout(() => {
+            sdkWrapperRequestResponsiveBanner("banner-container-top");
+            gameVars.showingBannerTop = true;
+        }, 50);
+        a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"), a.load.multiatlas("roomClown", "sprites/clown/clown.json"), a.load.multiatlas("flashScreens", "sprites/flashscreens/flashscreens.json"), a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), 
+        a.load.audio("loadingMusic", "audio/loadingmusic.mp3"), a.load.audio("click1", "audio/click1.mp3"), a.load.audio("click2", "audio/click2.mp3"), a.load.audio("click3", "audio/click3.mp3"), a.load.audio("click4", "audio/click4.mp3"), a.load.audio("airpump", "audio/airpump.mp3"), a.load.audio("doorslam", "audio/doorslam.mp3"), a.load.audio("dooropen", "audio/dooropen.mp3"), a.load.audio("dooropen2", "audio/dooropen2.mp3"), a.load.audio("squeakopen", "audio/squeakopen.mp3"), a.load.audio("lidslam", "audio/lidslam.mp3"), a.load.audio("creepysfx", "audio/creepysfx.mp3"), a.load.audio("void", "audio/void.mp3"), a.load.audio("metalgrind1", "audio/metalgrind1.mp3"), a.load.audio("metalgrind2", "audio/metalgrind2.mp3"), a.load.audio("metalgrind3", "audio/metalgrind3.mp3"), a.load.audio("metalgrind4", "audio/metalgrind4.mp3"), a.load.audio("metalsqueak1", "audio/metalsqueak1.mp3"), a.load.audio("metalsqueak2", "audio/metalsqueak2.mp3"), a.load.audio("keyfound", "audio/keyfound.mp3"), 
+        a.load.audio("keyget", "audio/keyget.mp3"), a.load.audio("keygetred", "audio/keygetred.mp3"), a.load.audio("deepbell1", "audio/deepbell1.mp3"), a.load.audio("deepbell2", "audio/deepbell2.mp3"), a.load.audio("deepbell3", "audio/deepbell3.mp3"), a.load.audio("deepbell4", "audio/deepbell4.mp3"), a.load.audio("deepbell5", "audio/deepbell5.mp3"), a.load.audio("fan1", "audio/fan1.mp3"), a.load.audio("fan2", "audio/fan2.mp3"), a.load.audio("nyaha", "audio/nyaha.mp3"), a.load.audio("muffle1", "audio/muffle1.mp3"), a.load.audio("muffle2", "audio/muffle2.mp3"), a.load.audio("muffle3", "audio/muffle3.mp3"), a.load.audio("muffle4", "audio/muffle4.mp3"), a.load.audio("muffle5", "audio/muffle5.mp3"), a.load.audio("muffle6", "audio/muffle6.mp3"), a.load.audio("muffle7", "audio/muffle7.mp3"), a.load.audio("muffle8", "audio/muffle8.mp3"), a.load.audio("splurt", "audio/splurt.mp3"), a.load.audio("watergurgle", "audio/watergurgle.mp3"), a.load.audio("a7", "audio/notes/a7.mp3"), a.load.audio("b7", "audio/notes/b7.mp3"), 
+        a.load.audio("c7", "audio/notes/c7.mp3"), a.load.audio("c7b", "audio/notes/c7b.mp3"), a.load.audio("d7", "audio/notes/d7.mp3"), a.load.audio("e7", "audio/notes/e7.mp3"), a.load.audio("e7b", "audio/notes/e7b.mp3"), a.load.audio("f7", "audio/notes/f7.mp3"), a.load.audio("f7b", "audio/notes/f7b.mp3"), a.load.audio("g6", "audio/notes/g6.mp3"), a.load.audio("g6s", "audio/notes/g6s.mp3"), a.load.audio("g7", "audio/notes/g7.mp3"), a.load.audio("c8", "audio/notes/c8.mp3"), a.load.audio("rubber1", "audio/rubber1.mp3"), a.load.audio("rubber2", "audio/rubber2.mp3"), a.load.audio("rubber3", "audio/rubber3.mp3"), a.load.audio("rubber4", "audio/rubber4.mp3"), a.load.audio("rubber5", "audio/rubber5.mp3"), a.load.audio("rubber6", "audio/rubber6.mp3"), a.load.audio("rubber7", "audio/rubber7.mp3"), a.load.audio("rubber8", "audio/rubber8.mp3"), a.load.audio("tear1", "audio/tear1.mp3"), a.load.audio("tear2", "audio/tear2.mp3"), a.load.audio("tear3", "audio/tear3.mp3"), a.load.audio("tear4", "audio/tear4.mp3"), 
+        a.load.audio("tear5", "audio/tear5.mp3"), a.load.audio("tear6", "audio/tear6.mp3"), a.load.audio("sing1", "audio/sing1.mp3"), a.load.audio("glassbreak", "audio/glassbreak.mp3"), a.load.audio("flickeron", "audio/flickeron.mp3"), a.load.audio("horrortrack1", "audio/horrortrack1.mp3"), a.load.audio("groundthud2", "audio/groundthud2.mp3"), a.load.audio("emerge1", "audio/emerge1.mp3"), a.load.audio("emerge2", "audio/emerge2.mp3"), a.load.audio("squeak1", "audio/squeak1.mp3"), a.load.audio("squeak2", "audio/squeak2.mp3"), a.load.audio("squeak3", "audio/squeak3.mp3"), a.load.audio("stopmusic", "audio/stopmusic.mp3"), a.load.audio("gladiator0", "audio/gladiator0.mp3"), a.load.audio("gladiator1", "audio/gladiator1.mp3"), a.load.audio("gladiator2", "audio/gladiator2.mp3"), a.load.audio("gladiatorx", "audio/gladiatorx.mp3"), a.load.audio("pumpamb", "audio/pumpamb.mp3"), a.load.audio("shout1", "audio/shout1.mp3"), a.load.audio("shout2", "audio/shout2.mp3"), a.load.audio("shout3", "audio/shout3.mp3"), 
+        a.load.audio("shout4", "audio/shout4.mp3"), a.load.audio("shout5", "audio/shout5.mp3"), a.load.audio("clownlaugh1", "audio/clownlaugh1.mp3"), a.load.audio("clownlaugh2", "audio/clownlaugh2.mp3"), a.load.audio("clownlaughfinal", "audio/clownlaughfinal.mp3"), a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), 
+        a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), 
+        a.load.start()
+
+    }
 }
 
 function onLoadComplete(a) {
