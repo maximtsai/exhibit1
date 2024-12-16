@@ -49,7 +49,8 @@ let config = {
     oneTimeScares = {},
     gameObjectsTemp = {},
     gameVarsTemp = {
-        darkFlickerCountdown: 1e3
+        darkFlickerCountdown: 1e3,
+        loadAmt: 0.001
     },
     gameObjects = {
         buttonList: [],
@@ -105,13 +106,13 @@ function onPreloadComplete(a) {
         fontSize: 22,
         color: "#ffffff",
         align: "center"
-    }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 110, "EXHIBIT OF SORROWS", {
+    }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 140, "EXHIBIT OF SORROWS", {
         fontFamily: "Times New Roman",
         fontSize: 36,
         color: "#777777",
         align: "center"
     }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), 
-    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup").setAlpha(0), 
+    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"), 
     gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"), 
     gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"), 
     gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
