@@ -38,8 +38,8 @@ function setupRoomPump(e, o, a) {
         alpha: .05,
         x: -240,
         y: 505,
-        scaleX: 1.6,
-        scaleY: 1
+        scaleX: isMobile ? 1.7 : 1.6,
+        scaleY: isMobile ? 1.1 : 1
     }, {
         atlas: "buttons",
         ref: "glow",

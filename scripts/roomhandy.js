@@ -190,36 +190,37 @@ gameObjects.roomHandyObjs.dollPicture = e.add.sprite(4, 188, "roomHandy", "handy
 }
 
 function initFingerButton() {
+    let mobileExpand = isMobile ? 1.1 : 1;
     gameObjects.roomHandyObjs.fingerButton = new Button(globalScene, gameObjects.roomHandyObjs.roomContainer, fingerPress, {
         ref: "blackPixel",
         alpha: .001,
         x: gameObjects.roomHandyObjs.listOfButtonPos[0].x,
         y: gameObjects.roomHandyObjs.listOfButtonPos[0].y,
-        scaleX: 84,
-        scaleY: 84
+        scaleX: 87 * mobileExpand,
+        scaleY: 89 * mobileExpand
     }, {
         ref: "blackPixel",
-        scaleX: 85,
-        scaleY: 85
+        scaleX: 88 * mobileExpand,
+        scaleY: 90 * mobileExpand
     }, {
         ref: "blackPixel",
-        scaleX: 85,
-        scaleY: 85
+        scaleX: 88 * mobileExpand,
+        scaleY: 90 * mobileExpand
     }), gameObjects.roomHandyObjs.cleanupButton = new Button(globalScene, gameObjects.roomHandyObjs.roomContainer, fingerUnPress, {
         ref: "blackPixel",
         alpha: .001,
         x: 0,
         y: -9999,
-        scaleX: 84,
-        scaleY: 84
+        scaleX: 88 * mobileExpand,
+        scaleY: 90 * mobileExpand
     }, {
         ref: "blackPixel",
-        scaleX: 85,
-        scaleY: 85
+        scaleX: 94 * mobileExpand,
+        scaleY: 96 * mobileExpand
     }, {
         ref: "blackPixel",
-        scaleX: 85,
-        scaleY: 85
+        scaleX: 94 * mobileExpand,
+        scaleY: 96 * mobileExpand
     })
 }
 
