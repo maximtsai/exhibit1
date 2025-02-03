@@ -1,4 +1,6 @@
 function setupRoomEntrance(e, t, a) {
+    gameObjects.scenex = e;
+    gameObjects.contextx = a;
     gameObjects.exhibit.setForegroundAtIndex(1, "menu", "welcome", gameVars.halfHeight - 55), gameObjects.entrance = {
         lines: []
     }, gameObjects.entrance.welcomeBtn = new Button(e, a, () => {
@@ -88,6 +90,21 @@ function setupRoomEntrance(e, t, a) {
 	let asdfJack = e.add.image(330, -300, "roomJack", "doll").setRotation(-3.12).setScale(0.8);
 	a.add(asdfJack);
 
+    gameObjects.crawlClown = e.add.sprite(40, 453, "roomClown2", "frame0000.png").setScale(-2, 2).setVisible(false);
+    a.add(gameObjects.crawlClown);
+
+    e.anims.create({
+        key: 'clownCrawl',
+        frames: e.anims.generateFrameNames('roomClown2', {
+            prefix: 'frame',
+            suffix: '.png',
+            start: 0,
+            end: 7,
+            zeroPad: 4,
+        }),
+        frameRate: 15
+    });
+
 	setTimeout(() => {
 		globalScene.tweens.add({
             targets: asdfJack,
@@ -137,6 +154,15 @@ function setupRoomEntrance(e, t, a) {
         }, 2400)) : (tweenVolume("gladiator0", .85), gameVars.darkPoint && (tweenVolume("gladiator1", 0), tweenVolume("gladiator2", 1))) : 0 === e && (gameVars.horrorPoint || (tweenVolume("gladiator0", 1), gameVars.darkPoint && (tweenVolume("gladiator1", 0, 1500), tweenVolume("gladiator2", 0, 1500), setTimeout(() => {
             gameObjects.musicBoxNote.alpha = 0, gameObjects.musicBoxNote2.alpha = 0, gameObjectsTemp.stoppedMusic = !0, gameObjects.sounds.gladiator1.stop(), gameObjects.sounds.gladiator2.stop()
         }, 1500))))
+
+        if (1 === e && gameVars.darkPoint && !gameVars.clownRun) {
+            gameVars.clownRun = true;
+            setTimeout(() => {
+                gameObjects.crawlClown.setVisible(true);
+                gameObjects.crawlClown.play('clownCrawl')
+                playSound("clownhorn", undefined, 0.65);
+            }, 2300)
+        }
     })
 }
 
