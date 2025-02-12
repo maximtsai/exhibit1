@@ -160,7 +160,7 @@ class Exhibit {
                                 if (newSceneNum === 0) {
                                     enableMoveRightButton();
                                 } else {
-                                    enableMoveButtons();                                
+                                    enableMoveButtons();
                                 }
                             }
                         }
@@ -187,9 +187,40 @@ class Exhibit {
                 }
             }
 
+
+            if ((this.currentScene === 2 && oldScene === 1 && gameVars.horrorPoint) || (oldScene === 1 && !gameVars.darkPoint)) {
+                console.log("call ad");
+                // call ad when at main lobby
+                sdkCommercialBreak(() => {
+                    console.log("mute all");
+                    // Mute all our sfx
+                    let itemsToMute = [gameObjects.sounds.gladiator0, gameObjects.sounds.gladiator1, gameObjects.sounds.gladiator2, gameObjects.sounds.gladiatorx];
+                    for (let i = 0; i < itemsToMute; i++) {
+                        if (!itemsToMute[i]) {
+                            continue;
+                        }
+                        itemsToMute[i].origVol = itemsToMute[i].volume;
+                        itemsToMute[i].volume = 0;
+                    }
+                    
+                }, () => {
+                    console.log("reenable sound")
+                    // Re Enable sound and then move right
+                    let itemsToUnMute = [gameObjects.sounds.gladiator0, gameObjects.sounds.gladiator1, gameObjects.sounds.gladiator2, gameObjects.sounds.gladiatorx];
+                    for (let i = 0; i < itemsToMute; i++) {
+                        if (!itemsToMute[i]) {
+                            continue;
+                            if (!itemsToMute[i].origVol) {
+                                continue;
+                            }
+                        }
+                        itemsToMute[i].volume = itemsToMute[i].origVol;
+                    }
+                });
+            }
+
             messageBus.publish('exhibitMove', this.currentScene, oldScene);
             messageBus.publish('exhibitMoveRight', this.currentScene, oldScene);
-
             gameObjects.exhibCntr.swayAccX = 0.8;
             for (let i = 0; i <this.listOfLists.length; i++) {
                 let currentList = this.listOfLists[i];
@@ -342,7 +373,7 @@ class Exhibit {
     resetListOfCantMove() {
         this.listOfCantMove = [
             false, false,
-            true, true, true, true, true, true, 
+            true, true, true, true, true, true,
             false, false, false, false, false, true, true, true, true
         ];
 

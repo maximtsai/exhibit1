@@ -513,8 +513,11 @@ function removeFromUpdateFuncList(e) {
 
 function createKey(e, t, a, s, o = !0, c) {
 	let n;
+	if (o) {
+		sdkWrapperGameplayStop();
+	}
 	return playSound("keyfound"), (n = new Button(globalScene, s, () => {
-		n.destroy(), o ? playSound("keyget") : playSound("keygetred"), tempFreeze(500), gameObjects.exhibit.setCantMoveIdx(a, !1), setTimeout(() => {
+		n.destroy(), o ? playSound("keyget") : playSound("keygetred"), tempFreeze(500), sdkWrapperGameplayStop(), gameObjects.exhibit.setCantMoveIdx(a, !1), setTimeout(() => {
 			enableMoveButtons(true), c && c()
 		}, 100)
 	}, {

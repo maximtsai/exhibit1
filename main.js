@@ -52,6 +52,7 @@ let config = {
         walkSlow: !1,
         initialExtraDark: 0,
         masterAudio: 1,
+        soundMult: 1,
         smallWindow: !1
     },
     oneTimeScares = {},
@@ -126,6 +127,7 @@ function onPreloadComplete(a) {
     a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
 }
 
+let gameLoadedOnce = false;
 function onLoadComplete(a) {
     if (!document.location.href.includes('itch') && !document.location.href.includes('localhost:8124') && !document.location.href.includes('poki')) {
         // Stops execution of rest of game
@@ -147,7 +149,11 @@ function onLoadComplete(a) {
         }
     })
 
-    sdkWrapperGameLoadingStop(), a.tweens.timeline({
+    if (!gameLoadedOnce) {
+        sdkWrapperGameLoadingStop();
+    }
+
+    a.tweens.timeline({
         targets: [gameObjectsTemp.loadingText, gameObjectsTemp.funlid, gameObjectsTemp.funbox],
         tweens: [{
             delay: 100,
@@ -155,6 +161,7 @@ function onLoadComplete(a) {
             duration: 150
         }],
         onComplete() {
+            gameLoadedOnce = true;
             gameObjectsTemp.loadingText.destroy();
             gameObjectsTemp.funlid.destroy();
             gameObjectsTemp.funbox.destroy();
@@ -372,12 +379,66 @@ function startGame(a) {
                 leftborder.style.opacity = '1';
                 let rightborder = document.getElementById('rightborder');
                 rightborder.style.opacity = '1';
+
+
+                gameObjects.muteButton = new Button(a, undefined, () => {
+                    if (gameVars.manualMuted) {
+                        gameVars.manualMuted = false;
+                        gameVars.soundMult = 1;
+                        gameObjects.muteButton.setNormalRef("muteButtonNormal");
+                        gameObjects.muteButton.setHoverRef("muteButtonPress");
+                        gameObjects.muteButton.setPressRef("muteButtonNormal");
+                        if (gameObjects.sounds.gladiator0) {
+                            gameObjects.sounds.gladiator0.volume = 0.7;
+                        }
+                        if (gameObjects.sounds.gladiator1) {
+                            gameObjects.sounds.gladiator1.volume = 1;
+                        }
+                        if (gameObjects.sounds.gladiator2) {
+                            gameObjects.sounds.gladiator2.volume = 1;
+                        }
+                        if (gameObjects.sounds.gladiatorx) {
+                            gameObjects.sounds.gladiatorx.volume = 0.7;
+                        }
+                        
+                    } else {
+                        gameVars.manualMuted = true;
+                        gameVars.soundMult = 0;
+                        gameObjects.muteButton.setNormalRef("muteButtonMutedNormal");
+                        gameObjects.muteButton.setHoverRef("muteButtonMutedPress");
+                        gameObjects.muteButton.setPressRef("muteButtonMutedNormal");
+                        if (gameObjects.sounds.gladiator0) {
+                            gameObjects.sounds.gladiator0.volume = 0;
+                        }
+                        if (gameObjects.sounds.gladiator1) {
+                            gameObjects.sounds.gladiator1.volume = 0;
+                        }
+                        if (gameObjects.sounds.gladiator2) {
+                            gameObjects.sounds.gladiator2.volume = 0;
+                        }
+                        if (gameObjects.sounds.gladiatorx) {
+                            gameObjects.sounds.gladiatorx.volume = 0;
+                        }
+                    }
+                }, {
+                    atlas: "buttons",
+                    ref: "muteButtonNormal",
+                    x: 1190,
+                    y: 37
+                }, {
+                    atlas: "buttons",
+                    ref: "muteButtonPress",
+                }, {
+                    atlas: "buttons",
+                    ref: "muteButtonNormal",
+                })
+
                 for (let b in removeFromUpdateFuncList(updateWelcomeFollower), gameObjects.loadingMusic.stop(), gameVars.gameConstructed = !0, gameObjects.loadingWelcomes) gameObjects.loadingWelcomes[b].destroy();
                 for (let a = 0; a < gameObjectsTemp.circleLoading.length; a++) gameObjectsTemp.circleLoading[a].destroy();
                 gameObjectsTemp.brightLight.destroy(), gameObjects.clickBlocker.destroy(), gameObjectsTemp.loadingBg.destroy(), gameObjectsTemp.blackTeeth.destroy(), gameObjectsTemp.blackTeethAnim.destroy(), setTimeout(() => {
                     gameObjects.sounds.gladiator0.play({
                         loop: !0
-                    }), gameObjects.sounds.gladiator0.volume = .6, tweenVolume("gladiator0", .7)
+                    }), gameObjects.sounds.gladiator0.volume = .6, tweenVolume("gladiator0", .7, 50)
                 }, 0), setTimeout(() => {
                     addToUpdateFuncList(flipEntryLights)
                 }, 350), setTimeout(() => {
@@ -535,7 +596,8 @@ function playSound(d, a, e = 1) {
     let b = "";
     void 0 !== a && (b = Math.floor(Math.random() * a) + 1);
     let c = d + b;
-    gameObjects.sounds[c].volume = e * gameVars.masterAudio, gameObjects.sounds[c].play();
+    gameObjects.sounds[c].play();
+    gameObjects.sounds[c].volume = e * gameVars.masterAudio * gameVars.soundMult;
     return gameObjects.sounds[c];
 }
 
@@ -543,7 +605,7 @@ function tweenVolume(a, b, c = 1500) {
     globalScene.tweens.timeline({
         targets: [gameObjects.sounds[a]],
         tweens: [{
-            volume: b * gameVars.masterAudio,
+            volume: b * gameVars.masterAudio * gameVars.soundMult,
             duration: c
         }]
     });
@@ -552,8 +614,8 @@ function tweenVolume(a, b, c = 1500) {
 
 function playSoundOnce(a, b, c = 1) {
     oneTimeScares[a] || (oneTimeScares[a] = !0, b ? setTimeout(() => {
-        gameObjects.sounds[a].volume = c * gameVars.masterAudio, gameObjects.sounds[a].play()
-    }, b) : (gameObjects.sounds[a].volume = c * gameVars.masterAudio, gameObjects.sounds[a].play()))
+        gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()
+    }, b) : (gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()))
 }
 
 function setupHand(a) {
@@ -702,7 +764,7 @@ function showMoveRightFlash() {
         scaleMult = 0.65;
         gameObjects.moveRightFlash.alpha = 0.9;
     } else {
-        gameObjects.moveRightFlash.alpha = 1;
+        gameObjects.moveRightFlash.alpha = 1.08;
     }
     gameObjects.moveRightFlash.scaleX = 1;
     gameObjects.moveRightFlash.scaleY = 1;

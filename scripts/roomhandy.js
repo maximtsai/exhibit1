@@ -149,7 +149,7 @@ function setupRoomHandy(e, a, o) {
         }],
         fingerState: 0,
         dollImages: []
-    }, gameObjects.roomHandyObjs.dollArms = e.add.image(0, gameVars.height - 260, "roomHandy", "arms"), o.add(gameObjects.roomHandyObjs.dollArms), gameObjects.roomHandyObjs.dollBody = e.add.image(0, gameVars.height - 260, "roomHandy", "dollBody"), o.add(gameObjects.roomHandyObjs.dollBody), 
+    }, gameObjects.roomHandyObjs.dollArms = e.add.image(0, gameVars.height - 260, "roomHandy", "arms"), o.add(gameObjects.roomHandyObjs.dollArms), gameObjects.roomHandyObjs.dollBody = e.add.image(0, gameVars.height - 260, "roomHandy", "dollBody"), o.add(gameObjects.roomHandyObjs.dollBody),
 gameObjects.roomHandyObjs.dollPicture = e.add.sprite(4, 188, "roomHandy", "handy1").setVisible(false), o.add(gameObjects.roomHandyObjs.dollPicture),
     setHandyDollImage("dollNeutral"), o.add(gameObjects.roomHandyObjs.doll), gameObjects.roomHandyObjs.leftHand = e.add.image(-285, 359, "roomHandy", "lefthand1"), gameObjects.roomHandyObjs.rightHand = e.add.image(290, 359, "roomHandy", "righthand1"), o.add(gameObjects.roomHandyObjs.leftHand), o.add(gameObjects.roomHandyObjs.rightHand), initFingerButton(), gameObjects.roomHandyObjs.placard = new Button(e, o, () => {
         gameVars.horrorPoint ? gameObjects.roomHandyObjs.roomComplete ? gameObjects.roomHandyObjs.playedOneTimeText ? updateInfoText("Mr.            ") : (gameObjects.roomHandyObjs.playedOneTimeText = !0, updateInfoText("Mr. Handy"), setTimeout(() => {
@@ -221,10 +221,11 @@ function initFingerButton() {
         ref: "blackPixel",
         scaleX: 94 * mobileExpand,
         scaleY: 96 * mobileExpand
-    })
+    });
 }
 
 function fingerPress() {
+    sdkWrapperGameplayStart();
     let e = gameObjects.roomHandyObjs.fingerState + 1;
     if (gameObjects.roomHandyObjs.fingerState === 16) {
     	gameObjects.roomHandyObjs.dollPicture.setFrame('handy4');

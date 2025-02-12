@@ -37,6 +37,7 @@ function setupRoomJack(e, a, o) {
             scaleY: 58
         },
         isDraggable: !0,
+        onMouseDown: () => {sdkWrapperGameplayStart()},
         onDrop: resetSpinnerButton
     }), addToUpdateFuncList(roomJackUpdate), resetSpinnerButton(), messageBus.subscribe("exhibitMove", (e, o) => {
         e === a ? (tweenVolume("gladiator0", 0), tweenVolume("gladiator1", .9), tweenVolume("gladiator2", .1), tweenVolume("gladiatorx", .1), gameVars.darkPoint && (gameObjects.roomJackObjs.eyeOffsetX = 4, setTimeout(() => {
@@ -179,7 +180,7 @@ function checkMusicSequenceDark(e) {
             zoomTemp(1.028), gameObjects.roomJackObjs.dollCreepy.y = 2010, gameObjects.roomJackObjs.lid.rotation = 0
         }, 170)
     }, 70), gameObjects.roomJackObjs.playedSlam = !0)), gameObjects.roomJackObjs.dollCreepy.y = Math.min(2010, gameObjects.roomJackObjs.dollCreepy.y - 5 * e), gameObjects.roomJackObjs.lid.rotation = Math.max(0, gameObjects.roomJackObjs.lid.rotation + .2 * e), gameObjects.roomJackObjs.lid.rotation <= .01 && (gameObjects.roomJackObjs.lid.rotation = 0, gameObjects.exhibit.needCleanup = !1, gameObjects.roomJackObjs.canSpin = !1, resetGuideArrowJack(), setTimeout(() => {
-        playSound("deepbell1"), updateInfoTextSoft("Room cleaned up.", 2500)
+        playSound("deepbell1"), updateInfoTextSoft("Room cleaned up.", 2500), sdkWrapperGameplayStop()
     }, 400))
 }
 
@@ -212,7 +213,7 @@ function checkMusicSequenceHorror(e, a = 1) {
                 showStaticRand(1, void 0, void 0, .07)
             }, 3e3)
         }, 1600)) : o.startFinale ? startFinale() : o.showLeftArm ? (gameObjects.roomJackObjs.dollHeadFlash2.visible = !1, showFlashRand(2), jumpOutLeftArm(), showStaticRand(2, void 0, void 0, .15), setTimeout(() => {
-            gameObjects.roomJackObjs.passedSafePoint || (gameObjects.sounds.pumpamb.play(), gameObjects.sounds.pumpamb.volume = 1, gameObjects.roomJackObjs.dollHeadFlash2.visible = !0, gameObjects.roomJackObjs.dollHeadFlash2.scaleX = .9, gameObjects.roomJackObjs.dollHeadFlash2.scaleY = .9, gameObjects.roomJackObjs.dollHead.visible = !1, gameObjects.roomJackObjs.dollEyes.visible = !1, gameObjects.roomJackObjs.dollCreepy.visible = !1, addToUpdateFuncList(shakeHeadFlashTwo), setTimeout(() => {
+            gameObjects.roomJackObjs.passedSafePoint || (gameObjects.sounds.pumpamb.play(), gameObjects.sounds.pumpamb.volume = 1 * gameVars.soundMult, gameObjects.roomJackObjs.dollHeadFlash2.visible = !0, gameObjects.roomJackObjs.dollHeadFlash2.scaleX = .9, gameObjects.roomJackObjs.dollHeadFlash2.scaleY = .9, gameObjects.roomJackObjs.dollHead.visible = !1, gameObjects.roomJackObjs.dollEyes.visible = !1, gameObjects.roomJackObjs.dollCreepy.visible = !1, addToUpdateFuncList(shakeHeadFlashTwo), setTimeout(() => {
                 gameObjects.sounds.pumpamb.stop(), gameObjects.roomJackObjs.dollHeadFlash2.visible = !1, removeFromUpdateFuncList(shakeHeadFlashTwo), showStaticRand(1), showFlashRand(1), gameObjects.roomJackObjs.dollHead.visible = !0, gameObjects.roomJackObjs.dollEyes.visible = !0, gameObjects.roomJackObjs.dollCreepy.visible = !0
             }, 385))
         }, 7e3)) : o.showRightArm ? (gameObjects.roomJackObjs.dollHead.visible = !1, gameObjects.roomJackObjs.dollEyes.visible = !1, gameObjects.roomJackObjs.dollCreepy.visible = !1, gameObjects.roomJackObjs.lights.alpha *= .5, gameObjects.roomJackObjs.dollHeadFlash1.visible = !0, gameObjects.roomJackObjs.dollHeadFlash1.scaleX = .8, gameObjects.roomJackObjs.dollHeadFlash1.scaleY = .8, addToUpdateFuncList(shakeHeadFlashOne), showFlashRand(2), setTimeout(() => {
@@ -985,7 +986,7 @@ function flipToAutoSpinArm() {
             gameObjects.roomJackObjs.isAutopilot = !0, gameObjects.roomJackObjs.readyToGrabSpinner = !0, setTimeout(() => {
                 gameObjects.sounds.squeak3.play({
                     loop: !0
-                }), gameObjects.sounds.squeak3.volume = 1, showStaticLite()
+                }), gameObjects.sounds.squeak3.volume = 1 * gameVars.soundMult, showStaticLite()
             }, 2200);
             let e = gameObjects.roomJackObjs.rightHand.x,
                 a = gameObjects.roomJackObjs.rightHand.y;

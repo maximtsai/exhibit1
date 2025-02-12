@@ -68,7 +68,7 @@ function setupRoomPump(e, o, a) {
 
     gameObjects.roomPumpObjs.floatyGoalPosX = 135, gameObjects.roomPumpObjs.floatyGoalPosY = b, gameObjects.roomPumpObjs.floatySprites = [e.add.image(135, b, "roomPump", "floaty1"), e.add.image(135, b, "roomPump", "floaty2"), e.add.image(135, b, "roomPump", "floaty3"), e.add.image(135, b, "roomPump", "floaty4"), e.add.image(135, b, "roomPump", "floaty5"), e.add.image(135, b, "roomPump", "floaty6"), e.add.image(135, b, "roomPump", "floaty7"), e.add.image(135, b, "roomPump", "floatyX"), e.add.image(135, b, "roomPump", "floatyY")];
     for (let e = 0; e < gameObjects.roomPumpObjs.floatySprites.length; e++) gameObjects.roomPumpObjs.floatySprites[e].visible = !1, gameObjects.roomPumpObjs.floatySprites[e].setOrigin(.5, .55), a.add(gameObjects.roomPumpObjs.floatySprites[e]);
-    gameObjects.roomPumpObjs.floaty = gameObjects.roomPumpObjs.floatySprites[0], gameObjects.roomPumpObjs.floaty.visible = !0, messageBus.subscribe("exhibitMove", e => {
+    gameObjects.roomPumpObjs.floaty = gameObjects.roomPumpObjs.floatySprites[0], gameObjects.roomPumpObjs.floaty.visible = !0, messageBus.subscribe("exhibitMove", (e, oldScene) => {
         e === o ? setTimeout(() => {
         	gameObjects.roomPumpObjs.shouldUpdate = !0;
             setTimeout(() => {
@@ -183,13 +183,13 @@ function updateFloatyPumpState(e) {
             let a = 1 - (370 - e) / 100;
             !gameObjects.roomPumpObjs.showOverblown2 && e > 355 && (showStaticLite(1, 7, 1.5), showStaticRand(1, void 0, void 0, .25), playSoundOnce("muffle4"), gameObjects.roomPumpObjs.pumpCheckpoint += 1, gameObjects.roomPumpObjs.randFlash1 || (gameObjects.roomPumpObjs.randFlash1 = !0, showAltReality(["balloon1", "balloon2", "balloon3", "balloon4", "balloon5"], 1.02), playSound("rubber6"), gameObjects.sounds.pumpamb.play({
                 loop: !0
-            }), gameObjects.sounds.pumpamb.volume = .1, tweenVolume("pumpamb", .3, 500)), setFloatyState(7), gameObjects.roomPumpObjs.floaty.scaleX = .7 + .05 * Math.random(), gameObjects.roomPumpObjs.floaty.scaleY = .68 + .05 * Math.random(), addFloatyShake(4, .6), setTimeout(() => {
+            }), gameObjects.sounds.pumpamb.volume = .1 * gameVars.soundMult, tweenVolume("pumpamb", .3, 500)), setFloatyState(7), gameObjects.roomPumpObjs.floaty.scaleX = .7 + .05 * Math.random(), gameObjects.roomPumpObjs.floaty.scaleY = .68 + .05 * Math.random(), addFloatyShake(4, .6), setTimeout(() => {
                 gameObjects.roomPumpObjs.showOverblown2 = !0, setFloatyState(4), gameObjects.roomPumpObjs.floaty.scaleX = .83 + .1 * a, gameObjects.roomPumpObjs.floaty.scaleY = .85 + .08 * a
             }, 200)), gameObjects.roomPumpObjs.balloon1.rotation = -.01 * a - .03, gameObjects.roomPumpObjs.balloon2.rotation = .03 + .01 * a, addFloatyShake(2 + a), setFloatyGoalPos(67.5, o - 265 - 10 * a), setFloatyGoalScale(.83 + .1 * a, .85 + .08 * a)
         } else if (e < 470) {
             setFloatyState(4);
             let o = 1 - (470 - e) / 100;
-            gameObjects.roomPumpObjs.balloon1.rotation = -.01 * o - .04, gameObjects.roomPumpObjs.balloon2.rotation = .04 + .01 * o, addFloatyShake(3 + o), setFloatyGoalScale(.93 + .07 * o, .93 + .05 * o), gameObjects.sounds.pumpamb.volume = .3 + .7 * o
+            gameObjects.roomPumpObjs.balloon1.rotation = -.01 * o - .04, gameObjects.roomPumpObjs.balloon2.rotation = .04 + .01 * o, addFloatyShake(3 + o), setFloatyGoalScale(.93 + .07 * o, .93 + .05 * o), gameObjects.sounds.pumpamb.volume = (.3 + .7 * o) * gameVars.soundMult
         } else if (e < 1e4) {
             gameObjects.roomPumpObjs.lastBreath = !0, gameObjects.roomPumpObjs.pumpAmt += 1;
             let o = 1 - (535 - e) / 20;
@@ -242,14 +242,15 @@ function updateFloatyPumpState(e) {
             loop: !0
         }), gameObjects.sounds.fan2.isPlaying || gameObjects.sounds.fan2.play({
             loop: !0
-        }), e < 150) gameObjects.sounds.fan1.volume = a, gameObjects.sounds.fan2.volume = 0;
+        }), e < 150) gameObjects.sounds.fan1.volume = a * gameVars.soundMult, gameObjects.sounds.fan2.volume = 0;
     else if (e < 300) {
         let o = (e - 150) / 150;
-        gameObjects.sounds.fan1.volume = (1 - o) * a, gameObjects.sounds.fan2.volume = o * a * 1.15
-    } else gameObjects.sounds.fan1.volume = 0, gameObjects.sounds.fan2.volume = 1.15 * a
+        gameObjects.sounds.fan1.volume = (1 - o) * a * gameVars.soundMult, gameObjects.sounds.fan2.volume = o * a * 1.15 * gameVars.soundMult
+    } else gameObjects.sounds.fan1.volume = 0, gameObjects.sounds.fan2.volume = 1.15 * a * gameVars.soundMult
 }
 
 function pumpPressed() {
+    sdkWrapperGameplayStart();
     gameObjects.roomPumpObjs.pressCooldown > 0 || (gameObjects.roomPumpObjs.buttonPressed = !0, gameObjects.roomPumpObjs.pressCooldown = 20, playSound("airpump", void 0, .25), gameObjects.roomPumpObjs.buttonPressCarryOver = 999999)
 }
 

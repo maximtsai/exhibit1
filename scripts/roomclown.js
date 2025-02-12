@@ -21,7 +21,7 @@ function setupRoomClown1(e, o, a) {
         scaleY: .158
     }), gameObjects.roomClown1.nose.setScale(145, 30), l = messageBus.subscribe("exhibitMove", e => {
         if (e === o) {
-
+            sdkWrapperGameplayStart();
             setTimeout(() => {
                 if (gameVars.firstNosePressed) {
                     return;
@@ -100,7 +100,7 @@ function setupRoomClown2(e, o, a) {
         scaleX: .25,
         scaleY: .25
     }), l = messageBus.subscribe("exhibitMove", e => {
-        e === o && (l.unsubscribe(), gameObjects.roomClown1 && gameObjects.exhibit.removeIndex(gameObjects.roomClown1.roomIndex))
+        e === o && (sdkWrapperGameplayStart(), l.unsubscribe(), gameObjects.roomClown1 && gameObjects.exhibit.removeIndex(gameObjects.roomClown1.roomIndex))
     })
 }
 
@@ -131,7 +131,7 @@ function setupRoomClown3(e, o, a) {
             nosePress3(o, a)
         }
     }), l = messageBus.subscribe("exhibitMove", e => {
-        e === o && (l.unsubscribe(), gameObjects.roomClown2 && gameObjects.exhibit.removeIndex(gameObjects.roomClown2.roomIndex))
+        e === o && (sdkWrapperGameplayStart(), l.unsubscribe(), gameObjects.roomClown2 && gameObjects.exhibit.removeIndex(gameObjects.roomClown2.roomIndex))
     }), messageBus.subscribe("prepareFinalClown", l => {
         disableMoveButtons(), gameObjects.roomClown3.portrait.destroy(), gameObjects.roomClown3.clown = globalScene.add.image(0, gameVars.halfHeight + 60, "roomClown", "clowncreepy"), gameObjects.roomClown3.clown.scaleX = .75, gameObjects.roomClown3.clown.scaleY = .75, gameObjects.roomClown3.clownLeftEye = globalScene.add.image(-66, gameVars.halfHeight - 100, "roomClown", "leftEye"), gameObjects.roomClown3.clownLeftEye.origX = gameObjects.roomClown3.clownLeftEye.x, gameObjects.roomClown3.clownLeftEye.origY = gameObjects.roomClown3.clownLeftEye.y, gameObjects.roomClown3.clownLeftEye.scaleX = .75, gameObjects.roomClown3.clownLeftEye.scaleY = .75, gameObjects.roomClown3.clownRightEye = globalScene.add.image(203, gameVars.halfHeight - 60, "roomClown", "leftEye"), gameObjects.roomClown3.clownRightEye.origX = gameObjects.roomClown3.clownRightEye.x, gameObjects.roomClown3.clownRightEye.origY = gameObjects.roomClown3.clownRightEye.y, gameObjects.roomClown3.clownRightEye.scaleX = .75, gameObjects.roomClown3.clownRightEye.scaleY = .75, a.add(gameObjects.roomClown3.clown), a.add(gameObjects.roomClown3.clownLeftEye), a.add(gameObjects.roomClown3.clownRightEye), addToUpdateFuncList(shakeClownEyes), disableMoveLeftButton(), gameObjects.roomClown3.nose2 = new Button(e, a, () => {
             nosePressFinal(o, a)
@@ -225,7 +225,7 @@ function nosePress3(e, o) {
                                             t.scaleX = 1.3, t.scaleY = 1.3, setTimeout(() => {
                                                 t.scaleX = 1.25, t.scaleY = 1.25, showFlashArr([0, 1, 12, 2, 3, 12, 6, 13, 7, 14, 8], () => {
                                                     l.destroy(), a.destroy(), t.destroy(), gameObjects.roomClown3.portrait.destroy(), gameObjects.roomClown3.portrait = globalScene.add.image(0, gameVars.halfHeight - 50, "roomClown", "portraitbroken"), o.add(gameObjects.roomClown3.portrait), initDarkSequence(e), enableMoveButtons(), setTimeout(() => {
-                                                        gameObjects.sounds.gladiator1.volume = .25, gameObjects.sounds.gladiator2.volume = 0, tweenVolume("gladiator1", 1), gameObjects.musicBoxNote.alpha = 1, gameObjects.musicBoxNote2.alpha = 1, gameObjects.musicBoxNote.origX = gameObjects.musicBox.x, gameObjects.musicBoxNote.origY = gameObjects.musicBox.y - 50, gameObjects.sounds.gladiator0.stop(), gameObjects.sounds.gladiator1.play({
+                                                        gameObjects.sounds.gladiator1.volume = .25 * gameVars.soundMult, gameObjects.sounds.gladiator2.volume = 0, tweenVolume("gladiator1", 1), gameObjects.musicBoxNote.alpha = 1, gameObjects.musicBoxNote2.alpha = 1, gameObjects.musicBoxNote.origX = gameObjects.musicBox.x, gameObjects.musicBoxNote.origY = gameObjects.musicBox.y - 50, gameObjects.sounds.gladiator0.stop(), gameObjects.sounds.gladiator1.play({
                                                             loop: !0
                                                         }), gameObjects.sounds.gladiator2.play({
                                                             loop: !0

@@ -9,6 +9,62 @@
 			},
 			"frames": [
 				{
+					"filename": "muteButtonNormal",
+					"frame": {
+						"x": 2687,
+						"y": 2520,
+						"w": 93,
+						"h": 93
+					},
+					"sourceSize": {
+						"w": 93,
+						"h": 93
+					},
+					"rotated": false
+				},
+				{
+					"filename": "muteButtonPress",
+					"frame": {
+						"x": 2687,
+						"y": 2596,
+						"w": 93,
+						"h": 93
+					},
+					"sourceSize": {
+						"w": 93,
+						"h": 93
+					},
+					"rotated": false
+				},
+				{
+					"filename": "muteButtonMutedNormal",
+					"frame": {
+						"x": 2763,
+						"y": 2520,
+						"w": 93,
+						"h": 93
+					},
+					"sourceSize": {
+						"w": 93,
+						"h": 93
+					},
+					"rotated": false
+				},
+				{
+					"filename": "muteButtonMutedPress",
+					"frame": {
+						"x": 2763,
+						"y": 2596,
+						"w": 93,
+						"h": 93
+					},
+					"sourceSize": {
+						"w": 93,
+						"h": 93
+					},
+					"rotated": false
+				},
+				{
 					"filename": "boxStand",
 					"frame": {
 						"x": 1307,

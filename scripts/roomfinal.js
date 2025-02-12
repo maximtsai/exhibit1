@@ -236,72 +236,8 @@ function runEpilogue(background) {
 																			delay: 2500
 																		});
 																		setTimeout(() => {
-																			gameObjectsTemp.dText = globalScene.add.text(100, 585, 'Latest news at:', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
-																			gameObjectsTemp.dText.setOrigin(0, 0.5);
-																			gameObjectsTemp.dText.alpha = 1;
 
-																			gameObjectsTemp.dText2 = globalScene.add.text(100, 630, 'Bluesky', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
-																			gameObjectsTemp.dText2.setOrigin(0, 0.5);
-																			gameObjectsTemp.dText2.alpha = 0.05;
-
-																			gameObjectsTemp.dText3 = globalScene.add.text(100, 670, 'Twitter', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
-																			gameObjectsTemp.dText3.setOrigin(0, 0.5);
-																			gameObjectsTemp.dText3.alpha = 0.05;
-
-																			globalScene.tweens.add({
-																				targets: [gameObjectsTemp.dText, gameObjectsTemp.dText2, gameObjectsTemp.dText3],
-																				alpha: 0.7,
-																				duration: 1500
-																			});
-																		    let bsky = new Button(
-																		        globalScene,
-																		        undefined,
-																		        () => {
-																		        	window.open("https://bsky.app/profile/adayofjoy.itch.io");
-																		        },
-																		        {
-																		            "ref": "whitePixel",
-																		            "x": 195,
-																		            "y": 630,
-																		            scaleX: 350,
-																		            scaleY: 28,
-																		            alpha: 0.001
-																		        }
-																		    );
-
-																		    bsky.setOnHoverFunc(() => {
-																		    	gameObjectsTemp.dText2.alpha = 1;
-																		    });
-																		    bsky.setOnHoverOutFunc(() => {
-																		    	gameObjectsTemp.dText2.alpha = 0.7;
-																		    });
-
-
-																		    let twtr = new Button(
-																		        globalScene,
-																		        undefined,
-																		        () => {
-																		        	window.open("https://x.com/TsaiMaxim");
-																		        },
-																		        {
-																		            "ref": "whitePixel",
-																		            "x": 195,
-																		            "y": 670,
-																		            scaleX: 350,
-																		            scaleY: 28,
-																		            alpha: 0.001
-																		        }
-																		    );
-
-																		    twtr.setOnHoverFunc(() => {
-																		    	gameObjectsTemp.dText3.alpha = 1;
-																		    });
-																		    twtr.setOnHoverOutFunc(() => {
-																		    	gameObjectsTemp.dText3.alpha = 0.7;
-																		    });
-
-
-																			gameObjectsTemp.replayText = globalScene.add.text(100, 720, 'REPLAY', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
+																			gameObjectsTemp.replayText = globalScene.add.text(100, 700, 'REPLAY', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
 																			gameObjectsTemp.replayText.setOrigin(0, 0.5);
 																			gameObjectsTemp.replayText.alpha = 0.05;
 																			globalScene.tweens.add({
@@ -363,9 +299,9 @@ function runEpilogue(background) {
 																		        {
 																		            "ref": "whitePixel",
 																		            "x": 195,
-																		            "y": 720,
-																		            scaleX: 350,
-																		            scaleY: 30,
+																		            "y": 700,
+																		            scaleX: 390,
+																		            scaleY: 40,
 																		            alpha: 0.001
 																		        }
 																		    );
@@ -388,7 +324,7 @@ function runEpilogue(background) {
 									    })
 									    if (!gameObjectsTemp.boxBroken) {
 									    	playSound('gladiator0');
-                       						gameObjects.sounds['gladiator0'].volume = 1;
+                       						gameObjects.sounds['gladiator0'].volume = 1 * gameVars.soundMult;
 									    } else {
 									    	tweenVolume('gladiatorx', 0.6);
 									    }

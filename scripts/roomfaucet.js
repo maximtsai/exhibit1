@@ -30,7 +30,7 @@ function setupRoomFaucet(e, a, o) {
         },
         isDraggable: !0,
         onDrop: dropHandle
-    }), gameObjects.roomFaucetObjs.placard = new Button(e, o, () => {
+    }), gameObjects.roomFaucetObjs.handle.setOnMouseDownFunc(() => {sdkWrapperGameplayStart()}), gameObjects.roomFaucetObjs.placard = new Button(e, o, () => {
         gameVars.horrorPoint ? gameObjects.roomFaucetObjs.roomCompleted ? updateInfoText("Faucet out of order") : updateInfoText("Mr. Washy") : gameVars.darkPoint ? updateInfoText("Just a gentle rinse") : updateInfoText("Mr. Washy")
     }, {
         atlas: "buttons",

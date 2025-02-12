@@ -4,62 +4,68 @@ function setupRoomEntrance(e, t, a) {
     gameObjects.exhibit.setForegroundAtIndex(1, "menu", "welcome", gameVars.halfHeight - 55), gameObjects.entrance = {
         lines: []
     }, gameObjects.entrance.welcomeBtn = new Button(e, a, () => {
+        if (!gameVars.horrorPoint && !gameVars.darkPoint) {
+            showMoveRightFlash();
+        }
+
         if (gameVars.horrorPoint && !gameObjects.entrance.showedHorrorText) {
             gameObjects.entrance.showedHorrorText = !0, showInfoTextLoop([{
-                text: "Welcome to the Exhibit of Smiles! :)",
+                text: "Exhibit of Smiles! :)\n   <=- EXIT    EXHIBITS =->",
                 time: 750
             }, {
-                text: "Welcome to the Exhibit of S̶m̵i̷l̸e̵s̵!! :)",
+                text: "Exhibit of S̶m̵i̷l̸e̵s̵!! :)\n   <-= EXIT    EXHIBITS -=>",
                 time: 100
             }, {
-                text: "Welcome to the Exhibit of S̶m̵i̷l̸e̵s̵!! :)",
+                text: "Exhibit of S̶m̵i̷l̸e̵s̵!! :)\n <=- NOEXIT    EXHIBITS =->",
                 time: 25
             }, {
-                text: "Welcome to the Exhibit of S̴o̵r̷r̷o̵w̴s̵!̶ :̵(",
+                text: "Exhibit of S̴o̵r̷r̷o̵w̴s̵!̶ :̵(\n   <=- EXIT    EXHIBITS =->",
                 time: 25
             }, {
-                text: "Welcome to the Exhibit of S̷̢͛m̷͕͒i̷̜̍l̵͓̏e̵̳̿s̵͈͒!̸͎̄ ̶̩͑:̶̛̣(̶͚͂",
+                text: "Exhibit of S̷̢͛m̷͕͒i̷̜̍l̵͓̏e̵̳̿s̵͈͒!̸͎̄ ̶̩͑:̶̛̣(̶͚͂",
                 time: 25
             }, {
-                text: "Welcome to the Exhibit of Smiles! :)",
+                text: "Exhibit of Smiles! :)\n   <=- EXIT    EXHIBITS =>",
                 time: 100
             }, {
-                text: "Welcome to the Exhibit of S̵o̶r̸r̷o̸w̸s̵!̴:|",
+                text: "Exhibit of S̵o̶r̸r̷o̸w̸s̵!̴:|\n   <== EXIT    EXHIBITS =>",
                 time: 50
             }, {
-                text: "Welcome to the Exhibit of Sorrows   ",
+                text: "Exhibit of Sorrows   \n ",
                 time: 1750
             }])
         } else if (gameVars.horrorPoint) {
             showInfoTextLoop([{
-                text: "Welcome to the Exhibit of S̶m̵i̷l̸e̵s̵!! :)",
+                text: "Exhibit of S̶m̵i̷l̸e̵s̵!! :)",
                 time: 100
             }, {
-                text: "Welcome to the Exhibit of Smiles! :)",
+                text: "Exhibit of Smiles! :)",
                 time: 200
             }, {
-                text: "Welcome to the Exhibit of S̴o̵r̷r̷o̵w̴s̵!̶ :̵(",
+                text: "Exhibit of S̴o̵r̷r̷o̵w̴s̵!̶ :̵(",
                 time: 50
             }, {
-                text: "Welcome to the Exhibit of Smiles! :)",
+                text: "Exhibit of Smiles! :)",
                 time: 100
             }, {
-                text: "Welcome to the Exhibit of S̵o̶r̸r̷o̸w̸s̵!̴:|",
+                text: "Exhibit of S̵o̶r̸r̷o̸w̸s̵!̴:|",
                 time: 100
             }, {
-                text: "Welcome to the Exhibit of Sorrows   ",
+                text: "Exhibit of Sorrows   ",
                 time: 300
             }, {
-                text: "Welcome to the Exhibit of S̷̢͛m̷͕͒i̷̜̍l̵͓̏e̵̿s̵͈͒!̸͎̄",
+                text: "Exhibit of S̷̢͛m̷͕͒i̷̜̍l̵͓̏e̵̿s̵͈͒!̸͎̄",
                 time: 50
             }, {
                 text: " ",
                 time: 550
             }])
-        } else gameVarsTemp.brokeMusicBox ? updateInfoText("Welcome to the Exhibit of Smiles.") : updateInfoText("Welcome to the Exhibit of Smiles! :)")
+        } else gameVarsTemp.brokeMusicBox ? updateInfoText("Exhibit of Smiles.\n   <== EXIT    EXHIBITS ==>") : updateInfoText("Exhibit of Smiles! :)\n   <== EXIT    EXHIBITS ==>", 3600)
     }, {
         atlas: "menu",
         ref: "welcomeText",
+        scaleX: 0.9,
+        scaleY: 0.9,
         x: -6,
         y: gameVars.halfHeight - 80,
         alpha: 1
