@@ -292,6 +292,8 @@ function runEpilogue(background) {
 																							starPressSequence: []
 																						},
 																						updateFuncList = [],
+																						localStorage.setItem('exhibitHasShownSDK', 'true');
+																						localStorage.setItem('exhibitHasFullyReloaded', 'true');
 																						location.reload();
 																					})
 																					

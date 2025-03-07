@@ -1,16 +1,19 @@
-let useSDK = false;
+let useSDK = true;
 let crazysdk = null;
 let gameplayOn = false;
 
 function sdkWrapperInit() {
 	if (useSDK) {
-		PokiSDK.init().then(() => {
-		    console.log("Poki SDK successfully initialized");
-		    // fire your function to continue to game
-		}).catch(() => {
-		    console.log("Initialized, something went wrong, load you game anyway");
-		    // fire your function to continue to game
-		});
+
+	    if (localStorage.getItem('exhibitHasShownSDK') !== 'true') {
+			PokiSDK.init().then(() => {
+			    console.log("Poki SDK successfully initialized");
+			    // fire your function to continue to game
+			}).catch(() => {
+			    console.log("Initialized, something went wrong, load you game anyway");
+			    // fire your function to continue to game
+			});
+	    }
 	}
 }
 
@@ -28,7 +31,9 @@ function sdkWrapperRequestResponsiveBanner(name) {
 
 function sdkWrapperGameLoadingStop() {
 	if (useSDK) {
-		PokiSDK.gameLoadingFinished();
+	    if (localStorage.getItem('exhibitHasFullyReloaded') !== 'true') {
+			PokiSDK.gameLoadingFinished();
+	    }
 	}
 }
 

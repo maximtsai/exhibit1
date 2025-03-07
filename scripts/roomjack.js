@@ -37,7 +37,6 @@ function setupRoomJack(e, a, o) {
             scaleY: 58
         },
         isDraggable: !0,
-        onMouseDown: () => {sdkWrapperGameplayStart()},
         onDrop: resetSpinnerButton
     }), addToUpdateFuncList(roomJackUpdate), resetSpinnerButton(), messageBus.subscribe("exhibitMove", (e, o) => {
         e === a ? (tweenVolume("gladiator0", 0), tweenVolume("gladiator1", .9), tweenVolume("gladiator2", .1), tweenVolume("gladiatorx", .1), gameVars.darkPoint && (gameObjects.roomJackObjs.eyeOffsetX = 4, setTimeout(() => {
@@ -85,6 +84,7 @@ function setupRoomJack(e, a, o) {
 function roomJackUpdate(e) {
     if (gameObjects.roomJackObjs.shouldUpdate) {
         if (gameObjects.roomJackObjs.spinnerButton.getIsDragged() && gameObjects.roomJackObjs.canSpin || gameObjects.roomJackObjs.isAutopilot) {
+            sdkWrapperGameplayStart();
             let a = gameObjects.roomJackObjs.spinnerButton.getXPos(),
                 o = gameObjects.roomJackObjs.spinnerButton.getYPos(),
                 t = a - gameObjects.roomJackObjs.spinner.x,

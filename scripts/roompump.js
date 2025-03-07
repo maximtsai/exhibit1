@@ -260,7 +260,7 @@ function pumpReleased() {
 
 function cleanupPump() {
     gameObjects.roomPumpObjs.cleanupBtn.destroy(), gameObjects.roomPumpObjs.pumpCheckpoint = 0, gameObjects.exhibit.needCleanup = !1, setTimeout(() => {
-        playSound("deepbell5"), updateInfoTextSoft("Room cleaned up.", 2250)
+        playSound("deepbell5"), updateInfoTextSoft("Room cleaned up.", 2250), sdkWrapperGameplayStop()
     }, 500)
 }
 
