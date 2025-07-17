@@ -158,7 +158,7 @@ class Button {
     tweenScale(e) {
         let s = [];
         for (let e in this.imageRefs) s.push(this.imageRefs[e]);
-        gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.timeline({
+        gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.chain({
             targets: s,
             tweens: [e]
         })

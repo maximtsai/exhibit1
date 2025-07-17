@@ -104,7 +104,7 @@ function setupRoomPump(e, o, a) {
             gameObjects.roomPumpObjs.shouldUpdate = !1;
         }, 600)
     }), messageBus.subscribe("mouseUp", pumpReleased), m = messageBus.subscribe("exhibitMove", e => {
-        e === o && (gameVars.darkPoint && (gameObjects.roomPumpObjs.frameKid = globalScene.add.image(-15, 140, "roomPump", "frameskid"), gameObjects.roomPumpObjs.frameKid.origX = gameObjects.roomPumpObjs.frameKid.x, gameObjects.roomPumpObjs.frameKid.origY = gameObjects.roomPumpObjs.frameKid.y, a.add(gameObjects.roomPumpObjs.frameKid), addToUpdateFuncList(frameKidUpdate)), gameVars.horrorPoint && gameObjects.roomPumpObjs.pumpAmt <= .1 && globalScene.tweens.timeline({
+        e === o && (gameVars.darkPoint && (gameObjects.roomPumpObjs.frameKid = globalScene.add.image(-15, 140, "roomPump", "frameskid"), gameObjects.roomPumpObjs.frameKid.origX = gameObjects.roomPumpObjs.frameKid.x, gameObjects.roomPumpObjs.frameKid.origY = gameObjects.roomPumpObjs.frameKid.y, a.add(gameObjects.roomPumpObjs.frameKid), addToUpdateFuncList(frameKidUpdate)), gameVars.horrorPoint && gameObjects.roomPumpObjs.pumpAmt <= .1 && globalScene.tweens.chain({
             targets: [gameObjects.roomPumpObjs.extraGlow],
             tweens: [{
                 alpha: 1,
@@ -125,7 +125,7 @@ function setupRoomPump(e, o, a) {
                 duration: 1500,
                 ease: "Quad.easeOut"
             }]
-        }), tweenVolume("gladiator0", .5), tweenVolume("gladiator1", .35), tweenVolume("gladiator2", .75), gameObjects.roomPumpObjs.visitedOnce || (gameObjects.roomPumpObjs.visitedOnce = !0, gameObjects.roomPumpObjs.fan.rotVel += .003, globalScene.tweens.timeline({
+        }), tweenVolume("gladiator0", .5), tweenVolume("gladiator1", .35), tweenVolume("gladiator2", .75), gameObjects.roomPumpObjs.visitedOnce || (gameObjects.roomPumpObjs.visitedOnce = !0, gameObjects.roomPumpObjs.fan.rotVel += .003, globalScene.tweens.chain({
             targets: [gameObjects.roomPumpObjs.balloon1, gameObjects.roomPumpObjs.balloon2],
             tweens: [{
                 rotation: 0,
@@ -201,7 +201,7 @@ function updateFloatyPumpState(e) {
                         })
                     }), gameObjects.sounds.fan1.stop(), gameObjects.sounds.fan2.stop();
                     for (let e = 0; e < gameObjects.roomPumpObjs.floatySprites.length; e++) gameObjects.roomPumpObjs.floatySprites[e].destroy();
-                    gameObjects.roomPumpObjs.pumpBtn.destroy(), gameObjects.roomPumpObjs.hose.destroy(), pumpReleased(), gameObjects.scene.tweens.timeline({
+                    gameObjects.roomPumpObjs.pumpBtn.destroy(), gameObjects.roomPumpObjs.hose.destroy(), pumpReleased(), gameObjects.scene.tweens.chain({
                         targets: gameObjects.roomPumpObjs.balloon1,
                         tweens: [{
                             rotation: -.08,
@@ -213,7 +213,7 @@ function updateFloatyPumpState(e) {
                             yoyo: !0,
                             ease: "Sine.easeInOut"
                         }]
-                    }), gameObjects.scene.tweens.timeline({
+                    }), gameObjects.scene.tweens.chain({
                         targets: gameObjects.roomPumpObjs.balloon2,
                         tweens: [{
                             rotation: .08,

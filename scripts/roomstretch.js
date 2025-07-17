@@ -191,7 +191,7 @@ function roomStretchUpdate(e) {
                 } else {
                     gameVars.horrorPoint || gameObjects.roomStretchObjs.handButton.setState("disable"), setStretchDollImage("dollHappy", !0);
                     let e = globalScene.add.image(gameObjects.roomStretchObjs.dollPosX - 65, gameObjects.roomStretchObjs.dollPosY - 125, "roomStretch", "exclamation");
-                    gameObjects.roomStretchObjs.roomContainer.add(e), e.scaleX = .5, e.scaleY = .5, globalScene.tweens.timeline({
+                    gameObjects.roomStretchObjs.roomContainer.add(e), e.scaleX = .5, e.scaleY = .5, globalScene.tweens.chain({
                         targets: e,
                         tweens: [{
                             scaleX: 1.2,
@@ -204,7 +204,7 @@ function roomStretchUpdate(e) {
                             duration: 450,
                             ease: "Quad.easeIn"
                         }]
-                    }), globalScene.tweens.timeline({
+                    }), globalScene.tweens.chain({
                         targets: e,
                         tweens: [{
                             x: gameObjects.roomStretchObjs.dollPosX - 100,

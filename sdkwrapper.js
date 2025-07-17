@@ -1,4 +1,4 @@
-let useSDK = true;
+let useSDK = false;
 let crazysdk = null;
 let gameplayOn = false;
 
@@ -65,7 +65,6 @@ function sdkWrapperClearAllBanners() {
 
 function sdkCommercialBreak(onStart, onResume) {
 	if (useSDK) {
-		console.log("commercial break");
 		PokiSDK.commercialBreak(() => {
 			console.log("commercial break - on start");
 		// you can pause any background music or other audio here

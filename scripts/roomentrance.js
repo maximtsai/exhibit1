@@ -217,7 +217,7 @@ function showInfoTextLoop(e, t = 0, a = !0) {
 }
 
 function playDeathRattle(e, t = 1) {
-    globalScene.tweens.timeline({
+    globalScene.tweens.chain({
         targets: e,
         tweens: [{
             scaleY: 1.2,

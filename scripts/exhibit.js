@@ -121,7 +121,7 @@ class Exhibit {
         if (this.centerImage) {
             this.centerImage.x = this.leftSpot;
             // center image goes right
-            this.shiftAnimCenter = this.scene.tweens.timeline({
+            this.shiftAnimCenter = this.scene.tweens.chain({
                 targets: this.centerImage,
                 tweens: [
                     {
@@ -136,7 +136,7 @@ class Exhibit {
         if (this.rightImage) {
             this.rightImage.x = this.centerSpot;
             // left image goes center
-            this.shiftAnimRight = this.scene.tweens.timeline({
+            this.shiftAnimRight = this.scene.tweens.chain({
                 targets: this.rightImage,
                 tweens: [
                 {
@@ -244,7 +244,7 @@ class Exhibit {
         if (this.centerImage) {
             this.centerImage.x = this.rightSpot;
             // center image goes right
-            this.shiftAnimCenter = this.scene.tweens.timeline({
+            this.shiftAnimCenter = this.scene.tweens.chain({
                 targets: this.centerImage,
                 tweens: [
                     {
@@ -259,7 +259,7 @@ class Exhibit {
         if (this.leftImage) {
             this.leftImage.x = this.centerSpot;
             // left image goes center
-            this.shiftAnimRight = this.scene.tweens.timeline({
+            this.shiftAnimRight = this.scene.tweens.chain({
                 targets: this.leftImage,
                 tweens: [
                 {

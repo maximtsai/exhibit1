@@ -194,6 +194,7 @@ function nosePress3(e, o) {
     if (gameObjects.roomClown3.nose.setPos(19, -9999), gameObjects.roomClown3.clickedOnce) {
         gameObjects.roomClown3.nose.destroy(), playSound("keyfound"), setTimeout(() => {
             playSound("click3")
+            showStaticRand(5);
         }, 500);
         let a = globalScene.add.image(0, 600, "buttons", "key_red");
         o.add(a);
@@ -211,7 +212,7 @@ function nosePress3(e, o) {
             onHover: () => {
                 l.destroy(), gameObjects.roomClown3.clown.visible = !1, gameObjects.roomClown3.clown.destroy();
                 let a = globalScene.add.image(0, gameVars.halfHeight - 50, "roomClown", "clownlarge2");
-                o.add(a), showStaticRand(3), playSound("clownlaugh2"), tempFreeze(800), setTimeout(() => {
+                o.add(a), showStaticRand(5), playSound("clownlaugh2"), tempFreeze(800), setTimeout(() => {
                     a.x = -3, setTimeout(() => {
                         a.scaleX = 1.03, a.x = 4, setTimeout(() => {
                             a.x = -7, a.scaleX = 1.08, a.scaleY = 1.02, setTimeout(() => {
@@ -229,7 +230,7 @@ function nosePress3(e, o) {
                                                             loop: !0
                                                         }), gameObjects.sounds.gladiator2.play({
                                                             loop: !0
-                                                        }), globalScene.tweens.timeline({
+                                                        }), globalScene.tweens.chain({
                                                             targets: [gameObjects.moveRightBtnHighlight, gameObjects.moveLeftBtnHighlight],
                                                             tweens: [{
                                                                 alpha: 1,
@@ -256,10 +257,15 @@ function nosePress3(e, o) {
     } else setTimeout(() => {
         playSound("keyfound");
         let e = globalScene.add.image(gameVars.halfWidth + 20, 600, "buttons", "key_yellow");
+        showStaticLite(2, 2)
+
         setTimeout(() => {
             gameObjects.roomClown3.clownTemp = globalScene.add.image(-100, gameVars.halfHeight - 46, "roomClown", "clownlarge2"), gameObjects.roomClown3.clownTemp.scaleX = 1.5, gameObjects.roomClown3.clownTemp.alpha = 0.5, o.add(gameObjects.roomClown3.clownTemp), setTimeout(() => {
                 gameObjects.roomClown3.clownTemp.x = 20
             }, 0), setTimeout(() => {
+                showStaticRand(8);
+                showStaticLite(3, 3)
+
             	let clownNoseFlash = globalScene.add.image(gameVars.halfWidth + 39, gameVars.halfHeight - 151, "roomClown", "clownnoseflash");
 
 		        globalScene.tweens.add({
@@ -299,16 +305,20 @@ function nosePress3(e, o) {
 		            scaleY: 2,
 		            ease: 'Cubic.easeOut',
 		            duration: 700,
+                    onComplete: () => {
+                        showStaticRand(5);
+                        showStaticLiteObj(1,1)
+                    }
 		        });
 
 
             	let clownLargeInstant = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, "roomClown", "clownlarge3");
-				clownLargeInstant.setScale(2);
+				clownLargeInstant.setScale(2).setAlpha(0.5);
 		        globalScene.tweens.add({
 		            targets: clownLargeInstant,
 		            alpha: 0,
 		            ease: 'Quart.easeOut',
-		            duration: 120,
+		            duration: 100,
 		            onComplete: () => {
 		            	clownLargeInstant.destroy();
 		            }

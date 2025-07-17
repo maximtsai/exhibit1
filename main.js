@@ -157,7 +157,7 @@ function onLoadComplete(a) {
     }
     localStorage.setItem('exhibitHasFullyReloaded', 'false');
 
-    a.tweens.timeline({
+    a.tweens.chain({
         targets: [gameObjectsTemp.loadingText, gameObjectsTemp.funlid, gameObjectsTemp.funbox],
         tweens: [{
             delay: 100,
@@ -170,7 +170,7 @@ function onLoadComplete(a) {
             gameObjectsTemp.funlid.destroy();
             gameObjectsTemp.funbox.destroy();
         }
-    }), gameObjectsTemp.brightLight = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 50, "loadingSS", "bright_light"), gameObjectsTemp.brightLight.scaleX = 1, gameObjectsTemp.brightLight.scaleY = 1, gameObjectsTemp.brightLight.alpha = 0, gameObjects.loadingCntr.add(gameObjectsTemp.brightLight), gameObjectsTemp.loadingWelcome = makeWelcomeImage("loading_welcome"), gameObjects.loadingCntr.add(gameObjectsTemp.loadingWelcome), gameObjectsTemp.loadingWelcome.rotation = 0, gameObjectsTemp.loadingWelcome.alpha = 0, gameObjectsTemp.loadingWelcome.scaleX = .8, gameObjectsTemp.loadingWelcome.scaleY = .8, a.tweens.timeline({
+    }), gameObjectsTemp.brightLight = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 50, "loadingSS", "bright_light"), gameObjectsTemp.brightLight.scaleX = 1, gameObjectsTemp.brightLight.scaleY = 1, gameObjectsTemp.brightLight.alpha = 0, gameObjects.loadingCntr.add(gameObjectsTemp.brightLight), gameObjectsTemp.loadingWelcome = makeWelcomeImage("loading_welcome"), gameObjects.loadingCntr.add(gameObjectsTemp.loadingWelcome), gameObjectsTemp.loadingWelcome.rotation = 0, gameObjectsTemp.loadingWelcome.alpha = 0, gameObjectsTemp.loadingWelcome.scaleX = .8, gameObjectsTemp.loadingWelcome.scaleY = .8, a.tweens.chain({
         targets: [gameObjectsTemp.loadingWelcome],
         tweens: [{
             alpha: .01,
@@ -195,7 +195,7 @@ function onLoadComplete(a) {
 }
 
 function onLoadAnimComplete(a) {
-    a.tweens.timeline({
+    a.tweens.chain({
         targets: [gameObjectsTemp.loadingBar, gameObjectsTemp.loadingBarBacking],
         tweens: [{
             offset: 0,
@@ -211,7 +211,7 @@ function onLoadAnimComplete(a) {
                 gameObjectsTemp.loadingBar.destroy(), gameObjectsTemp.loadingBarBacking.destroy()
             }
         }]
-    }), a.tweens.timeline({
+    }), a.tweens.chain({
         targets: [gameObjectsTemp.headphones, gameObjectsTemp.headphoneText, gameObjectsTemp.warningText, gameObjectsTemp.exhibitText],
         tweens: [{
             alpha: .5,
@@ -221,11 +221,12 @@ function onLoadAnimComplete(a) {
 }
 
 function startGame(a) {
+    gameVars.gameplayBegan = false;
     if (sdkWrapperGameplayStart(), sdkWrapperClearAllBanners(), useSDK) {
         let b = document.getElementById("banner-container-top");
         b.style.top = "-999px", gameVars.showingBannerTop = !1
     }
-    gameObjects.loadingMusic = a.sound.add("loadingMusic"), gameObjects.loadingMusic.play(), gameObjects.startGameButton.destroy(), gameVars.gameStarted = !0, gameObjects.scene = a, setupGame(a), gameObjectsTemp.blackTeeth = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 50, "menu", "teethBlack"), gameObjectsTemp.blackTeeth.scaleX = 1.6, gameObjectsTemp.blackTeeth.scaleY = 1.6, gameObjectsTemp.blackTeethAnim = a.tweens.timeline({
+    gameObjects.loadingMusic = a.sound.add("loadingMusic"), gameObjects.loadingMusic.play(), gameObjects.startGameButton.destroy(), gameVars.gameStarted = !0, gameObjects.scene = a, setupGame(a), gameObjectsTemp.blackTeeth = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 50, "menu", "teethBlack"), gameObjectsTemp.blackTeeth.scaleX = 1.6, gameObjectsTemp.blackTeeth.scaleY = 1.6, gameObjectsTemp.blackTeethAnim = a.tweens.chain({
         targets: [gameObjectsTemp.blackTeeth],
         tweens: [{
             scaleX: 1.45,
@@ -233,7 +234,7 @@ function startGame(a) {
             ease: "Quad.easeIn",
             duration: 3e3
         }]
-    }), a.tweens.timeline({
+    }), a.tweens.chain({
         targets: [gameObjectsTemp.headphones, gameObjectsTemp.headphoneText, gameObjectsTemp.warningText, gameObjectsTemp.exhibitText],
         tweens: [{
             alpha: 0,
@@ -251,7 +252,7 @@ function startGame(a) {
         y: gameVars.halfHeight,
         scaleX: 2e3,
         scaleY: 2e3
-    }), a.tweens.timeline({
+    }), a.tweens.chain({
         targets: [gameObjectsTemp.brightLight],
         tweens: [{
             alpha: 1.2,
@@ -260,7 +261,7 @@ function startGame(a) {
             duration: 2500,
             ease: "Quad.easeOut"
         }]
-    }), a.tweens.timeline({
+    }), a.tweens.chain({
         targets: [gameObjectsTemp.loadingWelcome],
         tweens: [{
             rotation: .01,
@@ -269,7 +270,7 @@ function startGame(a) {
             duration: 2500,
             ease: "Quad.easeIn"
         }]
-    }), gameObjectsTemp.circleLoading = [], a.tweens.timeline({
+    }), gameObjectsTemp.circleLoading = [], a.tweens.chain({
         targets: [gameObjectsTemp.loadingWelcome],
         tweens: [{
             alpha: .999,
@@ -377,80 +378,87 @@ function startGame(a) {
                 gameObjectsTemp.circleLoading.push(b), gameObjects.loadingCntr.add(b), makeWelcomeImage("loading_welcome_x13", !0)
             },
             onComplete() {
-                let background = document.getElementById('background');
-                background.style.opacity = '1';
-                let leftborder = document.getElementById('leftborder');
-                leftborder.style.opacity = '1';
-                let rightborder = document.getElementById('rightborder');
-                rightborder.style.opacity = '1';
-
-
-                gameObjects.muteButton = new Button(a, undefined, () => {
-                    if (gameVars.manualMuted) {
-                        gameVars.manualMuted = false;
-                        gameVars.soundMult = 1;
-                        gameObjects.muteButton.setNormalRef("muteButtonNormal");
-                        gameObjects.muteButton.setHoverRef("muteButtonPress");
-                        gameObjects.muteButton.setPressRef("muteButtonNormal");
-                        if (gameObjects.sounds.gladiator0) {
-                            gameObjects.sounds.gladiator0.volume = 0.7;
-                        }
-                        if (gameObjects.sounds.gladiator1) {
-                            gameObjects.sounds.gladiator1.volume = 1;
-                        }
-                        if (gameObjects.sounds.gladiator2) {
-                            gameObjects.sounds.gladiator2.volume = 1;
-                        }
-                        if (gameObjects.sounds.gladiatorx) {
-                            gameObjects.sounds.gladiatorx.volume = 0.7;
-                        }
-                        
-                    } else {
-                        gameVars.manualMuted = true;
-                        gameVars.soundMult = 0;
-                        gameObjects.muteButton.setNormalRef("muteButtonMutedNormal");
-                        gameObjects.muteButton.setHoverRef("muteButtonMutedPress");
-                        gameObjects.muteButton.setPressRef("muteButtonMutedNormal");
-                        if (gameObjects.sounds.gladiator0) {
-                            gameObjects.sounds.gladiator0.volume = 0;
-                        }
-                        if (gameObjects.sounds.gladiator1) {
-                            gameObjects.sounds.gladiator1.volume = 0;
-                        }
-                        if (gameObjects.sounds.gladiator2) {
-                            gameObjects.sounds.gladiator2.volume = 0;
-                        }
-                        if (gameObjects.sounds.gladiatorx) {
-                            gameObjects.sounds.gladiatorx.volume = 0;
-                        }
-                    }
-                }, {
-                    atlas: "buttons",
-                    ref: "muteButtonNormal",
-                    x: 1190,
-                    y: 37
-                }, {
-                    atlas: "buttons",
-                    ref: "muteButtonPress",
-                }, {
-                    atlas: "buttons",
-                    ref: "muteButtonNormal",
-                })
-
-                for (let b in removeFromUpdateFuncList(updateWelcomeFollower), gameObjects.loadingMusic.stop(), gameVars.gameConstructed = !0, gameObjects.loadingWelcomes) gameObjects.loadingWelcomes[b].destroy();
-                for (let a = 0; a < gameObjectsTemp.circleLoading.length; a++) gameObjectsTemp.circleLoading[a].destroy();
-                gameObjectsTemp.brightLight.destroy(), gameObjects.clickBlocker.destroy(), gameObjectsTemp.loadingBg.destroy(), gameObjectsTemp.blackTeeth.destroy(), gameObjectsTemp.blackTeethAnim.destroy(), setTimeout(() => {
-                    gameObjects.sounds.gladiator0.play({
-                        loop: !0
-                    }), gameObjects.sounds.gladiator0.volume = .6, tweenVolume("gladiator0", .7, 50)
-                }, 0), setTimeout(() => {
-                    addToUpdateFuncList(flipEntryLights)
-                }, 350), setTimeout(() => {
-                    gameVarsTemp.hasMoved || ftueMoveButton()
-                }, 4e3)
+                beginGameplay(a);
             }
         }]
     })
+}
+
+function beginGameplay(a) {
+    if (gameVars.gameplayBegan) {
+        return;
+    }
+    gameVars.gameplayBegan = true;
+    let background = document.getElementById('background');
+    background.style.opacity = '1';
+    let leftborder = document.getElementById('leftborder');
+    leftborder.style.opacity = '1';
+    let rightborder = document.getElementById('rightborder');
+    rightborder.style.opacity = '1';
+
+    gameObjects.muteButton = new Button(a, undefined, () => {
+        if (gameVars.manualMuted) {
+            gameVars.manualMuted = false;
+            gameVars.soundMult = 1;
+            gameObjects.muteButton.setNormalRef("muteButtonNormal");
+            gameObjects.muteButton.setHoverRef("muteButtonPress");
+            gameObjects.muteButton.setPressRef("muteButtonNormal");
+            if (gameObjects.sounds.gladiator0) {
+                gameObjects.sounds.gladiator0.volume = 0.7;
+            }
+            if (gameObjects.sounds.gladiator1) {
+                gameObjects.sounds.gladiator1.volume = 1;
+            }
+            if (gameObjects.sounds.gladiator2) {
+                gameObjects.sounds.gladiator2.volume = 1;
+            }
+            if (gameObjects.sounds.gladiatorx) {
+                gameObjects.sounds.gladiatorx.volume = 0.7;
+            }
+            
+        } else {
+            gameVars.manualMuted = true;
+            gameVars.soundMult = 0;
+            gameObjects.muteButton.setNormalRef("muteButtonMutedNormal");
+            gameObjects.muteButton.setHoverRef("muteButtonMutedPress");
+            gameObjects.muteButton.setPressRef("muteButtonMutedNormal");
+            if (gameObjects.sounds.gladiator0) {
+                gameObjects.sounds.gladiator0.volume = 0;
+            }
+            if (gameObjects.sounds.gladiator1) {
+                gameObjects.sounds.gladiator1.volume = 0;
+            }
+            if (gameObjects.sounds.gladiator2) {
+                gameObjects.sounds.gladiator2.volume = 0;
+            }
+            if (gameObjects.sounds.gladiatorx) {
+                gameObjects.sounds.gladiatorx.volume = 0;
+            }
+        }
+    }, {
+        atlas: "buttons",
+        ref: "muteButtonNormal",
+        x: 1190,
+        y: 37
+    }, {
+        atlas: "buttons",
+        ref: "muteButtonPress",
+    }, {
+        atlas: "buttons",
+        ref: "muteButtonNormal",
+    })
+
+    for (let b in removeFromUpdateFuncList(updateWelcomeFollower), gameObjects.loadingMusic.stop(), gameVars.gameConstructed = !0, gameObjects.loadingWelcomes) gameObjects.loadingWelcomes[b].destroy();
+    for (let a = 0; a < gameObjectsTemp.circleLoading.length; a++) gameObjectsTemp.circleLoading[a].destroy();
+    gameObjectsTemp.brightLight.destroy(), gameObjects.clickBlocker.destroy(), gameObjectsTemp.loadingBg.destroy(), gameObjectsTemp.blackTeeth.destroy(), gameObjectsTemp.blackTeethAnim.destroy(), setTimeout(() => {
+        gameObjects.sounds.gladiator0.play({
+            loop: !0
+        }), gameObjects.sounds.gladiator0.volume = .6, tweenVolume("gladiator0", .7, 50)
+    }, 0), setTimeout(() => {
+        addToUpdateFuncList(flipEntryLights)
+    }, 350), setTimeout(() => {
+        gameVarsTemp.hasMoved || ftueMoveButton()
+    }, 4e3)
 }
 
 function updateWelcomeFollower() {
@@ -606,7 +614,7 @@ function playSound(d, a, e = 1) {
 }
 
 function tweenVolume(a, b, c = 1500) {
-    globalScene.tweens.timeline({
+    globalScene.tweens.chain({
         targets: [gameObjects.sounds[a]],
         tweens: [{
             volume: b * gameVars.masterAudio * gameVars.soundMult,

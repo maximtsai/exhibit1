@@ -1,5 +1,5 @@
 function updateInfoText(e, t = 3200, a) {
-	gameObjects.infoText.setText("\n " + e + " \n"), a && (gameObjects.infoText.setOrigin(0, .5), gameObjects.infoText.x = gameVars.halfWidth - 360, gameObjects.infoText.y = gameVars.halfHeight + 220),  gameVarsTemp.updateTextAnim && gameVarsTemp.updateTextAnim.isPlaying() && gameVarsTemp.updateTextAnim.stop(), gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.timeline({
+	gameObjects.infoText.setText("\n " + e + " \n"), a && (gameObjects.infoText.setOrigin(0, .5), gameObjects.infoText.x = gameVars.halfWidth - 360, gameObjects.infoText.y = gameVars.halfHeight + 220),  gameVarsTemp.updateTextAnim && gameVarsTemp.updateTextAnim.isPlaying() && gameVarsTemp.updateTextAnim.stop(), gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.chain({
 		targets: gameObjects.infoText,
 		tweens: [{
 			alpha: 1,
@@ -18,7 +18,7 @@ function updateInfoText(e, t = 3200, a) {
 }
 
 function updateInfoTextSoft(e, t = 3e3) {
-	gameObjects.infoText.setText("\n " + e + " \n"), gameVarsTemp.updateTextAnim && gameVarsTemp.updateTextAnim.isPlaying() && gameVarsTemp.updateTextAnim.stop(), gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.timeline({
+	gameObjects.infoText.setText("\n " + e + " \n"), gameVarsTemp.updateTextAnim && gameVarsTemp.updateTextAnim.isPlaying() && gameVarsTemp.updateTextAnim.stop(), gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.chain({
 		targets: gameObjects.infoText,
 		tweens: [{
 			alpha: 1,
@@ -68,7 +68,7 @@ function onStandClick(e) {
 			gameVarsTemp.standSeenOnce || gameObjects.standDisplay.setAllRef("stand_display"), gameVars.canCloseStand = !0
 		}
 	}), gameObjects.standDisplay.runFuncOnImage(e => {
-		e.scaleX = .97, e.scaleY = .97, e.alpha = .65, gameObjects.scene.tweens.timeline({
+		e.scaleX = .97, e.scaleY = .97, e.alpha = .65, gameObjects.scene.tweens.chain({
 			targets: e,
 			tweens: [{
 				scaleX: 1,
@@ -669,7 +669,7 @@ function animateVoidGlow() {
 }
 
 function ftueMoveButton(e = !1) {
-	globalScene.tweens.timeline({
+	globalScene.tweens.chain({
 		targets: [gameObjects.moveRightBtnHighlight, gameObjects.moveLeftBtnHighlight],
 		tweens: [{
 			alpha: e ? .75 : 1,
