@@ -171,12 +171,12 @@ function runEpilogue(background) {
     								globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, 'theEnd');
     								setTimeout(() => {
 
-                let background = document.getElementById('background');
-                background.style.opacity = '0';
-                let leftborder = document.getElementById('leftborder');
-                leftborder.style.opacity = '0';
-                let rightborder = document.getElementById('rightborder');
-                rightborder.style.opacity = '0';
+						                let background = document.getElementById('background');
+						                background.style.opacity = '0';
+						                let leftborder = document.getElementById('leftborder');
+						                leftborder.style.opacity = '0';
+						                let rightborder = document.getElementById('rightborder');
+						                rightborder.style.opacity = '0';
 
     									let gameEndScreen = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, 'blackPixel');
     									gameEndScreen.scaleX = 999;
