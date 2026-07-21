@@ -172,6 +172,10 @@ let deferredAudio = [
     ["squeak2", "audio/squeak2.mp3"],
     ["squeak3", "audio/squeak3.mp3"]
 ];
+let deferredAtlases = [
+    ["roomClown2", "sprites/clown/clown2.json"],
+    ["flashScreens", "sprites/flashscreens/flashscreens.json"]
+];
 let deferredAudioLoaded = !1;
 
 function preload() {
@@ -220,9 +224,8 @@ function onPreloadComplete(a) {
     }), a.load.on("complete", () => {
         onLoadComplete(a)
     }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"), 
-    a.load.multiatlas("roomClown", "sprites/clown/clown.json"), 
-    a.load.multiatlas("roomClown2", "sprites/clown/clown2.json"), 
-    a.load.multiatlas("flashScreens", "sprites/flashscreens/flashscreens.json"), a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function() { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(), 
+    a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
+    a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function() { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
     a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
 }
 
@@ -299,7 +302,14 @@ function loadDeferredAudio(a) {
     }
     deferredAudioLoaded = true;
     for (let d = 0; d < deferredAudio.length; d++) a.load.audio(deferredAudio[d][0], deferredAudio[d][1]);
+    for (let t = 0; t < deferredAtlases.length; t++) a.load.multiatlas(deferredAtlases[t][0], deferredAtlases[t][1]);
     a.load.once("complete", () => {
+        for (let t = 0; t < deferredAtlases.length; t++) {
+            let key = deferredAtlases[t][0];
+            if (!a.textures.exists(key)) {
+                console.warn("loadDeferredAudio: atlas failed to load: " + key);
+            }
+        }
         for (let d = 0; d < deferredAudio.length; d++) {
             let key = deferredAudio[d][0];
             if (a.cache.audio.exists(key)) {

@@ -16,7 +16,7 @@ Replication:
      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
      <meta name="mobile-web-app-capable" content="yes">
      ```
-     Warning: `user-scalable=no` disables browser pinch-to-zoom. Use only when rapid double-taps/gestures are core to gameplay and conflict with browser default zooms.
+     Warning: `user-scalable=no` disables pinch-to-zoom — use only when rapid gestures conflict with browser defaults. Safari iOS 10+ ignores this property; prefer CSS `touch-action: manipulation` or `touch-action: none` to control double-tap zooming.
   B) Incorporate `env(safe-area-inset-...)` variables inside CSS paddings/margins to align HUD elements away from notches:
      ```css
      .bottom-bar {
@@ -141,17 +141,23 @@ Replication:
   A) Implement an Object Pool array to pre-allocate and reuse instances:
      ```javascript
      const objectPool = [];
+     const freeList = [];
+
      function spawnObject(x, y) {
-         let obj = objectPool.find(item => !item.active);
+         let obj = freeList.pop();
          if (!obj) {
-             obj = { active: true, x, y };
+             obj = { active: true, x: 0, y: 0 };
              objectPool.push(obj);
-         } else {
-             obj.active = true;
-             obj.x = x;
-             obj.y = y;
          }
+         obj.active = true;
+         obj.x = x;
+         obj.y = y;
          return obj;
+     }
+
+     function freeObject(obj) {
+         obj.active = false;
+         freeList.push(obj);
      }
      ```
   B) Clean resets using `.length = 0` to clear active collections without allocating a new array:
@@ -312,21 +318,25 @@ Replication:
 Context: Prevent AudioContext.decodeAudioData failures on legacy iOS Safari / webview builds that lack standard Promise support and only resolve via callback functions.
 Replication:
   Wrap the `decodeAudioData` invocation inside a custom Promise wrapper that handles both Promise resolutions and standard callback parameters:
-  ```javascript
-  async function loadAudioBuffer(context, arrayBuffer) {
-      return new Promise((resolve, reject) => {
-          try {
-              const res = context.decodeAudioData(arrayBuffer, resolve, reject);
-              // If modern Promise-returning API, chain standard resolve/reject
-              if (res && typeof res.then === 'function') {
-                  res.then(resolve, reject);
+      ```javascript
+      async function loadAudioBuffer(context, arrayBuffer) {
+          return new Promise((resolve, reject) => {
+              let isResolved = false;
+              const safeResolve = (buf) => { if (!isResolved) { isResolved = true; resolve(buf); } };
+              const safeReject = (err) => { if (!isResolved) { isResolved = true; reject(err); } };
+
+              try {
+                  const res = context.decodeAudioData(arrayBuffer, safeResolve, safeReject);
+                  if (res && typeof res.then === 'function') {
+                      res.then(safeResolve, safeReject);
+                  }
+              } catch (e) {
+                  safeReject(e);
               }
-          } catch (e) {
-              reject(e);
-          }
-      });
-  }
-  ```
+          });
+      }
+      ```
+
 
 --------------------------------------------------------------------------------
 17. FONTS PRE-LOADING IN CANVAS GAME LOOPS
@@ -478,22 +488,26 @@ Replication:
 Context: Mobile browsers reject `.play()` calls on HTML5 Audio elements inside asynchronous requestAnimationFrame game loops. They must be pre-unlocked during a synchronous user gesture callback.
 Replication:
   Trigger play and immediate pause actions during the first user interaction event:
-  ```javascript
-  function unlockHTML5Audio(audioElement) {
-      const playPromise = audioElement.play();
-      if (playPromise !== undefined) {
-          playPromise.then(() => {
-              // Pause immediately if it should not play yet
-              audioElement.pause();
-          }).catch(e => { /* catch browser rejection */ });
-      }
-  }
+      ```javascript
+      let isUnlocked = false;
 
-  // Triggered on user interaction (e.g. initial tap):
-  window.addEventListener('pointerdown', () => {
-      unlockHTML5Audio(bgMusicElement);
-  });
-  ```
+      function unlockHTML5Audio(audioElement) {
+          if (isUnlocked) return;
+          const playPromise = audioElement.play();
+          if (playPromise !== undefined) {
+              playPromise.then(() => {
+                  audioElement.pause();
+                  audioElement.currentTime = 0;
+                  isUnlocked = true;
+              }).catch(() => {});
+          }
+      }
+
+      // Triggered on user interaction (e.g. initial tap):
+      window.addEventListener('pointerdown', () => {
+          unlockHTML5Audio(bgMusicElement);
+      });
+      ```
 
 -------------------------------------------------------------------------------
 22. FULL GAME I18N / L10N TRANSLATION SYSTEM
@@ -660,8 +674,9 @@ Replication:
          this._startTime = 0;
          this._playOffset = 0.05; // Skip MP3 encoder padding
          this._shouldPlay = false;
-         this._loading = false;
-         this.fallbackAudio = null;
+          this._loading = false;
+          this._loadPromise = null;
+          this.fallbackAudio = null;
        }
 
        play() {
@@ -669,34 +684,40 @@ Replication:
          this._paused = false;
          if (this.fallbackAudio) return this.fallbackAudio.play();
 
-         if (!this.buffer) {
-           if (!this._loading) {
-             this._loading = true;
-             const self = this;
-             fetch(this.url)
-               .then(res => res.arrayBuffer())
-               .then(ab => this.actx.decodeAudioData(ab))
-               .then(b => {
-                 self.buffer = b;
-                 self._loading = false;
-                 if (self._shouldPlay) self.play();
-               })
-               .catch(e => {
-                 // CORS/Local-file fail trap: fallback to standard HTML5 Audio
-                 console.warn("Fallback to HTML5 Audio:", self.url, e);
-                 self.fallbackAudio = new Audio(self.url);
-                 self.fallbackAudio.loop = self.loop;
-                 self.fallbackAudio.volume = self._volume;
-                 self.fallbackAudio.muted = self._muted;
-                 self.fallbackAudio.currentTime = self._playOffset;
-                 self._loading = false;
-                 if (self._shouldPlay) self.fallbackAudio.play().catch(() => {});
-               });
-           }
-           return Promise.resolve();
-         }
+          if (!this.buffer) {
+            if (!this._loading) {
+              this._loading = true;
+              const self = this;
+              this._loadPromise = fetch(this.url)
+                .then(res => res.arrayBuffer())
+                .then(ab => this.actx.decodeAudioData(ab))
+                .then(b => {
+                  self.buffer = b;
+                  self._loading = false;
+                  if (self._shouldPlay) return self.play();
+                })
+                .catch(e => {
+                  // CORS/Local-file fail trap: fallback to standard HTML5 Audio
+                  console.warn("Fallback to HTML5 Audio:", self.url, e);
+                  self.fallbackAudio = new Audio(self.url);
+                  self.fallbackAudio.loop = self.loop;
+                  self.fallbackAudio.volume = self._volume;
+                  self.fallbackAudio.muted = self._muted;
+                  self.fallbackAudio.currentTime = self._playOffset;
+                  self._loading = false;
+                  if (self._shouldPlay) return self.fallbackAudio.play().catch(() => {});
+                });
+            }
+            return this._loadPromise || Promise.resolve();
+          }
 
-         if (this.source) { try { this.source.stop(); } catch(e) {} }
+         if (this.source) { 
+             try { 
+                 this.source.stop(); 
+                 this.source.disconnect();
+             } catch(e) {} 
+             this.source = null;
+         }
          this.source = this.actx.createBufferSource();
          this.source.buffer = this.buffer;
          this.source.loop = this.loop;
@@ -721,25 +742,31 @@ Context: Fixed joystick nodes cause hand fatigue and muscle memory drift on mobi
 Replication:
   A) Position the joystick base dynamically under the user's initial touch coordinate on pointerdown:
      ```javascript
-     let startX = 0, startY = 0;
-     let jTouchId = null;
+      let startX = 0, startY = 0;
+      let jTouchId = null;
 
-     window.addEventListener('pointerdown', (e) => {
-         if (jTouchId !== null) return;
-         if (e.target.closest('.ui-buttons')) return; // Ignore clicks on UI elements
+      window.addEventListener('pointerdown', (e) => {
+          if (jTouchId !== null) return;
+          if (e.target.closest('.ui-buttons')) return; // Ignore clicks on UI elements
 
-         jTouchId = e.pointerId;
-         startX = e.clientX;
-         startY = e.clientY;
+          jTouchId = e.pointerId;
+          startX = e.clientX;
+          startY = e.clientY;
 
-         // Center joystick base at (startX, startY)
-         joystickBase.style.display = 'block';
-         joystickBase.style.left = (startX - joystickBase.offsetWidth / 2) + 'px';
-         joystickBase.style.top = (startY - joystickBase.offsetHeight / 2) + 'px';
-         joystickBase.setPointerCapture(e.pointerId);
-     });
+          // Center joystick base at (startX, startY)
+          joystickBase.style.display = 'block';
+          joystickBase.style.left = (startX - joystickBase.offsetWidth / 2) + 'px';
+          joystickBase.style.top = (startY - joystickBase.offsetHeight / 2) + 'px';
+
+          requestAnimationFrame(() => {
+              if (jTouchId !== null) {
+                  try { joystickBase.setPointerCapture(e.pointerId); } catch (err) {}
+              }
+          });
+      });
      ```
-  B) Eliminate visual offsets by preserving CSS center transform properties when applying dynamic inline translations to the knob:
+     Note: Calling `joystickBase.setPointerCapture(e.pointerId)` on the same tick after changing `display` from `none` to `block` can fail in webkit/iOS engines because the element has not been laid out/painted yet. Consider capturing on `e.target` or `window`, or deferring with `requestAnimationFrame`.
+   B) Eliminate visual offsets by preserving CSS center transform properties when applying dynamic inline translations to the knob:
      ```javascript
      // Correct: translate(-50%, -50%) keeps the knob centered relative to its parent
      joystickKnob.style.transform = `translate(-50%, -50%) translate(${dx}px, ${dy}px)`;
