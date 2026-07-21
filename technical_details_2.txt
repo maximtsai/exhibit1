@@ -372,7 +372,7 @@ Replication:
      const criticalAssets = [loadImage('spark_particle'), loadAudio('ambient_music')];
      await Promise.all(criticalAssets);
      dismissLoadingScreen();
-     
+
      // 2. Background phase (doesn't block starting the gameplay)
      Promise.all([
          loadAudio('collision_sfx'),
@@ -382,6 +382,45 @@ Replication:
          console.log("Deferred background assets loaded.");
      });
      ```
+  C) PHASER 3 SPECIFIC — deferred audio and the sound cache:
+     Context: In Phaser 3 (verified on v3.90), `scene.sound.add("key")` THROWS
+     `Uncaught Error: Audio key "<key>" not found in cache` if the key has not
+     finished loading. A common mistake when retrofitting deferred loading is to
+     split the `load.audio(...)` calls into early/deferred batches but leave a
+     single `initializeSounds()` that calls `sound.add()` for EVERY key — it runs
+     right after the first load batch and crashes on the first deferred key.
+     Rules to replicate correctly:
+     1. Split the SOUND REGISTRATION the same way as the loading. At startup,
+        `sound.add()` only the keys from the early batch. Registration of
+        deferred keys must be event-driven off the deferred batch's completion,
+        never done eagerly at setup time:
+        ```javascript
+        function loadDeferredAudio(scene) {
+            if (deferredAudioStarted) return;
+            deferredAudioStarted = true;
+            for (const [key, url] of deferredAudio) scene.load.audio(key, url);
+            scene.load.once("complete", () => {
+                for (const [key] of deferredAudio) {
+                    if (scene.cache.audio.exists(key)) {      // guard partial failures
+                        gameObjects.sounds[key] = scene.sound.add(key);
+                    }
+                }
+            });
+            scene.load.start(); // required: loader does not auto-start outside preload()
+        }
+        ```
+     2. The Phaser loader's "complete" event fires ONCE PER BATCH. Any handler
+        registered with `load.on("complete", ...)` for the initial load screen
+        will fire AGAIN when the deferred batch finishes — guard it with a flag
+        (or use `load.once`) so post-load boot logic doesn't run twice.
+     3. Guard every playback helper (`playSound`, `tweenVolume`, etc.) with a
+        registration check (`if (!gameObjects.sounds[key]) { warn; return; }`) so
+        gameplay code that fires before the deferred batch lands degrades to a
+        skipped sound instead of a TypeError.
+     4. Trigger `loadDeferredAudio()` from a gameplay milestone that occurs well
+        before the deferred sounds are needed (e.g. when actual gameplay begins,
+        while the intro plays), not lazily at first playback — Web Audio still
+        needs download + decode time.
 
 --------------------------------------------------------------------------------
 19. RESIZEOBSERVER COMPATIBILITY FALLBACK
