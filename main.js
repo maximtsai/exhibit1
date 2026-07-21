@@ -76,6 +76,104 @@ let config = {
 let game;
 setTimeout(() => {game = new Phaser.Game(config)}, 20)
 
+let earlyAudio = [
+    ["loadingMusic", "audio/loadingmusic.mp3"],
+    ["click1", "audio/click1.mp3"],
+    ["click2", "audio/click2.mp3"],
+    ["click3", "audio/click3.mp3"],
+    ["click4", "audio/click4.mp3"],
+    ["airpump", "audio/airpump.mp3"],
+    ["doorslam", "audio/doorslam.mp3"],
+    ["dooropen", "audio/dooropen.mp3"],
+    ["dooropen2", "audio/dooropen2.mp3"],
+    ["squeakopen", "audio/squeakopen.mp3"],
+    ["lidslam", "audio/lidslam.mp3"],
+    ["metalgrind1", "audio/metalgrind1.mp3"],
+    ["metalgrind2", "audio/metalgrind2.mp3"],
+    ["metalgrind3", "audio/metalgrind3.mp3"],
+    ["metalgrind4", "audio/metalgrind4.mp3"],
+    ["metalsqueak1", "audio/metalsqueak1.mp3"],
+    ["metalsqueak2", "audio/metalsqueak2.mp3"],
+    ["keyfound", "audio/keyfound.mp3"],
+    ["keyget", "audio/keyget.mp3"],
+    ["keygetred", "audio/keygetred.mp3"],
+    ["deepbell1", "audio/deepbell1.mp3"],
+    ["deepbell2", "audio/deepbell2.mp3"],
+    ["deepbell3", "audio/deepbell3.mp3"],
+    ["deepbell4", "audio/deepbell4.mp3"],
+    ["deepbell5", "audio/deepbell5.mp3"],
+    ["fan1", "audio/fan1.mp3"],
+    ["fan2", "audio/fan2.mp3"],
+    ["nyaha", "audio/nyaha.mp3"],
+    ["splurt", "audio/splurt.mp3"],
+    ["watergurgle", "audio/watergurgle.mp3"],
+    ["stopmusic", "audio/stopmusic.mp3"],
+    ["gladiator0", "audio/gladiator0.mp3"],
+    ["gladiator1", "audio/gladiator1.mp3"],
+    ["gladiator2", "audio/gladiator2.mp3"],
+    ["gladiatorx", "audio/gladiatorx.mp3"],
+    ["pumpamb", "audio/pumpamb.mp3"],
+    ["shout1", "audio/shout1.mp3"],
+    ["shout2", "audio/shout2.mp3"],
+    ["shout3", "audio/shout3.mp3"],
+    ["shout4", "audio/shout4.mp3"],
+    ["shout5", "audio/shout5.mp3"]
+];
+let deferredAudio = [
+    ["a7", "audio/notes/a7.mp3"],
+    ["b7", "audio/notes/b7.mp3"],
+    ["c7", "audio/notes/c7.mp3"],
+    ["c7b", "audio/notes/c7b.mp3"],
+    ["d7", "audio/notes/d7.mp3"],
+    ["e7", "audio/notes/e7.mp3"],
+    ["e7b", "audio/notes/e7b.mp3"],
+    ["f7", "audio/notes/f7.mp3"],
+    ["f7b", "audio/notes/f7b.mp3"],
+    ["g6", "audio/notes/g6.mp3"],
+    ["g6s", "audio/notes/g6s.mp3"],
+    ["g7", "audio/notes/g7.mp3"],
+    ["c8", "audio/notes/c8.mp3"],
+    ["clownlaugh1", "audio/clownlaugh1.mp3"],
+    ["clownlaugh2", "audio/clownlaugh2.mp3"],
+    ["clownlaughfinal", "audio/clownlaughfinal.mp3"],
+    ["clownhorn", "audio/clown_horn.mp3"],
+    ["creepysfx", "audio/creepysfx.mp3"],
+    ["void", "audio/void.mp3"],
+    ["flickeron", "audio/flickeron.mp3"],
+    ["muffle1", "audio/muffle1.mp3"],
+    ["muffle2", "audio/muffle2.mp3"],
+    ["muffle3", "audio/muffle3.mp3"],
+    ["muffle4", "audio/muffle4.mp3"],
+    ["muffle5", "audio/muffle5.mp3"],
+    ["muffle6", "audio/muffle6.mp3"],
+    ["muffle7", "audio/muffle7.mp3"],
+    ["muffle8", "audio/muffle8.mp3"],
+    ["sing1", "audio/sing1.mp3"],
+    ["rubber1", "audio/rubber1.mp3"],
+    ["rubber2", "audio/rubber2.mp3"],
+    ["rubber3", "audio/rubber3.mp3"],
+    ["rubber4", "audio/rubber4.mp3"],
+    ["rubber5", "audio/rubber5.mp3"],
+    ["rubber6", "audio/rubber6.mp3"],
+    ["rubber7", "audio/rubber7.mp3"],
+    ["rubber8", "audio/rubber8.mp3"],
+    ["tear1", "audio/tear1.mp3"],
+    ["tear2", "audio/tear2.mp3"],
+    ["tear3", "audio/tear3.mp3"],
+    ["tear4", "audio/tear4.mp3"],
+    ["tear5", "audio/tear5.mp3"],
+    ["tear6", "audio/tear6.mp3"],
+    ["glassbreak", "audio/glassbreak.mp3"],
+    ["horrortrack1", "audio/horrortrack1.mp3"],
+    ["groundthud2", "audio/groundthud2.mp3"],
+    ["emerge1", "audio/emerge1.mp3"],
+    ["emerge2", "audio/emerge2.mp3"],
+    ["squeak1", "audio/squeak1.mp3"],
+    ["squeak2", "audio/squeak2.mp3"],
+    ["squeak3", "audio/squeak3.mp3"]
+];
+let deferredAudioLoaded = !1;
+
 function preload() {
     let gameDiv = document.getElementById('preload-notice');
     gameDiv.innerHTML = "";
@@ -124,14 +222,15 @@ function onPreloadComplete(a) {
     }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"), 
     a.load.multiatlas("roomClown", "sprites/clown/clown.json"), 
     a.load.multiatlas("roomClown2", "sprites/clown/clown2.json"), 
-    a.load.multiatlas("flashScreens", "sprites/flashscreens/flashscreens.json"), a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), a.load.audio("loadingMusic", "audio/loadingmusic.mp3"), a.load.audio("click1", "audio/click1.mp3"), a.load.audio("click2", "audio/click2.mp3"), a.load.audio("click3", "audio/click3.mp3"), a.load.audio("click4", "audio/click4.mp3"), a.load.audio("airpump", "audio/airpump.mp3"), a.load.audio("doorslam", "audio/doorslam.mp3"), a.load.audio("dooropen", "audio/dooropen.mp3"), a.load.audio("dooropen2", "audio/dooropen2.mp3"), a.load.audio("squeakopen", "audio/squeakopen.mp3"), a.load.audio("lidslam", "audio/lidslam.mp3"), a.load.audio("creepysfx", "audio/creepysfx.mp3"), a.load.audio("void", "audio/void.mp3"), a.load.audio("metalgrind1", "audio/metalgrind1.mp3"), a.load.audio("metalgrind2", "audio/metalgrind2.mp3"), a.load.audio("metalgrind3", "audio/metalgrind3.mp3"), a.load.audio("metalgrind4", "audio/metalgrind4.mp3"), a.load.audio("metalsqueak1", "audio/metalsqueak1.mp3"), a.load.audio("metalsqueak2", "audio/metalsqueak2.mp3"), a.load.audio("keyfound", "audio/keyfound.mp3"), a.load.audio("keyget", "audio/keyget.mp3"), a.load.audio("keygetred", "audio/keygetred.mp3"), a.load.audio("deepbell1", "audio/deepbell1.mp3"), a.load.audio("deepbell2", "audio/deepbell2.mp3"), a.load.audio("deepbell3", "audio/deepbell3.mp3"), a.load.audio("deepbell4", "audio/deepbell4.mp3"), a.load.audio("deepbell5", "audio/deepbell5.mp3"), a.load.audio("fan1", "audio/fan1.mp3"), a.load.audio("fan2", "audio/fan2.mp3"), a.load.audio("nyaha", "audio/nyaha.mp3"), a.load.audio("muffle1", "audio/muffle1.mp3"), a.load.audio("muffle2", "audio/muffle2.mp3"), a.load.audio("muffle3", "audio/muffle3.mp3"), a.load.audio("muffle4", "audio/muffle4.mp3"), a.load.audio("muffle5", "audio/muffle5.mp3"), a.load.audio("muffle6", "audio/muffle6.mp3"), a.load.audio("muffle7", "audio/muffle7.mp3"), a.load.audio("muffle8", "audio/muffle8.mp3"), a.load.audio("splurt", "audio/splurt.mp3"), a.load.audio("watergurgle", "audio/watergurgle.mp3"), a.load.audio("a7", "audio/notes/a7.mp3"), a.load.audio("b7", "audio/notes/b7.mp3"), a.load.audio("c7", "audio/notes/c7.mp3"), a.load.audio("c7b", "audio/notes/c7b.mp3"), a.load.audio("d7", "audio/notes/d7.mp3"), a.load.audio("e7", "audio/notes/e7.mp3"), a.load.audio("e7b", "audio/notes/e7b.mp3"), a.load.audio("f7", "audio/notes/f7.mp3"), a.load.audio("f7b", "audio/notes/f7b.mp3"), a.load.audio("g6", "audio/notes/g6.mp3"), a.load.audio("g6s", "audio/notes/g6s.mp3"), a.load.audio("g7", "audio/notes/g7.mp3"), a.load.audio("c8", "audio/notes/c8.mp3"), a.load.audio("rubber1", "audio/rubber1.mp3"), a.load.audio("rubber2", "audio/rubber2.mp3"), a.load.audio("rubber3", "audio/rubber3.mp3"), a.load.audio("rubber4", "audio/rubber4.mp3"), a.load.audio("rubber5", "audio/rubber5.mp3"), a.load.audio("rubber6", "audio/rubber6.mp3"), a.load.audio("rubber7", "audio/rubber7.mp3"), a.load.audio("rubber8", "audio/rubber8.mp3"), a.load.audio("tear1", "audio/tear1.mp3"), a.load.audio("tear2", "audio/tear2.mp3"), a.load.audio("tear3", "audio/tear3.mp3"), a.load.audio("tear4", "audio/tear4.mp3"), a.load.audio("tear5", "audio/tear5.mp3"), a.load.audio("tear6", "audio/tear6.mp3"), a.load.audio("sing1", "audio/sing1.mp3"), a.load.audio("glassbreak", "audio/glassbreak.mp3"), a.load.audio("flickeron", "audio/flickeron.mp3"), a.load.audio("horrortrack1", "audio/horrortrack1.mp3"), a.load.audio("groundthud2", "audio/groundthud2.mp3"), a.load.audio("emerge1", "audio/emerge1.mp3"), a.load.audio("emerge2", "audio/emerge2.mp3"), a.load.audio("squeak1", "audio/squeak1.mp3"), a.load.audio("squeak2", "audio/squeak2.mp3"), a.load.audio("squeak3", "audio/squeak3.mp3"), a.load.audio("stopmusic", "audio/stopmusic.mp3"), a.load.audio("gladiator0", "audio/gladiator0.mp3"), a.load.audio("gladiator1", "audio/gladiator1.mp3"), a.load.audio("gladiator2", "audio/gladiator2.mp3"), a.load.audio("gladiatorx", "audio/gladiatorx.mp3"), a.load.audio("pumpamb", "audio/pumpamb.mp3"), a.load.audio("shout1", "audio/shout1.mp3"), a.load.audio("shout2", "audio/shout2.mp3"), a.load.audio("shout3", "audio/shout3.mp3"), a.load.audio("shout4", "audio/shout4.mp3"), a.load.audio("shout5", "audio/shout5.mp3"), a.load.audio("clownlaugh1", "audio/clownlaugh1.mp3"), a.load.audio("clownlaugh2", "audio/clownlaugh2.mp3"), 
-    a.load.audio("clownlaughfinal", "audio/clownlaughfinal.mp3"), 
-    a.load.audio("clownhorn", "audio/clown_horn.mp3"), 
+    a.load.multiatlas("flashScreens", "sprites/flashscreens/flashscreens.json"), a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function() { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(), 
     a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
 }
 
 let gameLoadedOnce = false;
 function onLoadComplete(a) {
+    if (deferredAudioLoaded) {
+        return;
+    }
     if (!document.location.href.includes('itch') && !document.location.href.includes('localhost:8124') && !document.location.href.includes('poki')) {
         // Stops execution of rest of game
         let gameDiv = document.getElementById('preload-notice');
@@ -192,6 +291,25 @@ function onLoadComplete(a) {
             duration: 400
         }]
     })
+}
+
+function loadDeferredAudio(a) {
+    if (deferredAudioLoaded) {
+        return;
+    }
+    deferredAudioLoaded = true;
+    for (let d = 0; d < deferredAudio.length; d++) a.load.audio(deferredAudio[d][0], deferredAudio[d][1]);
+    a.load.once("complete", () => {
+        for (let d = 0; d < deferredAudio.length; d++) {
+            let key = deferredAudio[d][0];
+            if (a.cache.audio.exists(key)) {
+                gameObjects.sounds[key] = a.sound.add(key);
+            } else {
+                console.warn("loadDeferredAudio: audio failed to load: " + key);
+            }
+        }
+    });
+    a.load.start()
 }
 
 function onLoadAnimComplete(a) {
@@ -389,6 +507,7 @@ function beginGameplay(a) {
         return;
     }
     gameVars.gameplayBegan = true;
+    loadDeferredAudio(a);
     let background = document.getElementById('background');
     background.style.opacity = '1';
     let leftborder = document.getElementById('leftborder');
@@ -509,98 +628,14 @@ function handleBorders() {
 }
 
 function initializeSounds(a) {
-    gameObjects.sounds = {
-        a7: a.sound.add("a7"),
-        b7: a.sound.add("b7"),
-        c7: a.sound.add("c7"),
-        c7b: a.sound.add("c7b"),
-        d7: a.sound.add("d7"),
-        e7: a.sound.add("e7"),
-        e7b: a.sound.add("e7b"),
-        f7: a.sound.add("f7"),
-        f7b: a.sound.add("f7b"),
-        g6: a.sound.add("g6"),
-        g6s: a.sound.add("g6s"),
-        g7: a.sound.add("g7"),
-        c8: a.sound.add("c8"),
-        click1: a.sound.add("click1"),
-        click2: a.sound.add("click2"),
-        click3: a.sound.add("click3"),
-        click4: a.sound.add("click4"),
-        clownhorn: a.sound.add("clownhorn"),
-        clownlaugh1: a.sound.add("clownlaugh1"),
-        clownlaugh2: a.sound.add("clownlaugh2"),
-        clownlaughfinal: a.sound.add("clownlaughfinal"),
-        airpump: a.sound.add("airpump"),
-        doorslam: a.sound.add("doorslam"),
-        dooropen: a.sound.add("dooropen"),
-        dooropen2: a.sound.add("dooropen2"),
-        squeakopen: a.sound.add("squeakopen"),
-        lidslam: a.sound.add("lidslam"),
-        creepysfx: a.sound.add("creepysfx"),
-        void: a.sound.add("void"),
-        metalgrind1: a.sound.add("metalgrind1"),
-        metalgrind2: a.sound.add("metalgrind2"),
-        metalgrind3: a.sound.add("metalgrind3"),
-        metalgrind4: a.sound.add("metalgrind4"),
-        metalsqueak1: a.sound.add("metalsqueak1"),
-        metalsqueak2: a.sound.add("metalsqueak2"),
-        keyfound: a.sound.add("keyfound"),
-        keyget: a.sound.add("keyget"),
-        keygetred: a.sound.add("keygetred"),
-        deepbell1: a.sound.add("deepbell1"),
-        deepbell2: a.sound.add("deepbell2"),
-        deepbell3: a.sound.add("deepbell3"),
-        deepbell4: a.sound.add("deepbell4"),
-        deepbell5: a.sound.add("deepbell5"),
-        fan1: a.sound.add("fan1"),
-        fan2: a.sound.add("fan2"),
-        nyaha: a.sound.add("nyaha"),
-        rubber1: a.sound.add("rubber1"),
-        rubber2: a.sound.add("rubber2"),
-        rubber3: a.sound.add("rubber3"),
-        rubber4: a.sound.add("rubber4"),
-        rubber5: a.sound.add("rubber5"),
-        rubber6: a.sound.add("rubber6"),
-        rubber7: a.sound.add("rubber7"),
-        rubber8: a.sound.add("rubber8"),
-        tear1: a.sound.add("tear1"),
-        tear2: a.sound.add("tear2"),
-        tear3: a.sound.add("tear3"),
-        tear4: a.sound.add("tear4"),
-        tear5: a.sound.add("tear5"),
-        tear6: a.sound.add("tear6"),
-        muffle1: a.sound.add("muffle1"),
-        muffle2: a.sound.add("muffle2"),
-        muffle3: a.sound.add("muffle3"),
-        muffle4: a.sound.add("muffle4"),
-        muffle5: a.sound.add("muffle5"),
-        muffle6: a.sound.add("muffle6"),
-        muffle7: a.sound.add("muffle7"),
-        muffle8: a.sound.add("muffle8"),
-        splurt: a.sound.add("splurt"),
-        watergurgle: a.sound.add("watergurgle"),
-        sing1: a.sound.add("sing1"),
-        glassbreak: a.sound.add("glassbreak"),
-        flickeron: a.sound.add("flickeron"),
-        horrortrack1: a.sound.add("horrortrack1"),
-        groundthud2: a.sound.add("groundthud2"),
-        emerge1: a.sound.add("emerge1"),
-        emerge2: a.sound.add("emerge2"),
-        squeak1: a.sound.add("squeak1"),
-        squeak2: a.sound.add("squeak2"),
-        squeak3: a.sound.add("squeak3"),
-        stopmusic: a.sound.add("stopmusic"),
-        gladiator0: a.sound.add("gladiator0"),
-        gladiator1: a.sound.add("gladiator1"),
-        gladiator2: a.sound.add("gladiator2"),
-        gladiatorx: a.sound.add("gladiatorx"),
-        pumpamb: a.sound.add("pumpamb"),
-        shout1: a.sound.add("shout1"),
-        shout2: a.sound.add("shout2"),
-        shout3: a.sound.add("shout3"),
-        shout4: a.sound.add("shout4"),
-        shout5: a.sound.add("shout5")
+    // Deferred sounds get registered later, in loadDeferredAudio's complete callback
+    gameObjects.sounds = {};
+    for (let d = 0; d < earlyAudio.length; d++) {
+        let key = earlyAudio[d][0];
+        if (key === "loadingMusic") {
+            continue;
+        }
+        gameObjects.sounds[key] = a.sound.add(key);
     }
 }
 
@@ -608,12 +643,20 @@ function playSound(d, a, e = 1) {
     let b = "";
     void 0 !== a && (b = Math.floor(Math.random() * a) + 1);
     let c = d + b;
+    if (!gameObjects.sounds[c]) {
+        console.warn("playSound: sound not registered: " + c);
+        return null;
+    }
     gameObjects.sounds[c].play();
     gameObjects.sounds[c].volume = e * gameVars.masterAudio * gameVars.soundMult;
     return gameObjects.sounds[c];
 }
 
 function tweenVolume(a, b, c = 1500) {
+    if (!gameObjects.sounds[a]) {
+        console.warn("tweenVolume: sound not registered: " + a);
+        return null;
+    }
     globalScene.tweens.chain({
         targets: [gameObjects.sounds[a]],
         tweens: [{
@@ -625,6 +668,10 @@ function tweenVolume(a, b, c = 1500) {
 }
 
 function playSoundOnce(a, b, c = 1) {
+    if (!gameObjects.sounds[a]) {
+        console.warn("playSoundOnce: sound not registered: " + a);
+        return null;
+    }
     oneTimeScares[a] || (oneTimeScares[a] = !0, b ? setTimeout(() => {
         gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()
     }, b) : (gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()))
