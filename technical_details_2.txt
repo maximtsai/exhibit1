@@ -255,7 +255,7 @@ Replication:
   button.classList.add('requesting'); // Lock user interaction
   
   let adResolved = false;
-  // Safety timeout fallback: unlock user interaction if ad takes too long to start/respond
+  // Safety timeout fallback: unlock user interaction if ad takes too long to launch/respond
   const adTimeout = setTimeout(() => {
       if (!adResolved) {
           adResolved = true;
@@ -269,14 +269,20 @@ Replication:
           clearTimeout(adTimeout); // Ad started successfully, clear initial request timeout
       }
   }).then(completed => {
+      clearTimeout(adTimeout); // Guard in case onStarted was omitted by SDK
       if (adResolved) return;
       adResolved = true;
-      clearTimeout(adTimeout);
       if (completed) {
           triggerReward();
       } else {
           showEarlyCloseWarning();
       }
+  }).catch(err => {
+      clearTimeout(adTimeout);
+      if (adResolved) return;
+      adResolved = true;
+      button.classList.remove('requesting');
+      showError('ad_failed');
   });
   ```
 
@@ -630,7 +636,7 @@ E) Vehicle dialog combos:
 getVehicleReaction(skinId, planet) {
   const key = 'combo.' + skinId + '.' + planet.toLowerCase();
   const T = window.Translations;
-  return T.keys()[key] || T.get('garage.reaction.fallback');
+  return T.has(key) ? T.get(key) : T.get('garage.reaction.fallback');
 }
 ```
 
@@ -690,7 +696,7 @@ Replication:
               const self = this;
               this._loadPromise = fetch(this.url)
                 .then(res => res.arrayBuffer())
-                .then(ab => this.actx.decodeAudioData(ab))
+                .then(ab => loadAudioBuffer(this.actx, ab)) // Uses hybrid Promise/callback wrapper for legacy Safari
                 .then(b => {
                   self.buffer = b;
                   self._loading = false;
@@ -701,7 +707,6 @@ Replication:
                   console.warn("Fallback to HTML5 Audio:", self.url, e);
                   self.fallbackAudio = new Audio(self.url);
                   self.fallbackAudio.loop = self.loop;
-                  self.fallbackAudio.volume = self._volume;
                   self.fallbackAudio.muted = self._muted;
                   self.fallbackAudio.currentTime = self._playOffset;
                   self._loading = false;
@@ -758,14 +763,11 @@ Replication:
           joystickBase.style.left = (startX - joystickBase.offsetWidth / 2) + 'px';
           joystickBase.style.top = (startY - joystickBase.offsetHeight / 2) + 'px';
 
-          requestAnimationFrame(() => {
-              if (jTouchId !== null) {
-                  try { joystickBase.setPointerCapture(e.pointerId); } catch (err) {}
-              }
-          });
+          // Set pointer capture on target or window synchronously during pointerdown turn
+          try { e.target.setPointerCapture(e.pointerId); } catch (err) {}
       });
      ```
-     Note: Calling `joystickBase.setPointerCapture(e.pointerId)` on the same tick after changing `display` from `none` to `block` can fail in webkit/iOS engines because the element has not been laid out/painted yet. Consider capturing on `e.target` or `window`, or deferring with `requestAnimationFrame`.
+     Note: Calling `setPointerCapture(e.pointerId)` should be done synchronously during the active `pointerdown` event turn (or captured directly on `e.target` / `window`) to prevent `InvalidPointerId` DOMExceptions across mobile browsers.
    B) Eliminate visual offsets by preserving CSS center transform properties when applying dynamic inline translations to the knob:
      ```javascript
      // Correct: translate(-50%, -50%) keeps the knob centered relative to its parent
@@ -773,15 +775,18 @@ Replication:
      ```
   C) Map screen coordinates accurately onto the sphere using the camera's true quaternion basis to eliminate perspective squash/flip alignment issues:
      ```javascript
-     // 1. Get the camera's local screen-right and screen-up axes in world coordinates
+     // 1. Derive the surface unit normal vector at the vehicle position (norm)
+     const norm = pos.clone().normalize();
+
+     // 2. Get the camera's local screen-right and screen-up axes in world coordinates
      const camRight = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
      const camUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
 
-     // 2. Project these axes onto the sphere's tangent plane at the vehicle's position (pos)
-     const tRight = camRight.clone().addScaledVector(pos, -camRight.dot(pos)).normalize();
-     const tFwd = camUp.clone().addScaledVector(pos, -camUp.dot(pos)).normalize();
+     // 3. Project these axes onto the sphere's tangent plane using the unit normal
+     const tRight = camRight.clone().addScaledVector(norm, -camRight.dot(norm)).normalize();
+     const tFwd = camUp.clone().addScaledVector(norm, -camUp.dot(norm)).normalize();
 
-     // 3. Combine with normalized joystick inputs (nx, ny) to derive the target tangent heading vector
+     // 4. Combine with normalized joystick inputs (nx, ny) to derive the target tangent heading vector
      const desired = tFwd.clone().multiplyScalar(-ny).addScaledVector(tRight, nx).normalize();
      ```
   D) Enforce zero-input safety triggers: track touch events globally, resetting joystick inputs the moment the screen touches drop to zero (`e.touches.length === 0`), avoiding stuck inputs.
