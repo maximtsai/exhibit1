@@ -178,14 +178,207 @@ let deferredAtlases = [
 ];
 let deferredAudioLoaded = !1;
 
+const MAX_ASSET_RETRIES = 3;
+
+let assetRetry = {
+    installed: false,
+    counts: {},      // request key -> attempts already made
+    failedReqs: {},  // request key -> descriptor, so the retry button can re-queue
+    pending: 0,      // retries scheduled but not yet back through the loader
+    onPermanentFailure: null
+};
+
+// Phaser reports the individual file that failed, which for a multiatlas is a
+// sub-file: either the manifest json, or a texture page under an internal
+// "MA<n>_<path>" key. Re-adding that sub-file would not rebuild the atlas, so
+// walk the multiFile back-pointer to the request the game actually made.
+function getAssetRequest(file) {
+    let owner = file.multiFile || file,
+        url = owner.url;
+    if (url === undefined && owner.files && owner.files.length) {
+        url = owner.files[0].url;
+    }
+    return {
+        key: owner.key,
+        type: owner.type,
+        url: url === undefined ? file.url : url
+    };
+}
+
+function requeueAsset(scene, req) {
+    switch (req.type) {
+        case "multiatlas":
+            scene.load.multiatlas(req.key, req.url);
+            return true;
+        case "audio":
+            scene.load.audio(req.key, req.url);
+            return true;
+        case "image":
+            scene.load.image(req.key, req.url);
+            return true;
+        case "json":
+            scene.load.json(req.key, req.url);
+            return true;
+    }
+    console.warn(`[AssetLoader] no retry rule for type "${req.type}" (${req.key})`);
+    return false;
+}
+
+function markAssetPermanentlyFailed(req) {
+    console.error(`[AssetLoader] permanently failed "${req.key}" (${req.url}) after ${MAX_ASSET_RETRIES} retries`);
+    assetRetry.failedReqs[req.key] = req;
+    if (assetRetry.onPermanentFailure) {
+        assetRetry.onPermanentFailure(req);
+    }
+}
+
+function assetRetryScheduleRequeue(scene, req, delay) {
+    setTimeout(() => {
+        // load.start() is ignored while a batch is in flight, which would leave the
+        // re-added file sitting in the queue forever. Wait for the loader to idle.
+        if (scene.load.isLoading()) {
+            assetRetryScheduleRequeue(scene, req, 250);
+            return;
+        }
+        assetRetry.pending--;
+        if (requeueAsset(scene, req)) {
+            scene.load.start();
+        } else {
+            markAssetPermanentlyFailed(req);
+        }
+    }, delay);
+}
+
+function setupLoaderRetryHandlers(scene, onPermanentFailure) {
+    if (onPermanentFailure) {
+        assetRetry.onPermanentFailure = onPermanentFailure;
+    }
+    // The loader's emitter lives on the scene and outlives each batch. Installing
+    // twice (preload + the deferred batch) would run both handlers per failure:
+    // double-counting attempts and queueing every failed file twice.
+    if (assetRetry.installed) {
+        return;
+    }
+    assetRetry.installed = true;
+    // "loaderror" is the real event name - there is no "filefailed" in Phaser.
+    scene.load.on("loaderror", (file) => {
+        let req = getAssetRequest(file),
+            attempts = (assetRetry.counts[req.key] || 0) + 1;
+        assetRetry.counts[req.key] = attempts;
+
+        if (attempts <= MAX_ASSET_RETRIES) {
+            console.warn(`[AssetLoader] retrying "${req.key}" (${req.url}) - attempt ${attempts}/${MAX_ASSET_RETRIES}`);
+            // Counted from the moment of failure so that a "complete" landing
+            // during the backoff is never mistaken for a successful load.
+            assetRetry.pending++;
+            assetRetryScheduleRequeue(scene, req, Math.min(1000 * attempts, 3000));
+        } else {
+            markAssetPermanentlyFailed(req);
+        }
+    });
+}
+
+function assetLoadHasFailures() {
+    for (let key in assetRetry.failedReqs) {
+        return true;
+    }
+    return false;
+}
+
+// A destroyed Phaser GameObject is still a live reference, so a truthiness check
+// is not enough - setText() on one throws inside the texture update.
+function setLoadingTextSafe(text) {
+    let t = gameObjectsTemp.loadingText;
+    if (t && t.scene) {
+        t.setText(text);
+    }
+}
+
+function hideLoadingFailureUI() {
+    if (gameObjectsTemp.loadingFailureText) {
+        gameObjectsTemp.loadingFailureText.destroy();
+        gameObjectsTemp.loadingFailureText = null;
+    }
+    if (gameObjectsTemp.retryBtn) {
+        gameObjectsTemp.retryBtn.destroy();
+        gameObjectsTemp.retryBtn = null;
+    }
+}
+
+function showLoadingFailureUI(scene) {
+    if (gameObjectsTemp.loadingFailureText) return;
+    setLoadingTextSafe("LOADING INTERRUPTED");
+    gameObjectsTemp.loadingFailureText = scene.add.text(gameVars.halfWidth, gameVars.height - 210, "Network connection issue. Tap below to retry:", {
+        fontFamily: "Times New Roman",
+        fontSize: 20,
+        color: "#ff9999",
+        align: "center"
+    }).setOrigin(0.5).setDepth(10);
+
+    gameObjectsTemp.retryBtn = scene.add.text(gameVars.halfWidth, gameVars.height - 160, "[ TAP TO RETRY LOADING ]", {
+        fontFamily: "Times New Roman",
+        fontSize: 26,
+        color: "#ffffff",
+        align: "center"
+    }).setOrigin(0.5).setDepth(10).setInteractive({ useHandCursor: true });
+
+    gameObjects.loadingCntr.add(gameObjectsTemp.loadingFailureText);
+    gameObjects.loadingCntr.add(gameObjectsTemp.retryBtn);
+
+    gameObjectsTemp.retryBtn.on("pointerdown", () => {
+        hideLoadingFailureUI();
+        setLoadingTextSafe("RETRYING LOAD...");
+        // Re-queue the recorded failures. Clearing the bookkeeping and calling
+        // start() on its own runs the loader on an empty queue, which completes
+        // instantly and boots the game with the assets still missing.
+        let reqs = [];
+        for (let key in assetRetry.failedReqs) reqs.push(assetRetry.failedReqs[key]);
+        assetRetry.counts = {};
+        assetRetry.failedReqs = {};
+
+        let queued = 0;
+        for (let i = 0; i < reqs.length; i++) {
+            if (requeueAsset(scene, reqs[i])) queued++;
+        }
+        if (queued === 0) {
+            // Nothing could be re-issued; keep the failure on screen rather than
+            // letting an empty batch report success.
+            for (let i = 0; i < reqs.length; i++) assetRetry.failedReqs[reqs[i].key] = reqs[i];
+            showLoadingFailureUI(scene);
+            return;
+        }
+        scene.load.start();
+    });
+}
+
+let bootLoadHandled = false;
+
+function onLoaderBatchComplete(a) {
+    // Each retry runs the loader again, so "complete" fires several times. Only
+    // the pass with nothing outstanding decides whether boot succeeded.
+    if (assetRetry.pending > 0) {
+        return;
+    }
+    if (assetLoadHasFailures()) {
+        if (!gameVars.gameStarted) showLoadingFailureUI(a);
+        return;
+    }
+    if (bootLoadHandled) {
+        return;
+    }
+    bootLoadHandled = true;
+    hideLoadingFailureUI();
+    onLoadComplete(a);
+}
+
 function preload() {
     let gameDiv = document.getElementById('preload-notice');
     gameDiv.innerHTML = "";
     handleBorders();
     sdkWrapperGameLoadingStart();
-    game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"),
-        this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"),
-        this.load.image("headphones", "sprites/headphones.png")
+    game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), 
+    this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"), 
+    this.load.image("headphones", "sprites/headphones.png")
 }
 
 function create() {
@@ -210,23 +403,31 @@ function onPreloadComplete(a) {
         fontSize: 36,
         color: "#777777",
         align: "center"
-    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1),
-        gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"),
-        gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"),
-        gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"),
-        gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
-            fontFamily: "Times New Roman",
-            fontSize: 22,
-            color: "#ffffff",
-            align: "center"
-        }), gameObjectsTemp.headphoneText.setOrigin(.5, .5), gameObjectsTemp.headphoneText.setDepth(1), a.load.on("progress", function (a) {
-            gameVarsTemp.loadAmt = a
-        }), a.load.on("complete", () => {
-            onLoadComplete(a)
-        }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"),
-        a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
-        a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
-        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
+    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), 
+    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"), 
+    gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"), 
+    gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"), 
+    gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
+        fontFamily: "Times New Roman",
+        fontSize: 22,
+        color: "#ffffff",
+        align: "center"
+    }), gameObjectsTemp.headphoneText.setOrigin(.5, .5), gameObjectsTemp.headphoneText.setDepth(1),
+    
+    setupLoaderRetryHandlers(a, () => {
+        if (!gameVars.gameStarted) {
+            showLoadingFailureUI(a);
+        }
+    }),
+    
+    a.load.on("progress", function(a) {
+        gameVarsTemp.loadAmt = a
+    }), a.load.on("complete", () => {
+        onLoaderBatchComplete(a)
+    }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"), 
+    a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
+    a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
+    a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
 }
 
 let gameLoadedOnce = false;
@@ -301,9 +502,16 @@ function loadDeferredAudio(a) {
         return;
     }
     deferredAudioLoaded = true;
+    setupLoaderRetryHandlers(a);
     for (let d = 0; d < deferredAudio.length; d++) a.load.audio(deferredAudio[d][0], deferredAudio[d][1]);
     for (let t = 0; t < deferredAtlases.length; t++) a.load.multiatlas(deferredAtlases[t][0], deferredAtlases[t][1]);
-    a.load.once("complete", () => {
+    let onDeferredComplete = () => {
+        // A retry re-runs the loader; wait for the pass that follows it, or the
+        // assets being retried would be written off as failed here.
+        if (assetRetry.pending > 0) {
+            a.load.once("complete", onDeferredComplete);
+            return;
+        }
         for (let t = 0; t < deferredAtlases.length; t++) {
             let key = deferredAtlases[t][0];
             if (!a.textures.exists(key)) {
@@ -327,7 +535,8 @@ function loadDeferredAudio(a) {
         if (a.textures.exists("roomClown2")) {
             refreshCrawlClown();
         }
-    });
+    };
+    a.load.once("complete", onDeferredComplete);
     a.load.start()
 }
 
@@ -1013,3 +1222,8 @@ window.addEventListener('keydown', ev => {
     }
 });
 window.addEventListener('wheel', ev => ev.preventDefault(), { passive: false });
+window.addEventListener('pointerdown', () => {
+    if (globalScene && globalScene.sound && globalScene.sound.context && globalScene.sound.context.state === 'suspended') {
+        globalScene.sound.context.resume().catch(() => {});
+    }
+});

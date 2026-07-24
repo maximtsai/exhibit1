@@ -233,7 +233,7 @@ Replication:
 --------------------------------------------------------------------------------
 Context: Automated testing scripts, browser emulators, and SDK frames sometimes send fake touch profiles lacking standard event coordinate vectors.
 Replication:
-  Ensure fallback protections are active when retrieving pointer metrics:
+  A) Ensure fallback protections are active when retrieving pointer metrics:
   ```javascript
   function getPointerPos(e) {
       if (e.touches && e.touches.length > 0) {
@@ -243,6 +243,10 @@ Replication:
       }
       return { x: e.clientX || 0, y: e.clientY || 0 };
   }
+  ```
+  B) Wrap `setPointerCapture` calls in try-catch blocks to prevent unhandled `InvalidPointerId` DOMExceptions across mobile browser turns:
+  ```javascript
+  try { (e.target || element).setPointerCapture(e.pointerId); } catch (err) {}
   ```
 
 --------------------------------------------------------------------------------
@@ -484,6 +488,14 @@ Replication:
           localStorage.setItem(key, value);
       } catch (e) {
           storageFallback[key] = value;
+      }
+  }
+
+  function safeRemoveItem(key) {
+      try {
+          localStorage.removeItem(key);
+      } catch (e) {
+          delete storageFallback[key];
       }
   }
   ```
@@ -764,7 +776,7 @@ Replication:
           joystickBase.style.top = (startY - joystickBase.offsetHeight / 2) + 'px';
 
           // Set pointer capture on target or window synchronously during pointerdown turn
-          try { e.target.setPointerCapture(e.pointerId); } catch (err) {}
+          try { (e.target || joystickBase).setPointerCapture(e.pointerId); } catch (err) {}
       });
      ```
      Note: Calling `setPointerCapture(e.pointerId)` should be done synchronously during the active `pointerdown` event turn (or captured directly on `e.target` / `window`) to prevent `InvalidPointerId` DOMExceptions across mobile browsers.
@@ -790,4 +802,540 @@ Replication:
      const desired = tFwd.clone().multiplyScalar(-ny).addScaledVector(tRight, nx).normalize();
      ```
   D) Enforce zero-input safety triggers: track touch events globally, resetting joystick inputs the moment the screen touches drop to zero (`e.touches.length === 0`), avoiding stuck inputs.
+
+--------------------------------------------------------------------------------
+25. HOST-CONTAINER MUTE ENFORCEMENT (EMBEDDED PLATFORM SDK AUDIO)
+--------------------------------------------------------------------------------
+Context: Embedded game platforms (YouTube Playables, CrazyGames, Poki) own a mute control outside the game and require the game to honour it — certification fails if any audio is audible while the host reports audio disabled. Suspending the AudioContext alone is NOT sufficient: every `resume()` call site (tap-to-unlock handlers, unpause, per-gesture resumes) silently un-mutes already-playing loops, and relying on the host's change event alone breaks when the mute is toggled during the load screen, before listeners are registered. This section supersedes the unconditional resume pattern shown in section 3B.
+Replication:
+  A) Route every sound through a single master GainNode instead of connecting sources straight to `destination`. A zeroed master gain cannot be undone by a stray `resume()`; a suspended context can:
+     ```javascript
+     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+     const masterGain = audioCtx.createGain();
+     masterGain.gain.value = 1;
+     masterGain.connect(audioCtx.destination);
+
+     function playSound(buffer, volume, loop) {
+         applyHostAudioState();           // self-correct before every sound
+         if (!hostAudioEnabled) return null;
+         const source = audioCtx.createBufferSource();
+         const gain = audioCtx.createGain();
+         source.buffer = buffer;
+         source.loop = !!loop;
+         gain.gain.value = volume;
+         source.connect(gain);
+         gain.connect(masterGain);        // never audioCtx.destination
+         source.start(0);
+         return { source, gain };
+     }
+     ```
+  B) Collapse the host check into ONE reconciliation function and call it from every site that previously called `resume()` directly (pointerdown, button handlers, unpause). Duplicating the check inline at each call site is leak-by-default — one missed site restores all playing loops:
+     ```javascript
+     let hostAudioEnabled = true;
+     let audioUnlocked = false;          // set true on first user gesture
+
+     function isHostAudioEnabled() {
+         if (!window.GameSDK || typeof window.GameSDK.isAudioEnabled !== 'function') return true;
+         try { return window.GameSDK.isAudioEnabled() !== false; } catch (e) { return true; }
+     }
+
+     function applyHostAudioState(forced) {
+         const enabled = typeof forced === 'boolean' ? forced : isHostAudioEnabled();
+         const wasEnabled = hostAudioEnabled;
+         hostAudioEnabled = enabled;
+
+         const target = enabled ? 1 : 0;
+         if (Math.abs(masterGain.gain.value - target) > 0.001) {
+             const now = audioCtx.currentTime;
+             masterGain.gain.cancelScheduledValues(now);
+             masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+             masterGain.gain.linearRampToValueAtTime(target, now + 0.03);
+         }
+
+         if (!enabled) {
+             if (audioCtx.state === 'running') {
+                 // Deferred — see the warning below.
+                 setTimeout(() => {
+                     if (!hostAudioEnabled && audioCtx.state === 'running') {
+                         audioCtx.suspend().catch(() => {});
+                     }
+                 }, 60);
+             }
+             return;
+         }
+         if (audioUnlocked && audioCtx.state === 'suspended') {
+             audioCtx.resume().catch(() => {});
+         }
+         if (!wasEnabled && musicPendingHostUnmute) {   // see (D)
+             musicPendingHostUnmute = false;
+             startMusic();
+         }
+     }
+     ```
+     Warning: A short (~30ms) `linearRampToValueAtTime` avoids an audible click when muting mid-playback, but `suspend()` freezes `currentTime`, so calling it immediately after scheduling the ramp can strand the gain part-way (e.g. 0.5) with no clock left to finish the ramp. That silently reduces the design back to suspend-only enforcement — the exact single point of failure the master gain removes. Always let the fade land (defer the suspend past the ramp duration) before freezing the context.
+  C) Register the host's change event AND enforce the current state immediately — the mute may already have been toggled while assets were loading. Add a low-frequency poll as a safety net so the graph self-corrects even if the event never fires:
+     ```javascript
+     window.GameSDK.onAudioEnabledChange((enabled) => applyHostAudioState(enabled !== false));
+     applyHostAudioState();                                     // enforce state at startup
+     if (typeof window.GameSDK.isAudioEnabled === 'function') {
+         setInterval(() => applyHostAudioState(), 1000);        // fallback reconciliation
+     }
+     ```
+     Note: 1000ms is only the worst-case latency for an idle game — the change event handles the common case instantly, and `playSound` (A) re-checks before every discrete sound.
+  D) Do not silently drop background music that was requested while muted. Record the intent and start it on the unmute edge, otherwise fixing the mute trades one failure for "no music after unmute":
+     ```javascript
+     function startMusic() {
+         audioUnlocked = true;
+         if (!isHostAudioEnabled()) {
+             if (!bgMusic) musicPendingHostUnmute = true;
+             applyHostAudioState(false);
+             return;
+         }
+         if (!bgMusic) bgMusic = playSound(musicBuffer, 0.2, true);
+     }
+     ```
+  E) Never enforce the host mute by zeroing the player's stored volume preferences. Those are typically persisted to a cloud save and would permanently mute the player after the host re-enables audio. Mute at the graph level (master gain + context) and leave the preference values untouched.
+  F) Make the local/dev SDK adapter stateful so the mute path is reproducible without the real platform. A mock whose `isAudioEnabled()` hardcodes `true` and whose change hook only invokes the callback makes the host-mute bug invisible in development:
+     ```javascript
+     isAudioEnabled() { return this._audioEnabled !== false; }   // no console.log — this is polled
+     onAudioEnabledChange(cb) {
+         window.__mockAudioEnabledChange = (enabled) => {
+             this._audioEnabled = enabled !== false;   // getter flips FIRST, mirroring the real host
+             cb(this._audioEnabled);
+         };
+     }
+     ```
+     Verification matrix (all must hold): mute then tap → context `suspended`, master gain `0`, no music; mute via the getter without firing the event → poll silences within its interval; muted + repeated taps + pause/resume cycle → stays silenced; unmute → context `running`, gain `1`, music resumes.
+
+--------------------------------------------------------------------------------
+26. SPRITESHEET FRAME EXTRACTION: CACHE CANVASES, NOT IMAGES
+--------------------------------------------------------------------------------
+Context: When slicing a packed spritesheet into individual frames at load time, the common pattern is to draw each frame onto a scratch canvas and then convert it into an `Image` via `toDataURL()`. This costs one full PNG encode plus one asynchronous decode per frame (~100+ for a typical atlas) and introduces a race: `img.src = dataURL` decodes asynchronously, so frames can draw blank for the first frames after "loading complete".
+Replication:
+  A) Cache the canvas element itself. `drawImage` accepts `HTMLCanvasElement` as a source directly, so the encode/decode round-trip is pure overhead:
+     ```javascript
+     const canvas = document.createElement('canvas');
+     canvas.width = frameData.frame.w;
+     canvas.height = frameData.frame.h;
+     canvas.getContext('2d').drawImage(sheetImg, sx, sy, sw, sh, 0, 0, sw, sh);
+
+     imageCache[spriteId] = canvas;              // ready synchronously
+     // NOT: const img = new Image(); img.src = canvas.toDataURL(); imageCache[id] = img;
+     ```
+  B) Warning: this changes the cache's element type, and any consumer that feeds a cached entry into a DOM `<img>` reads `.src` — which is `undefined` on a canvas. The failure is quiet: `src="undefined"` yields a broken image plus a spurious 404 request, with no thrown error. Audit every `.src` read against the cache and route them through an accessor that handles both element types:
+     ```javascript
+     function getImageSrc(id) {
+         const img = imageCache[id];
+         if (!img) return '';
+         return typeof img.toDataURL === 'function' ? img.toDataURL() : (img.src || '');
+     }
+     ```
+     This keeps the encode lazy — paid only when a DOM element actually needs a URL (icons, modal artwork), not for every frame at load. Verify with `el.complete && el.naturalWidth === 0`, which detects a broken `<img>` that no console error reports.
+
+
+--------------------------------------------------------------------------------
+27. POINTER EVENTS FALLBACK FOR IOS < 13 (TOUCH EVENT COMPATIBILITY)
+--------------------------------------------------------------------------------
+Context: iOS Safari added PointerEvent support in iOS 13 (Sept 2019). Games that exclusively listen for `pointerdown`/`pointermove`/`pointerup` receive zero input on older iOS devices. The game appears to load but is completely unplayable.
+Replication:
+  A) Register pointer event listeners as normal for modern browsers.
+  B) Additionally register touch event listeners only when `window.PointerEvent` is absent (i.e. the browser only understands touch events):
+     ```javascript
+     // Primary: Pointer Events (modern browsers, including iOS 13+)
+     canvas.addEventListener('pointerdown', this._onPointerDown);
+     canvas.addEventListener('pointermove', this._onPointerMove);
+     canvas.addEventListener('pointerup', this._onPointerUp);
+     canvas.addEventListener('pointercancel', this._onPointerCancel);
+
+     // Fallback: Touch Events (only for browsers without PointerEvent, e.g. iOS < 13)
+     if (!window.PointerEvent) {
+         canvas.addEventListener('touchstart', (e) => {
+             this.pointerDown = true;
+             this.setNDC(e.changedTouches[0], true);
+             // init audio, hide hints, etc.
+         }, { passive: true });
+         canvas.addEventListener('touchmove', (e) => {
+             if (this.pointerDown) this.setNDC(e.changedTouches[0], true);
+         }, { passive: true });
+         canvas.addEventListener('touchend', () => { this.pointerDown = false; }, { passive: true });
+         canvas.addEventListener('touchcancel', () => { this.pointerDown = false; }, { passive: true });
+     }
+     ```
+  C) Adapt the `setNDC` method to accept an optional `isTouch` parameter, since touch events store coordinates in `e.changedTouches[i]` rather than directly on `e.clientX`/`e.clientY`:
+     ```javascript
+     function setNDC(e, isTouch) {
+         if (!canvas) return;
+         const r = canvas.getBoundingClientRect();
+         const x = isTouch ? e.clientX || e.pageX : e.clientX;
+         const y = isTouch ? e.clientY || e.pageY : e.clientY;
+         pointerNDC.x = ((x - r.left) / r.width) * 2 - 1;
+         pointerNDC.y = -((y - r.top) / r.height) * 2 + 1;
+     }
+     ```
+  D) Clean up touch listeners in the destroy/teardown method with a guard for the `_onTouchStart` reference:
+     ```javascript
+     function destroy() {
+         canvas.removeEventListener('pointerdown', onPointerDown);
+         canvas.removeEventListener('pointermove', onPointerMove);
+         canvas.removeEventListener('pointerup', onPointerUp);
+         canvas.removeEventListener('pointercancel', onPointerCancel);
+         if (onTouchStart) {
+             canvas.removeEventListener('touchstart', onTouchStart);
+             canvas.removeEventListener('touchmove', onTouchMove);
+             canvas.removeEventListener('touchend', onTouchEnd);
+             canvas.removeEventListener('touchcancel', onTouchCancel);
+         }
+     }
+     ```
+  E) Mark touch event listeners as `{ passive: true }` to avoid blocking the scroll thread — the canvas should already have `touch-action: none` in CSS, but passive:true prevents warnings in Chrome and avoids potential scroll jank on mobile.
+
+--------------------------------------------------------------------------------
+28. HIGH-DPI (RETINA) CANVAS RENDERING VIA DEVICEPIXELRATIO + CTX TRANSFORM
+--------------------------------------------------------------------------------
+Context: A 2D canvas whose backing store is sized in CSS pixels (canvas.width =
+element.clientWidth) renders a low-resolution bitmap that the browser then
+upscales to the physical pixels of the display. On any high-DPI device
+(devicePixelRatio 2-3: most phones, Retina laptops, scaled 4K monitors) this
+looks blurry/soft even when the source art is far higher resolution than needed,
+because the art is first downsampled into the small backing store and then blown
+back up. The fix is to render at the device's real pixel resolution.
+
+This note documents the "canonical" approach (Option 1): keep the backing store
+at device resolution, but keep ALL game/draw/input math in LOGICAL (CSS) pixels
+by applying a base ctx transform of devicePixelRatio each frame. Prefer this when
+starting a new project. (The lower-diff alternative — letting the whole
+coordinate system run in device pixels — is easier to retrofit into a codebase
+that already uses canvas.width as its universal coordinate unit, but it forces
+you to divide by dpr anywhere canvas coordinates are used to position DOM
+elements, e.g. HTML tutorial hands, floating buttons, tooltips.)
+
+Key principle: separate the three distinct pixel spaces and never mix them.
+  - Backing store size   = canvas.width / canvas.height        (device pixels)
+  - CSS/layout size      = canvas.style.width / .height        (logical pixels)
+  - Drawing/input coords = everything you compute in game code (logical pixels)
+
+Replication:
+  A) On resize, size the backing store by dpr but keep the CSS box logical.
+     Round to whole device pixels to avoid sub-pixel seams. Cache logical W/H
+     and dpr on a shared object so every other module reads logical dimensions
+     instead of canvas.width/height:
+     ```javascript
+     function resizeCanvas() {
+         const dpr = window.devicePixelRatio || 1;
+         const logicalW = gameWorld.clientWidth;
+         const logicalH = gameWorld.clientHeight;
+
+         // CSS box stays in logical pixels (what layout/UI overlays align to)
+         canvas.style.width  = logicalW + 'px';
+         canvas.style.height = logicalH + 'px';
+
+         // Backing store is the real device-pixel resolution
+         canvas.width  = Math.round(logicalW * dpr);
+         canvas.height = Math.round(logicalH * dpr);
+
+         // Publish LOGICAL dimensions for all other modules to consume.
+         // IMPORTANT: after this change, no module should read canvas.width /
+         // canvas.height for coordinate math — use these instead.
+         Game.viewW = logicalW;
+         Game.viewH = logicalH;
+         Game.dpr   = dpr;
+     }
+     ```
+  B) At the very start of each frame, reset the transform to the dpr scale BEFORE
+     any drawing. Setting it absolutely (setTransform, not scale) avoids the
+     accumulation bug where repeated ctx.scale(dpr) compounds every frame. Clear
+     in device space, then draw in logical space:
+     ```javascript
+     function render() {
+         // Clear the full device-pixel buffer (identity transform)
+         ctx.setTransform(1, 0, 0, 1, 0, 0);
+         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+         // From here on, 1 unit = 1 logical (CSS) pixel; the dpr scale makes it
+         // land on real device pixels. All game draw code below is unchanged.
+         ctx.setTransform(Game.dpr, 0, 0, Game.dpr, 0, 0);
+
+         // ... existing draw calls, all in logical coordinates ...
+     }
+     ```
+  C) Replace every logical-size read of canvas.width / canvas.height with the
+     cached logical dimensions. Anything that used canvas.width as "how wide is
+     the play area" was implicitly assuming backing-store == CSS size; that
+     assumption is now false. Typical sites:
+     ```javascript
+     // Centering the world / camera:
+     const cx = Game.viewW / 2 + camOffsetX;   // was canvas.width  / 2
+     const cy = Game.viewH / 2 + camOffsetY;   // was canvas.height / 2
+
+     // Any content-scale derived from viewport height:
+     heightScale = Game.viewH / BASE_HEIGHT;   // was canvas.height / BASE_HEIGHT
+
+     // Zoom/breathe pivots that translate to center, scale, translate back:
+     ctx.translate(Game.viewW / 2, Game.viewH / 2);
+     ctx.scale(zoom, zoom);
+     ctx.translate(-Game.viewW / 2, -Game.viewH / 2);
+     ```
+  D) Fix pointer/touch hit-testing so it maps into LOGICAL space (matching the
+     transformed draw space), NOT device space. getBoundingClientRect() already
+     returns CSS pixels, so divide by the rect size and multiply by the logical
+     dimension — the dpr cancels out and never appears here:
+     ```javascript
+     function toWorld(e) {
+         const rect = canvas.getBoundingClientRect();
+         // Map CSS-pixel pointer position to logical canvas coordinates.
+         const x = (e.clientX - rect.left) / rect.width  * Game.viewW;
+         const y = (e.clientY - rect.top)  / rect.height * Game.viewH;
+         // x,y are now in the same logical space as everything drawn under the
+         // dpr transform, so existing screenToGrid()/hit tests work unchanged.
+         return { x, y };
+     }
+     ```
+     NOTE: Do NOT use scaleX = canvas.width / rect.width for this (a common
+     pattern). Under this model canvas.width is device pixels, so that factor is
+     dpr and would push input into device space, misaligning taps by the dpr
+     factor on every high-DPI device.
+  E) DOM overlays positioned from canvas coordinates need NO change under this
+     model: draw coords are logical == CSS pixels, so element.style.left/top set
+     from a world->screen result already align. (This is the main advantage over
+     the device-pixel alternative, where every such site must be divided by dpr.)
+  F) Optional quality tuning, unrelated to resolution but often conflated with
+     "blur":
+     - Ensure the canvas CSS does NOT set `image-rendering: pixelated` /
+       `crisp-edges` unless you specifically want nearest-neighbor (that hardens
+       any remaining scaling into blockiness — the opposite of what you want for
+       smooth art).
+     - For art that is still drawn scaled down at runtime, set
+       `ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';`
+       (default quality is 'low'). Set it once after each getContext and re-set
+       after any context state reset.
+  G) Watch devicePixelRatio changes at runtime: dragging a window between a
+     Retina and non-Retina monitor, or OS zoom changes, mutate
+     window.devicePixelRatio without firing a normal 'resize' in all browsers.
+     Re-run resizeCanvas on such changes:
+     ```javascript
+     let dprMediaQuery;
+     function watchDpr() {
+         if (dprMediaQuery) dprMediaQuery.removeEventListener('change', watchDpr);
+         dprMediaQuery = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+         dprMediaQuery.addEventListener('change', watchDpr, { once: true });
+         resizeCanvas();
+     }
+     watchDpr();
+     ```
+  H) Performance guard: on a dpr=3 phone the backing store is 9x the pixel count
+     of the naive version, which can hurt fill-rate-bound games. If you see frame
+     drops, clamp the multiplier (e.g. `const dpr = Math.min(window.devicePixelRatio || 1, 2);`)
+     — 2x is visually near-indistinguishable from 3x for most art while cutting
+     pixel work by ~55%.
+
+--------------------------------------------------------------------------------
+29. ASSET LOADER FAILURE HANDLING AND AUTOMATIC RETRY
+--------------------------------------------------------------------------------
+Context: Flaky mobile connections, CDN hiccups and captive-portal proxies drop
+individual asset requests. Nearly every loader (Phaser 3's LoaderPlugin, PIXI
+Assets, three.js LoadingManager, bare Promise.all wrappers) still fires its
+"batch finished" event when files inside the batch failed. The game then boots
+with missing textures and crashes later at first use, far from the real cause.
+The goal is to retry transient failures automatically and, when they are not
+recoverable, halt boot and tell the player instead of continuing into a broken
+session. The rules below are engine-agnostic; the reference implementation is
+Phaser 3 (verified on v3.90).
+
+Replication:
+  A) VERIFY THE FAILURE EVENT NAME AGAINST THE ACTUAL ENGINE BUILD.
+     Subscribing to an event name that does not exist fails silently: the
+     handler never runs, nothing throws, and the feature looks implemented. This
+     is the most common way retry logic ships dead. In Phaser 3 the per-file
+     failure event is `loaderror` - there is NO `filefailed` event. Enumerate
+     the real names rather than trusting memory or docs:
+     ```javascript
+     console.log(Object.values(Phaser.Loader.Events));
+     // ["addfile","complete","filecomplete","filecomplete-","loaderror",
+     //  "load","fileprogress","postprocess","progress","start"]
+     ```
+     Engine-agnostic verification: register the handler, request a URL that is
+     known to 404, and assert the handler actually ran. Make this a boot-time
+     smoke test if the loader is ever swapped or upgraded.
+
+  B) RETRY THE REQUEST YOU MADE, NOT THE FILE THE LOADER REPORTS.
+     Composite assets (multiatlas, atlas+json, spritesheet, bitmap font, audio
+     sprite) expand into several sub-files, and the failure event reports the
+     SUB-FILE. Re-adding that sub-file does not rebuild the parent asset, and
+     its key is often an internal one that is meaningless to the game. Observed
+     in Phaser 3 for `load.multiatlas('roomClown', 'clown.json')`:
+       - manifest 404 -> { key: "roomClown", type: "json" }
+       - texture page 404 -> { key: "MA13_sprites/clown/clown.png", type: "image" }
+     Neither reports type "multiatlas", so a `switch (file.type)` over the types
+     the game actually requested silently matches nothing. Resolve back to the
+     originating request first. Phaser exposes a `multiFile` back-pointer:
+     ```javascript
+     function getAssetRequest(file) {
+         let owner = file.multiFile || file,          // parent request, or the file itself
+             url = owner.url;
+         // MultiFile keeps its parts in files[]; files[0] is the manifest.
+         if (url === undefined && owner.files && owner.files.length) {
+             url = owner.files[0].url;
+         }
+         return { key: owner.key, type: owner.type, url: url === undefined ? file.url : url };
+     }
+     ```
+     Portable alternative that works on ANY loader and needs no engine
+     internals: record every request through a thin wrapper and replay it
+     verbatim. Prefer this when the engine has no parent back-pointer:
+     ```javascript
+     const manifest = new Map();                       // key -> {method, args}
+     function queueAsset(loader, method, ...args) {
+         manifest.set(args[0], { method, args });
+         loader[method](...args);
+     }
+     const retry = (loader, key) => {
+         const r = manifest.get(key);
+         loader[r.method](...r.args);
+     };
+     ```
+
+  C) "BATCH COMPLETE" IS NOT "LOAD SUCCEEDED". GATE BOOT ON OUTSTANDING RETRIES.
+     A retry is scheduled behind a backoff timer, so the loader will reach
+     `complete` for the remaining files while retries are still on the clock. At
+     that instant the permanent-failure set is still empty, so a naive
+     `if (failed.size > 0) showError(); else boot();` check boots the game as if
+     everything loaded. Track work in flight and make completion a no-op until
+     it drains:
+     ```javascript
+     if (assetRetry.pending > 0) return;    // a retry is still scheduled/queued
+     if (assetLoadHasFailures()) { showLoadingFailureUI(scene); return; }
+     boot();
+     ```
+     Increment `pending` at the moment of failure (not when the timer fires) and
+     decrement it only once the request has been handed back to the loader.
+
+  D) MAKE COMPLETION HANDLERS FIRE-ONCE / IDEMPOTENT.
+     Every retry restarts the loader, so `complete` fires several times.
+     Pre-retry code typically assumes exactly one completion and will re-run
+     boot animations, rebuild UI, and call `destroy()` on already-destroyed
+     objects. Guard with an explicit latch:
+     ```javascript
+     let bootLoadHandled = false;
+     ...
+     if (bootLoadHandled) return;
+     bootLoadHandled = true;
+     ```
+     The same applies to any secondary `load.once("complete", ...)` handler (for
+     example a deferred/lazy batch registering its sounds - see section 18). If
+     retries are outstanding when it fires, it must re-arm itself rather than
+     write the assets off as failed:
+     ```javascript
+     let onDeferredComplete = () => {
+         if (assetRetry.pending > 0) { scene.load.once("complete", onDeferredComplete); return; }
+         registerDeferredAssets();
+     };
+     scene.load.once("complete", onDeferredComplete);
+     ```
+
+  E) A MANUAL "RETRY" BUTTON MUST RE-QUEUE THE FAILED REQUESTS.
+     Clearing the bookkeeping and calling `loader.start()` does NOT retry
+     anything: the failed files are no longer in the queue, so the loader runs
+     an empty batch, emits `complete` immediately, and - with the failure set
+     just cleared - reports success. The game boots with the assets still
+     missing, which is worse than the original error. Keep the request
+     descriptors and re-issue them:
+     ```javascript
+     let reqs = Object.values(assetRetry.failedReqs);
+     assetRetry.counts = {};
+     assetRetry.failedReqs = {};
+     let queued = 0;
+     for (const req of reqs) if (requeueAsset(scene, req)) queued++;
+     if (queued === 0) {                       // nothing re-issuable: stay failed
+         for (const req of reqs) assetRetry.failedReqs[req.key] = req;
+         showLoadingFailureUI(scene);
+         return;
+     }
+     scene.load.start();
+     ```
+     Verify by asserting `loader.totalToLoad > 0` after the press.
+
+  F) INSTALL THE HANDLER EXACTLY ONCE.
+     The loader's emitter usually lives on the scene/app and outlives each
+     batch. Calling the setup function again for a second batch (a deferred
+     load, a level load) adds a DUPLICATE listener that is never removed. Both
+     copies then run per failure: the attempt counter double-increments, so
+     MAX_RETRIES = 3 yields one or two real attempts, and every failed file is
+     queued twice. Latch the installation, and let repeat calls only refresh the
+     callback:
+     ```javascript
+     function setupLoaderRetryHandlers(scene, onPermanentFailure) {
+         if (onPermanentFailure) assetRetry.onPermanentFailure = onPermanentFailure;
+         if (assetRetry.installed) return;
+         assetRetry.installed = true;
+         scene.load.on("loaderror", handleLoadError);
+     }
+     ```
+     Audit with `loader.listenerCount("loaderror")` - it must stay at 1.
+
+  G) RESPECT LOADER STATE WHEN RESTARTING.
+     `LoaderPlugin.start()` is ignored unless the loader is idle
+     (`isReady()` is true for IDLE/COMPLETE only). Calling it mid-batch leaves
+     the re-added file parked in the queue forever, and because the boot gate in
+     (C) waits on it, the game hangs on the loading bar - a worse failure than a
+     missing texture. Wait for the loader to drain instead of assuming:
+     ```javascript
+     function scheduleRequeue(scene, req, delay) {
+         setTimeout(() => {
+             if (scene.load.isLoading()) { scheduleRequeue(scene, req, 250); return; }
+             assetRetry.pending--;
+             requeueAsset(scene, req) ? scene.load.start() : markPermanentlyFailed(req);
+         }, delay);
+     }
+     ```
+
+  H) CAP ATTEMPTS AND BACK OFF; TREAT UNKNOWN TYPES AS PERMANENT.
+     Use a small cap (3) with linear or exponential backoff clamped to a few
+     seconds - `Math.min(1000 * attempt, 3000)`. An unbounded retry loop against
+     a genuinely missing file is an infinite timer chain that burns battery for
+     the rest of the session. If the type has no re-issue rule, fail it
+     immediately and loudly rather than counting it down silently.
+
+  I) GUARD THE FAILURE UI AGAINST DESTROYED OBJECTS.
+     The failure UI usually mutates loading-screen widgets ("LOADING
+     INTERRUPTED"), but those are destroyed once boot succeeds. A destroyed
+     Phaser GameObject is still a live truthy reference, so `if (obj)` passes
+     and `obj.setText(...)` then throws inside the texture update
+     (`Cannot read properties of null (reading 'drawImage')`). Check that the
+     object is still attached to a scene:
+     ```javascript
+     function setLoadingTextSafe(text) {
+         let t = gameObjectsTemp.loadingText;
+         if (t && t.scene) t.setText(text);     // `t.scene` is nulled by destroy()
+     }
+     ```
+     Parent the failure UI to the same container as the rest of the loading
+     screen so it inherits its transform, and destroy it when a later attempt
+     succeeds.
+
+  J) AUTO-RESUME SUSPENDED AUDIO CONTEXTS ON FIRST INPUT.
+     Unrelated to retries but part of the same "boot survived a hostile
+     environment" pass - browser autoplay policy suspends the context until a
+     gesture:
+     ```javascript
+     window.addEventListener('pointerdown', () => {
+         const ctx = scene.sound && scene.sound.context;      // undefined on the HTML5 fallback
+         if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+     });
+     ```
+
+  K) TEST MATRIX - none of this is observable without deliberately broken
+     assets, and every rule above corresponds to a bug that testing only the
+     happy path will miss:
+       1. Permanent failure: point a request at a 404. Expect exactly
+          MAX_RETRIES warnings (not 2x - that indicates the duplicate listener
+          from (F)) followed by one permanent-failure error.
+       2. Recovery: request a composite asset whose sub-file is missing, then
+          create the file while the backoff is running. Expect the retry to
+          succeed, the asset to appear in the texture/audio cache, and NO
+          permanent failure. This is the case that proves (B) - it fails if the
+          retry re-issued the sub-file instead of the parent request.
+       3. Manual retry: after a permanent failure, press the button and assert
+          `totalToLoad > 0` and that a fresh attempt cycle actually starts.
+       4. Clean boot: assert the happy path still boots exactly once
+          (`bootLoadHandled` latches, boot logic does not re-run).
 
