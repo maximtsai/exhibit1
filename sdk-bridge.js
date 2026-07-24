@@ -27,9 +27,6 @@
         // Called when gameplay pauses (menu opened, ad shown, tab hidden, etc.)
         gameplayStop() { }
 
-        // Tells the platform to signal a positive user moment (e.g. merge streak).
-        happyTime() { }
-
         // --- Audio ---
 
         // Returns a boolean: whether the host container currently allows audio.
@@ -53,17 +50,6 @@
         // Unsubscribes all registered event listeners (onPause, onResume, onAudioEnabledChange).
         // Call this when tearing down the game to prevent memory leaks.
         cleanup() { }
-
-        // --- Score / Leaderboard ---
-
-        // Sends the player's score to the platform.
-        // score: number
-        setScore(score) { return Promise.resolve(false); }
-
-        // --- User Identity ---
-
-        // Returns a Promise resolving to user profile info, e.g. { username: string, profilePictureUrl: string } or null.
-        getUser() { return Promise.resolve(null); }
 
         // --- Data Persistence (blob) ---
 
@@ -287,9 +273,6 @@
         gameplayStart() { }
         gameplayStop() { }
 
-        // YouTube has no happyTime equivalent — no-op.
-        happyTime() { }
-
         // Returns whether the YouTube container currently has audio enabled.
         isAudioEnabled() {
             if (!this.yt || !this.yt.system) return true;
@@ -349,24 +332,6 @@
                 }
             }
             this._unsubs = [];
-        }
-
-        // Sends the player's score to YouTube.
-        // sendScore returns Promise<void> — we must await it and handle errors.
-        async setScore(score) {
-            if (!this.yt || !this.yt.engagement) return false;
-            try {
-                await this.yt.engagement.sendScore({ value: Math.floor(score) });
-                return true;
-            } catch (e) {
-                console.warn('[YouTubePlayablesAdapter] sendScore failed:', e);
-                return false;
-            }
-        }
-
-        // YouTube Playables does not expose user profile data directly to the game for privacy reasons.
-        getUser() {
-            return Promise.resolve(null);
         }
 
         // --- Data Persistence (blob) ---
@@ -549,34 +514,6 @@
     class MockDevAdapter extends BaseSDKAdapter {
         init() {
             console.log('[MockSDK] Initialized (local dev environment).');
-            if (!window.lib) {
-                const mockEntries = [
-                    { userId: '1', username: 'MansionMaster', score: 300, profilePicture: 'https://placekitten.com/50/50', userRank: null },
-                    { userId: '2', username: 'SpeedMerger', score: 420, profilePicture: 'https://placekitten.com/50/51', userRank: null },
-                    { userId: '3', username: 'DevPlayer_123', score: 540, profilePicture: 'https://placekitten.com/50/52', userRank: 3 },
-                    { userId: '4', username: 'CasualBuilder', score: 740, profilePicture: 'https://placekitten.com/50/53', userRank: null }
-                ];
-                window.lib = {
-                    addPlayerScoreToLeaderboard: (score, count) => {
-                        console.log('[MockLib] addPlayerScoreToLeaderboard:', score, count);
-                        const dev = mockEntries.find(e => e.userId === '3');
-                        if (dev) dev.score = score;
-                        return Promise.resolve(true);
-                    },
-                    getTopNEntriesFromLeaderboard: (count) => {
-                        console.log('[MockLib] getTopNEntriesFromLeaderboard:', count);
-                        const sorted = [...mockEntries].sort((a, b) => a.score - b.score);
-                        const userIndex = sorted.findIndex(e => e.userId === '3');
-                        return Promise.resolve({
-                            entries: sorted.slice(0, count),
-                            userRank: userIndex !== -1 ? userIndex + 1 : null
-                        });
-                    },
-                    log: (msg) => {
-                        console.log('[MockLib] log:', msg);
-                    }
-                };
-            }
             return Promise.resolve(true);
         }
         loadingStart() {
@@ -593,9 +530,6 @@
         }
         gameplayStop() {
             console.log('[MockSDK] gameplayStop()');
-        }
-        happyTime() {
-            console.log('[MockSDK] happyTime() 🎉');
         }
         // Stateful so the host-mute path is actually reproducible in dev: flip it
         // with window.__mockAudioEnabledChange(false). Deliberately unlogged —
@@ -619,14 +553,6 @@
                 console.log('[MockSDK] audio enabled →', this._audioEnabled);
                 cb(this._audioEnabled);
             };
-        }
-        setScore(score) {
-            console.log('[MockSDK] setScore:', score);
-            return Promise.resolve(true);
-        }
-        getUser() {
-            console.log('[MockSDK] getUser() called.');
-            return Promise.resolve({ username: 'Player', profilePictureUrl: 'https://placekitten.com/100/100' });
         }
 
         // --- Data Persistence (blob) ---
