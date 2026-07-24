@@ -242,54 +242,86 @@ function runEpilogue(background) {
 																		        undefined,
 																		        () => {
 																					const restartGame = () => {
+																							if (globalScene && globalScene.sound) {
+																								globalScene.sound.stopAll();
+																							}
 																							gameVars = {
-																							baseSway: .025,
-																							gameStarted: !1,
-																							gameConstructed: !1,
-																							mousedown: !1,
-																							mouseposx: 0,
-																							mouseposy: 0,
-																							prevMouseposx: 0,
-																							prevMouseposy: 0,
-																							mouseaccx: 0,
-																							mouseaccy: 0,
-																							lastmousedown: {
-																								x: 0,
-																								y: 0
-																							},
-																							width: 1220,
-																							halfWidth: 610,
-																							height: 920,
-																							halfHeight: 460,
-																							horrorPoint: !1,
-																							darkPoint: !1,
-																							isFrozen: !1,
-																							lastLoadingWelcomeRef: null,
-																							walkSlow: !1,
-																							initialExtraDark: 0,
-																							masterAudio: 1,
-																							smallWindow: !1
-																						},
-																						oneTimeScares = {},
-																						gameObjectsTemp = {},
-																						gameVarsTemp = {
-																							darkFlickerCountdown: 1e3
-																						},
-																						gameObjects = {
-																							buttonList: [],
-																							draggedObj: null,
-																							loadingWelcomes: [],
-																							noteList: [],
-																							starPressSequence: []
-																						},
-																						updateFuncList = [];
-																						location.reload();
-																					};
-																					if (window.GameSDK && typeof window.GameSDK.showAd === 'function') {
-																						window.GameSDK.showAd('midgame', { onFinished: restartGame });
-																					} else {
-																						restartGame();
-																					}
+																								baseSway: .025,
+																								gameStarted: !1,
+																								gameConstructed: !1,
+																								mousedown: !1,
+																								mouseposx: 0,
+																								mouseposy: 0,
+																								prevMouseposx: 0,
+																								prevMouseposy: 0,
+																								mouseaccx: 0,
+																								mouseaccy: 0,
+																								lastmousedown: {
+																									x: 0,
+																									y: 0
+																								},
+																								width: 1220,
+																								halfWidth: 610,
+																								height: 920,
+																								halfHeight: 460,
+																								horrorPoint: !1,
+																								darkPoint: !1,
+																								isFrozen: !1,
+																								lastLoadingWelcomeRef: null,
+																								walkSlow: !1,
+																								initialExtraDark: 0,
+																								masterAudio: 1,
+																								soundMult: 1,
+																								smallWindow: !1
+																							};
+																							oneTimeScares = {};
+																							gameObjectsTemp = {};
+																							gameVarsTemp = {
+																								darkFlickerCountdown: 1e3
+																							};
+																							gameObjects = {
+																								buttonList: [],
+																								draggedObj: null,
+																								loadingWelcomes: [],
+																								noteList: [],
+																								starPressSequence: []
+																							};
+																							updateFuncList = [];
+
+																							// These live at module scope in main.js and survive a scene
+																							// restart, so they must be cleared by hand. Leaving them set
+																							// strands the replay on the loading screen with no start
+																							// button: bootLoadHandled makes onLoaderBatchComplete return
+																							// early, and onLoadComplete itself begins with
+																							// `if (deferredAudioLoaded) return`. deferredAudioLoaded also
+																							// gates loadDeferredAudio, so without this the 51 deferred
+																							// sounds never get re-registered after a replay.
+																							bootLoadHandled = false;
+																							deferredAudioLoaded = false;
+
+																							// The scene shutdown tears the loader's listeners down, but the
+																							// `installed` latch would stop them being re-registered, which
+																							// silently disables asset retries for the whole replay.
+																							assetRetry.installed = false;
+																							assetRetry.counts = {};
+																							assetRetry.failedReqs = {};
+																							assetRetry.pending = 0;
+
+																							// No gameplayStart() here - this returns the player to the
+																							// loading/menu screen. startGame() raises it when they actually
+																							// begin playing again.
+
+																							if (globalScene && globalScene.scene) {
+																								globalScene.scene.restart();
+																							} else {
+																								location.reload();
+																							}
+																						};
+																						if (window.GameSDK && typeof window.GameSDK.showAd === 'function') {
+																							window.GameSDK.showAd('midgame', { onFinished: restartGame });
+																						} else {
+																							restartGame();
+																						}
 																		        },
 																		        {
 																		            "ref": "whitePixel",
