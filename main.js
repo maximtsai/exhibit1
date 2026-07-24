@@ -13,8 +13,10 @@ let pixelHeight = 920;
 let config = {
     type: Phaser.AUTO,
     scale: {
+        // No parent: there is no #phaser-app element, so Phaser was silently
+        // falling back to document.body anyway. The canvas is centred by the
+        // `canvas { position: absolute; ... }` rule in index.html.
         mode: Phaser.Scale.FIT,
-        parent: "phaser-app",
         width: 1210,
         height: 920
     },
@@ -880,14 +882,22 @@ function handleBorders() {
 }
 
 function initializeSounds(a) {
-    // Deferred sounds get registered later, in loadDeferredAudio's complete callback
-    gameObjects.sounds = {};
+    // Deferred sounds get registered later, in loadDeferredAudio's complete
+    // callback. Keep whatever is already registered rather than resetting to {}:
+    // a second pass through here after the deferred batch has landed would drop
+    // all 51 deferred sounds while leaving them in the cache, which is silent and
+    // leaves every horror-sequence sound permanently missing.
+    if (!gameObjects.sounds) {
+        gameObjects.sounds = {};
+    }
     for (let d = 0; d < earlyAudio.length; d++) {
         let key = earlyAudio[d][0];
         if (key === "loadingMusic") {
             continue;
         }
-        gameObjects.sounds[key] = a.sound.add(key);
+        if (!gameObjects.sounds[key]) {
+            gameObjects.sounds[key] = a.sound.add(key);
+        }
     }
 }
 

@@ -1,17 +1,50 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { execFileSync } = require('child_process');
 
 const srcDir = __dirname;
 const distDir = path.join(srcDir, 'dist');
 
-// Local scripts loaded by index.html (in order)
+// Every local script loaded by index.html, in execution order. This list is the
+// single source of truth: it drives the bundle, the <script> tag removal, and the
+// consistency check against index.html. There is no pre-combined intermediate —
+// the room scripts are compiled straight from source, so a bundle can never be
+// out of date with them.
 const jsFiles = [
     'sdk-bridge.js',
-    'scripts/loadup.js',
+    'scripts/messageBus.js',
+    'scripts/button.js',
+    'scripts/hand.js',
+    'scripts/exhibit.js',
+    'scripts/pointer.js',
+    'scripts/guidearrow.js',
+    'scripts/roomentrance.js',
+    'scripts/roompump.js',
+    'scripts/roomfaucet.js',
+    'scripts/roomhandy.js',
+    'scripts/roomflower.js',
+    'scripts/roomstretch.js',
+    'scripts/roomjack.js',
+    'scripts/roomclown.js',
+    'scripts/roomfinal.js',
     'helpermain.js',
     'main.js'
 ];
+
+// Assets that exist in the repo but nothing loads. Kept on disk, kept out of dist.
+const excludedAssets = [
+    'sprites/altreality/Untitled-2.jpg',
+    'audio/airpumpdeep.mp3',
+    'audio/finaldoorslam.mp3',
+    'audio/singbg.mp3'
+];
+const excludedSet = new Set(excludedAssets.map(p => path.normalize(p)));
+
+function fail(msg) {
+    console.error(`Error: ${msg}`);
+    process.exit(1);
+}
 
 /**
  * Empty and recreate contents of a directory without removing the directory itself
@@ -29,17 +62,25 @@ function cleanDir(dir) {
         try {
             fs.rmSync(fullPath, { recursive: true, force: true });
         } catch (err) {
-            console.warn(`Warning: Could not remove ${fullPath}: ${err.message}`);
+            // Continuing here would mix stale output into an otherwise fresh
+            // build, which is far harder to diagnose than a failed build.
+            fail(`could not remove ${fullPath}: ${err.message}\n` +
+                 `  Something is holding the file open (dev server? editor?).`);
         }
     }
 }
 
 /**
- * Copy directory or file recursively
+ * Copy directory or file recursively, skipping excluded assets
  */
 function copyRecursiveSync(src, dest) {
     if (!fs.existsSync(src)) {
         console.warn(`Warning: Source path not found: ${src}`);
+        return;
+    }
+    const rel = path.normalize(path.relative(srcDir, src));
+    if (excludedSet.has(rel)) {
+        console.log(`  - Skipping unused asset: ${rel}`);
         return;
     }
     const stats = fs.statSync(src);
@@ -60,70 +101,68 @@ function copyRecursiveSync(src, dest) {
 }
 
 /**
- * Warn if any individual room script in scripts/ is newer than scripts/loadup.js
+ * Read index.html's local <script src="..."> tags in document order
  */
-function checkScriptStaleness() {
-    const loadupPath = path.join(srcDir, 'scripts', 'loadup.js');
-    if (!fs.existsSync(loadupPath)) return;
-    const loadupMtime = fs.statSync(loadupPath).mtimeMs;
-    const scriptsDir = path.join(srcDir, 'scripts');
-    const entries = fs.readdirSync(scriptsDir);
-    const newerFiles = [];
-    for (const file of entries) {
-        if (file === 'loadup.js' || file === 'combine_m.sh' || !file.endsWith('.js')) continue;
-        const filePath = path.join(scriptsDir, file);
-        const fileMtime = fs.statSync(filePath).mtimeMs;
-        if (fileMtime > loadupMtime) {
-            newerFiles.push(file);
+function readLocalScriptTags(htmlContent) {
+    const re = /<script\s+src="([^"]+\.js)"[^>]*><\/script>/g;
+    const found = [];
+    let m;
+    while ((m = re.exec(htmlContent))) {
+        const src = m[1];
+        if (src !== 'phaser.min.js' && !/^https?:\/\//.test(src)) {
+            found.push(src);
         }
     }
-    if (newerFiles.length > 0) {
-        console.warn(`Warning: The following script files in scripts/ are newer than scripts/loadup.js:`);
-        console.warn(`  ${newerFiles.join(', ')}`);
-        console.warn(`  Remember to update scripts/loadup.js if you made changes to individual room scripts.`);
+    return found;
+}
+
+/**
+ * Minify the bundle. Top-level names are deliberately NOT mangled: the files
+ * share globals with each other and with index.html, and Phaser's config holds
+ * direct references to preload/create/update.
+ */
+function minify(srcPath, outPath) {
+    try {
+        execFileSync('uglifyjs', [srcPath, '-o', outPath, '-c', '-m'], {
+            stdio: ['ignore', 'ignore', 'pipe'],
+            shell: process.platform === 'win32'
+        });
+    } catch (err) {
+        const stderr = err.stderr ? err.stderr.toString().trim() : err.message;
+        fail(`minification failed: ${stderr}\n` +
+             `  Install it with: npm i -g uglify-js`);
+    }
+    if (!fs.existsSync(outPath) || fs.statSync(outPath).size === 0) {
+        fail('minification produced no output.');
     }
 }
 
 function build() {
     console.log('Starting Exhibit of Sorrows production build...');
 
-    // 1. Check if individual room scripts are newer than loadup.js
-    checkScriptStaleness();
-
-    // 2. Clean and recreate dist
+    // 1. Clean and recreate dist
     cleanDir(distDir);
 
-    // 3. Copy static asset directories and libraries
+    // 2. Copy static asset directories and libraries
     console.log('Copying static assets...');
     copyRecursiveSync(path.join(srcDir, 'audio'), path.join(distDir, 'audio'));
     copyRecursiveSync(path.join(srcDir, 'sprites'), path.join(distDir, 'sprites'));
 
     const phaserSrc = path.join(srcDir, 'phaser.min.js');
-    if (fs.existsSync(phaserSrc)) {
-        console.log('Copying phaser.min.js...');
-        fs.copyFileSync(phaserSrc, path.join(distDir, 'phaser.min.js'));
-    } else {
-        console.warn('Warning: phaser.min.js not found!');
+    if (!fs.existsSync(phaserSrc)) {
+        fail('phaser.min.js not found!');
     }
+    console.log('Copying phaser.min.js...');
+    fs.copyFileSync(phaserSrc, path.join(distDir, 'phaser.min.js'));
 
-    // 4. Validate script tags in index.html match jsFiles
+    // 3. Validate script tags in index.html match jsFiles
     const htmlSrc = path.join(srcDir, 'index.html');
     if (!fs.existsSync(htmlSrc)) {
-        console.error('Error: index.html not found!');
-        process.exit(1);
+        fail('index.html not found!');
     }
     let htmlContent = fs.readFileSync(htmlSrc, 'utf8');
 
-    const localScriptRe = /<script\s+src="([^"]+\.js)"[^>]*><\/script>/g;
-    const foundScripts = [];
-    let sm;
-    while ((sm = localScriptRe.exec(htmlContent))) {
-        const src = sm[1];
-        if (src !== 'phaser.min.js' && !src.startsWith('http://') && !src.startsWith('https://')) {
-            foundScripts.push(src);
-        }
-    }
-
+    const foundScripts = readLocalScriptTags(htmlContent);
     const missingFromBuild = foundScripts.filter(f => !jsFiles.includes(f));
     const missingFromHtml = jsFiles.filter(f => !foundScripts.includes(f));
     const orderMismatch = missingFromBuild.length === 0 && missingFromHtml.length === 0
@@ -137,49 +176,77 @@ function build() {
         process.exit(1);
     }
 
-    // 5. Combine JS files into dist/game.js
-    console.log('Combining JS files...');
+    // 4. Combine JS files
+    console.log(`Combining ${jsFiles.length} JS files...`);
     let combinedJS = '';
     for (const file of jsFiles) {
         const filePath = path.join(srcDir, file);
-        if (fs.existsSync(filePath)) {
-            console.log(`  - Adding ${file}`);
-            const content = fs.readFileSync(filePath, 'utf8');
-            combinedJS += `\n// --- START FILE: ${file} ---\n`;
-            combinedJS += content;
-            combinedJS += '\n';
-        } else {
-            console.error(`Error: Required script file not found: ${filePath}`);
-            process.exit(1);
+        if (!fs.existsSync(filePath)) {
+            fail(`required script file not found: ${filePath}`);
         }
+        const content = fs.readFileSync(filePath, 'utf8');
+        combinedJS += `\n// --- START FILE: ${file} ---\n`;
+        combinedJS += content;
+        combinedJS += '\n';
     }
 
-    // Validate the combined bundle parses before writing it
+    // Validate the combined bundle parses before minifying it
     try {
         new vm.Script(combinedJS, { filename: 'dist/game.js' });
     } catch (err) {
-        console.error(`Error: combined bundle failed to parse: ${err.message}`);
-        process.exit(1);
+        fail(`combined bundle failed to parse: ${err.message}`);
     }
 
-    fs.writeFileSync(path.join(distDir, 'game.js'), combinedJS, 'utf8');
-    console.log(`Created JS bundle: dist/game.js (${Buffer.byteLength(combinedJS)} bytes)`);
+    const rawPath = path.join(distDir, 'game.raw.js');
+    const outPath = path.join(distDir, 'game.js');
+    fs.writeFileSync(rawPath, combinedJS, 'utf8');
 
-    // 6. Update index.html for dist/
+    // 5. Minify
+    console.log('Minifying bundle...');
+    minify(rawPath, outPath);
+
+    // Re-check the minified output parses before shipping it
+    try {
+        new vm.Script(fs.readFileSync(outPath, 'utf8'), { filename: 'dist/game.js' });
+    } catch (err) {
+        fail(`minified bundle failed to parse: ${err.message}`);
+    }
+    fs.rmSync(rawPath, { force: true });
+
+    const rawSize = Buffer.byteLength(combinedJS);
+    const minSize = fs.statSync(outPath).size;
+    const saved = (100 * (1 - minSize / rawSize)).toFixed(1);
+    console.log(`Created JS bundle: dist/game.js (${minSize} bytes, ${saved}% smaller than ${rawSize} raw)`);
+
+    // 6. Update index.html for dist/ — drop every bundled tag, then point at game.js.
+    //    Driven off jsFiles so adding a script cannot leave a stray tag behind,
+    //    which would load that file twice (once standalone, once inside game.js).
     console.log('Generating dist/index.html...');
-    // Remove local script tags from head that are bundled in game.js
-    htmlContent = htmlContent.replace(/\s*<script\s+src="sdk-bridge\.js"[^>]*><\/script>/, '');
-    htmlContent = htmlContent.replace(/\s*<script\s+src="scripts\/loadup\.js"[^>]*><\/script>/, '');
-    htmlContent = htmlContent.replace(/\s*<script\s+src="helpermain\.js"[^>]*><\/script>/, '');
+    for (const file of jsFiles) {
+        const escaped = file.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+        const before = htmlContent;
+        htmlContent = htmlContent.replace(
+            new RegExp('\\s*<script\\s+src="' + escaped + '"[^>]*></script>'),
+            ''
+        );
+        if (htmlContent === before) {
+            fail(`could not strip the <script> tag for ${file} from index.html.\n` +
+                 `  Leaving it in would execute that file twice in dist/.`);
+        }
+    }
 
-    // Replace main.js in body with game.js
+    // Insert the single bundle where main.js used to be (end of <body>)
     htmlContent = htmlContent.replace(
-        /<script\s+src="main\.js"[^>]*><\/script>/,
-        '<script src="game.js"></script>'
+        /(\s*)<\/body>/,
+        '$1    <script src="game.js"></script>$1</body>'
     );
 
-    const htmlDest = path.join(distDir, 'index.html');
-    fs.writeFileSync(htmlDest, htmlContent, 'utf8');
+    const leftovers = readLocalScriptTags(htmlContent).filter(s => s !== 'game.js');
+    if (leftovers.length) {
+        fail(`dist/index.html still references un-bundled scripts: ${leftovers.join(', ')}`);
+    }
+
+    fs.writeFileSync(path.join(distDir, 'index.html'), htmlContent, 'utf8');
     console.log('Updated dist/index.html with unified JS script tag.');
 
     console.log('Build completed successfully!');

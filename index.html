@@ -3,13 +3,31 @@
 <link href=data:, rel=icon>
 <head> 
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <title>Exhibit of Sorrows</title>
-    <link rel="icon" type="image/x-icon" href="/sprites/favicon.png">
+    <link rel="icon" type="image/x-icon" href="sprites/favicon.png">
 
     <script src="https://www.youtube.com/game_api/v1"></script>
     <script src="phaser.min.js"></script>
     <script src="sdk-bridge.js"></script>
-    <script src="scripts/loadup.js"></script>
+    <!-- Game scripts, load order matters. build.js concatenates these (plus
+         sdk-bridge.js, helpermain.js and main.js) into dist/game.js in exactly
+         this order and checks the two lists still agree. -->
+    <script src="scripts/messageBus.js"></script>
+    <script src="scripts/button.js"></script>
+    <script src="scripts/hand.js"></script>
+    <script src="scripts/exhibit.js"></script>
+    <script src="scripts/pointer.js"></script>
+    <script src="scripts/guidearrow.js"></script>
+    <script src="scripts/roomentrance.js"></script>
+    <script src="scripts/roompump.js"></script>
+    <script src="scripts/roomfaucet.js"></script>
+    <script src="scripts/roomhandy.js"></script>
+    <script src="scripts/roomflower.js"></script>
+    <script src="scripts/roomstretch.js"></script>
+    <script src="scripts/roomjack.js"></script>
+    <script src="scripts/roomclown.js"></script>
+    <script src="scripts/roomfinal.js"></script>
     <script src="helpermain.js"></script>
 
     <noscript>Enable JavaScript to play this game.</noscript>
@@ -69,9 +87,6 @@
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
-        }
-        #phaser-app {
-            margin: 0 auto;
         }
         #preload-notice {
             color: grey;
