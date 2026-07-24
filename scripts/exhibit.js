@@ -214,18 +214,18 @@ class Exhibit {
                     }
                     
                 }, () => {
-                    if (useSDK) {
-                        console.log("reenable sound")
-                        // Re Enable sound and then move right
-                        for (let i = 0; i < itemsToMute.length; i++) {
-                            if (!itemsToMute[i]) {
-                                continue;
-                            }
-                            if (!itemsToMute[i].origVol) {
-                                continue;
-                            }
-                            itemsToMute[i].volume = itemsToMute[i].origVol;
+                    console.log("reenable sound")
+                    // Re Enable sound and then move right. This must run on every
+                    // platform - the old `if (useSDK)` guard referenced a global
+                    // that died with sdkwrapper.js and threw a ReferenceError here.
+                    for (let i = 0; i < itemsToMute.length; i++) {
+                        if (!itemsToMute[i]) {
+                            continue;
                         }
+                        if (!itemsToMute[i].origVol) {
+                            continue;
+                        }
+                        itemsToMute[i].volume = itemsToMute[i].origVol;
                     }
                 });
             }

@@ -2,14 +2,6 @@
     'use strict';
 
     // ===========================================================================
-    // 0. Crypto helpers — CrazyGames v3 requires AES-GCM encrypted scores.
-    //    The encryption key is a Base64-encoded 256-bit key from the Developer
-    //    Portal's Leaderboard tab.
-    // ===========================================================================
-
-
-
-    // ===========================================================================
     // 1. BaseSDKAdapter — defines the full interface all platforms must implement.
     //    Methods that a platform doesn't support should be no-ops or return
     //    sensible defaults (see each adapter below).
@@ -132,8 +124,11 @@
 
         // --- Locale ---
 
-        // Returns a BCP-47 locale tag (e.g. "en-US").
-        getLanguage() { return navigator.language || 'en-US'; }
+        // Returns a Promise resolving to a BCP-47 locale tag (e.g. "en-US").
+        // Async because YouTube's ytgame.system.getLanguage() returns a Promise -
+        // the interface has to be the async one or the return type would differ
+        // per platform and callers would break only on YouTube.
+        getLanguage() { return Promise.resolve(navigator.language || 'en-US'); }
 
         // --- Environment ---
 
@@ -173,7 +168,7 @@
 
 
 
-    // 3. YouTubePlayablesAdapter
+    // 2. YouTubePlayablesAdapter
     //    Wraps the YouTube Playables SDK (window.ytgame namespace).
     //    SDK script: <script src="https://www.youtube.com/game_api/v1"></script>
     //    Docs: https://developers.google.com/youtube/gaming/playables
@@ -360,15 +355,22 @@
             this._storage = {};
         }
 
+        // ytgame.system.getLanguage() resolves asynchronously, so every path here
+        // returns a Promise<string> to match the interface. Rejections fall back
+        // to the browser locale rather than surfacing as an unhandled rejection.
         getLanguage() {
+            const fallback = navigator.language || 'en-US';
             if (!this.yt || !this.yt.system) {
-                return navigator.language || 'en-US';
+                return Promise.resolve(fallback);
             }
             try {
-                return this.yt.system.getLanguage();
+                return Promise.resolve(this.yt.system.getLanguage()).catch((e) => {
+                    console.warn('[YouTubePlayablesAdapter] getLanguage failed:', e);
+                    return fallback;
+                });
             } catch (e) {
                 console.warn('[YouTubePlayablesAdapter] getLanguage failed:', e);
-                return navigator.language || 'en-US';
+                return Promise.resolve(fallback);
             }
         }
 
@@ -385,7 +387,11 @@
         openYTContent(videoId) {
             if (!this.yt || !this.yt.engagement) return;
             try {
-                const contentType = (this.yt.engagement.ContentType && this.yt.engagement.ContentType.VIDEO) || 'VIDEO';
+                // ContentType is a numeric enum: { VIDEO: 0, PLAYABLE: 1 }. VIDEO is
+                // 0, so `|| 'VIDEO'` would discard the valid value and send a string
+                // instead - check for undefined rather than falsiness.
+                const ct = this.yt.engagement.ContentType;
+                const contentType = (ct && ct.VIDEO !== undefined) ? ct.VIDEO : 0;
                 // openYTContent returns a Promise that rejects with SdkError on
                 // failure — catch it here or it surfaces as an unhandled rejection
                 // (the surrounding try/catch only covers synchronous throws).
@@ -408,21 +414,31 @@
             try {
                 if (callbacks.onStarted) callbacks.onStarted();
 
-                let rewarded = false;
+                // The ad calls resolve with an AdResult enum:
+                // { UNKNOWN: 0, SHOWED: 1, DISMISSED: 2, REJECTED: 3 }.
+                // Only SHOWED means the ad actually played - DISMISSED and
+                // REJECTED are truthy, so a plain truthiness test hands out the
+                // reward to anyone who closes the ad early.
+                const SHOWED = (this.yt.ads.AdResult && this.yt.ads.AdResult.SHOWED !== undefined)
+                    ? this.yt.ads.AdResult.SHOWED
+                    : 1;
+
                 if (type === 'rewarded') {
-                    rewarded = await this.yt.ads.requestRewardedAd(rewardId);
-                    if (rewarded) {
+                    const result = await this.yt.ads.requestRewardedAd(rewardId);
+                    const earned = result === SHOWED;
+                    if (earned) {
                         if (callbacks.onFinished) callbacks.onFinished();
-                    } else {
-                        if (callbacks.onError) callbacks.onError('ad_closed_early');
+                    } else if (callbacks.onError) {
+                        callbacks.onError('ad_closed_early');
                     }
-                } else {
-                    await this.yt.ads.requestInterstitialAd();
-                    if (callbacks.onFinished) callbacks.onFinished();
-                    rewarded = true;
+                    return earned;
                 }
 
-                return rewarded;
+                const result = await this.yt.ads.requestInterstitialAd();
+                // Gameplay must resume whatever the ad did, so onFinished always
+                // fires here; the return value just reports whether it played.
+                if (callbacks.onFinished) callbacks.onFinished();
+                return result === SHOWED;
             } catch (e) {
                 console.warn('[YouTubePlayablesAdapter] showAd failed:', e);
                 if (callbacks.onError) callbacks.onError(e);
@@ -460,7 +476,7 @@
 
 
     // ===========================================================================
-    // 4. MockDevAdapter — local development fallback.
+    // 3. MockDevAdapter — local development fallback.
     //    All calls are logged to the console so you can verify integration points
     //    without deploying to either platform.
     // ===========================================================================
@@ -591,7 +607,7 @@
         getLanguage() {
             const lang = navigator.language || 'en-US';
             console.log('[MockSDK] getLanguage() →', lang);
-            return lang;
+            return Promise.resolve(lang);
         }
         getEnvironment() {
             console.log('[MockSDK] getEnvironment() → local');

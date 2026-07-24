@@ -7,7 +7,6 @@ let isMobile = testMobile();
 
 var currentResize;
 if (window.GameSDK && typeof window.GameSDK.init === 'function') window.GameSDK.init();
-setupHostAudioReconciliation();
 
 let pixelWidth = 1210;
 let pixelHeight = 920;
@@ -376,15 +375,36 @@ function preload() {
     if (gameDiv) gameDiv.innerHTML = "";
     handleBorders();
     if (window.GameSDK && typeof window.GameSDK.loadingStart === 'function') window.GameSDK.loadingStart();
-    if (window.GameSDK && typeof window.GameSDK.firstFrameReady === 'function') {
-        window.GameSDK.firstFrameReady();
-    }
+    signalFirstFrameWhenRendered(this);
     game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), 
     this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"), 
     this.load.image("headphones", "sprites/headphones.png")
 }
 
+// YouTube uses firstFrameReady() to measure time-to-first-frame and to take its
+// own loading UI down, so it has to fire once something has actually been drawn.
+// Called from preload() it fired against a blank canvas - the frame had not been
+// rendered yet, and the reported timing was wrong in our favour.
+let firstFrameSignalled = false;
+
+function signalFirstFrameWhenRendered(scene) {
+    if (firstFrameSignalled) return;
+    if (!window.GameSDK || typeof window.GameSDK.firstFrameReady !== 'function') return;
+    if (!scene.game || !scene.game.events) return;
+    scene.game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+        if (firstFrameSignalled) return;
+        firstFrameSignalled = true;
+        window.GameSDK.firstFrameReady();
+    });
+}
+
 function create() {
+    // setupHostAudioReconciliation() runs before the scene boots, so its first
+    // reconcile can only set the flag - phaserGame.sound does not exist yet. Push
+    // the host's state into Phaser now that it does, or a host that starts muted
+    // would still be audible through the direct .play() calls that bypass
+    // playSound(). The old 1s poll was papering over this.
+    applyHostAudioState();
     onPreloadComplete(this)
 }
 
@@ -914,12 +934,16 @@ function setupHostAudioReconciliation() {
             }
         });
     }
+    // Reconcile when the tab comes back. onAudioEnabledChange above is the real
+    // signal; this only covers a host that changed state while we were hidden and
+    // did not fire it. Replaces a 1s setInterval that re-queried the SDK forever.
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) applyHostAudioState();
+    });
     applyHostAudioState();
-    setInterval(() => applyHostAudioState(), 1000);
 }
 
 function playSound(d, a, e = 1) {
-    applyHostAudioState();
     if (!hostAudioEnabled) return null;
     let b = "";
     void 0 !== a && (b = Math.floor(Math.random() * a) + 1);
@@ -934,7 +958,6 @@ function playSound(d, a, e = 1) {
 }
 
 function tweenVolume(a, b, c = 1500) {
-    applyHostAudioState();
     if (!gameObjects.sounds[a]) {
         console.warn("tweenVolume: sound not registered: " + a);
         return null;
@@ -950,7 +973,6 @@ function tweenVolume(a, b, c = 1500) {
 }
 
 function playSoundOnce(a, b, c = 1) {
-    applyHostAudioState();
     if (!hostAudioEnabled) return null;
     if (!gameObjects.sounds[a]) {
         console.warn("playSoundOnce: sound not registered: " + a);
@@ -1283,3 +1305,10 @@ window.addEventListener('pointerdown', () => {
         globalScene.sound.context.resume().catch(() => {});
     }
 });
+
+// Runs last, after every `let` in this file has been initialised. It touches
+// hostAudioEnabled and phaserGame, and reading a `let` binding before its
+// declaration has been evaluated throws - including through `typeof`, which only
+// guards *undeclared* names. Called from the top of the file it aborted the whole
+// script, leaving the game half-constructed.
+setupHostAudioReconciliation();
