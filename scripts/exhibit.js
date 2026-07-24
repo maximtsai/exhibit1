@@ -95,6 +95,11 @@ class Exhibit {
                 // keep shifting until we get the right one
                 this.currentScene--;
                 if (this.currentScene < 0) {
+                    // nothing to the left: undo the move instead of leaving the
+                    // player stuck with isMoving set and both buttons disabled
+                    this.currentScene = oldScene;
+                    this.isMoving = false;
+                    enableMoveButtons();
                     return;
                 }
             }
@@ -183,6 +188,11 @@ class Exhibit {
                 // keep shifting until we get the right one
                 this.currentScene++;
                 if (this.currentScene >= this.listOfBGs.length) {
+                    // nothing to the right: undo the move instead of leaving the
+                    // player stuck with isMoving set and both buttons disabled
+                    this.currentScene = oldScene;
+                    this.isMoving = false;
+                    enableMoveButtons();
                     return;
                 }
             }

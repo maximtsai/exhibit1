@@ -96,20 +96,10 @@ function setupRoomEntrance(e, t, a) {
 	let asdfJack = e.add.image(330, -300, "roomJack", "doll").setRotation(-3.12).setScale(0.8);
 	a.add(asdfJack);
 
-    gameObjects.crawlClown = e.add.sprite(40, 453, "roomClown2", "frame0000.png").setScale(-2, 2).setVisible(false);
+    gameObjects.crawlClown = e.add.sprite(40, 453, "blackPixel").setScale(-2, 2).setVisible(false);
     a.add(gameObjects.crawlClown);
 
-    e.anims.create({
-        key: 'clownCrawl',
-        frames: e.anims.generateFrameNames('roomClown2', {
-            prefix: 'frame',
-            suffix: '.png',
-            start: 0,
-            end: 7,
-            zeroPad: 4,
-        }),
-        frameRate: 15
-    });
+    refreshCrawlClown();
 
 	setTimeout(() => {
 		globalScene.tweens.add({
@@ -170,6 +160,26 @@ function setupRoomEntrance(e, t, a) {
             }, 2300)
         }
     })
+}
+
+// "roomClown2" is a deferred atlas, so setupRoomEntrance runs before it exists.
+// loadDeferredAudio calls this once the atlas is in the texture manager, which is
+// when the sprite and its animation actually get their frames.
+function refreshCrawlClown() {
+    if (!gameObjects.crawlClown || !globalScene.textures.exists("roomClown2")) return;
+    gameObjects.crawlClown.setTexture("roomClown2", "frame0000.png");
+    globalScene.anims.remove('clownCrawl');
+    globalScene.anims.create({
+        key: 'clownCrawl',
+        frames: globalScene.anims.generateFrameNames('roomClown2', {
+            prefix: 'frame',
+            suffix: '.png',
+            start: 0,
+            end: 7,
+            zeroPad: 4,
+        }),
+        frameRate: 15
+    });
 }
 
 function createStarButton(e, t, a, s) {

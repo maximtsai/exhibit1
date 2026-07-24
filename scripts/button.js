@@ -188,10 +188,8 @@ class Button {
     }
     update() {}
     destroy() {
-        for (let e in gameObjects.buttonList)
-            if (gameObjects.buttonList[e] === this) {
-                gameObjects.buttonList.splice(parseInt(e), 1);
-                break
-            } for (let e in this.imageRefs) this.imageRefs[e].destroy()
+        let e = gameObjects.buttonList.indexOf(this);
+        e > -1 && gameObjects.buttonList.splice(e, 1);
+        for (let s in this.imageRefs) this.imageRefs[s].destroy()
     }
 }

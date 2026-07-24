@@ -133,6 +133,9 @@ function undoCreditsClick(e) {
 }
 
 function shakeImage(e, t, a, s) {
+	// Bail out once the duration runs out, or if the image was already destroyed,
+	// otherwise this setTimeout chain keeps ticking for the rest of the session.
+	if (t <= 0 || !e || !e.scene) return;
 	let o = e.x,
 		c = e.y;
 	a && (o = a), s && (c = s), e.x += 7 * (Math.random() - .5) * e.scaleX, e.y += 7 * (Math.random() - .5) * e.scaleY, setTimeout(() => {
@@ -539,10 +542,17 @@ function createKey(e, t, a, s, o = !0, c) {
 }
 
 function initFlashScreens() {
+	// Safe to call twice: the first call runs before the deferred "flashScreens"
+	// atlas has landed, so it gets re-run once that load completes.
+	if (gameObjects.flashScreens)
+		for (let e = 0; e < gameObjects.flashScreens.length; e++) gameObjects.flashScreens[e].destroy();
 	gameObjects.flashScreens = [];
+	// Until the atlas lands, stand the images up on an already-loaded texture so a
+	// flash fired during that window shows nothing instead of a missing-texture box.
+	let s = globalScene.textures.exists("flashScreens");
 	for (let e = 0; e < 20; e++) {
 		let t = "static" + e,
-			a = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, "flashScreens", t);
+			a = s ? globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, "flashScreens", t) : globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel");
 		a.scaleX = 1.5, a.scaleY = 1.5, a.setDepth(9999), a.alpha = 0, gameObjects.flashScreens[e] = a
 	}
 }
@@ -565,8 +575,9 @@ function initStaticScreens() {
 
 function showFlashArr(e, t) {
 	if (e.length > 0) {
-		let a = e[0];
-		newArr = e.slice(1), gameObjects.flashScreens[a].alpha = 1, setTimeout(() => {
+		let a = e[0],
+			newArr = e.slice(1);
+		gameObjects.flashScreens[a].alpha = 1, setTimeout(() => {
 			gameObjects.flashScreens[a].alpha = 0, showFlashArr(newArr, t)
 		}, 50)
 	} else t && t()
@@ -596,7 +607,7 @@ function showStaticRand(e = 1, t = !1, a, s = 1, o = !0) {
 	}
 	if (e >= 1) {
 		let o = Math.floor(Math.random() * gameObjects.staticScreens.length);
-		gameObjects.staticScreens[o].alpha = 1 === e ? Math.min(.2, s) : Math.min(1, s + .2 * (Math.random() - .5)), gameObjects.staticScreens[o].scaleX = t ? -1.5 - .1 * Math.random : 1.5 + .1 * Math.random(), setTimeout(() => {
+		gameObjects.staticScreens[o].alpha = 1 === e ? Math.min(.2, s) : Math.min(1, s + .2 * (Math.random() - .5)), gameObjects.staticScreens[o].scaleX = t ? -1.5 - .1 * Math.random() : 1.5 + .1 * Math.random(), setTimeout(() => {
 			gameObjects.staticScreens[o].alpha = 0, showStaticRand(e - 1, !t, a, s, !1)
 		}, 30)
 	} else void 0 !== a && a()
@@ -623,8 +634,9 @@ function showStaticLiteObj(e, t) {
 	}
 	c.alpha = .25 * t + Math.random() * t * .5, c.isFree = !1, c.x = Math.random() * gameVars.width * 1.1 - 50, c.y = Math.random() * gameVars.height * 1.1 - 50;
 	let n = Math.abs(gameVars.halfWidth - c.x),
-		m = Math.abs(gameVars.halfHeight - c.y);
-	distFromCenterUnit = .5 + n / gameVars.halfWidth + m / gameVars.halfHeight, c.alpha *= distFromCenterUnit, c.scaleX = e, c.scaleY = e;
+		m = Math.abs(gameVars.halfHeight - c.y),
+		distFromCenterUnit = .5 + n / gameVars.halfWidth + m / gameVars.halfHeight;
+	c.alpha *= distFromCenterUnit, c.scaleX = e, c.scaleY = e;
 	let i = Math.random() > .5 ? -1 : 1;
 	if (s) c.scaleX *= 1 + 5 * Math.random() * i, c.scaleY *= 1 + Math.random();
 	else {

@@ -136,7 +136,8 @@ function roomFaucetUpdate(e) {
     }
     for (let a = 0; a < gameObjects.roomFaucetObjs.activeDroplets.length; a++) {
         let o = gameObjects.roomFaucetObjs.activeDroplets[a];
-        o.velY += .1, o.y += o.velY * e, o.y > gameVars.halfHeight + 208 && (o.y = -9999, gameObjects.roomFaucetObjs.activeDroplets.splice(a, 1), gameObjects.roomFaucetObjs.freeDropletPool.push(o))
+        // splice shifts everything down, so step back to avoid skipping a droplet
+        o.velY += .1, o.y += o.velY * e, o.y > gameVars.halfHeight + 208 && (o.y = -9999, gameObjects.roomFaucetObjs.activeDroplets.splice(a--, 1), gameObjects.roomFaucetObjs.freeDropletPool.push(o))
     }
     a && (gameObjects.roomFaucetObjs.lever.rotation += gameObjects.roomFaucetObjs.lever.rotVel * e), gameObjects.roomFaucetObjs.leverBent && (gameObjects.roomFaucetObjs.leverBent.x = gameObjects.roomFaucetObjs.lever.x, gameObjects.roomFaucetObjs.leverBent.y = gameObjects.roomFaucetObjs.lever.y, gameObjects.roomFaucetObjs.leverBent.rotation = gameObjects.roomFaucetObjs.lever.rotation)
 }
@@ -186,6 +187,7 @@ function resetGuideArrowFaucet() {
 }
 
 function createExtraDrops(e) {
+    if (e <= 0) return;
     for (let a = 0; a < e; a++) createWaterDrop();
     setTimeout(() => {
         createExtraDrops(e - 1)

@@ -1,6 +1,6 @@
 function testMobile() {
-  const regex = /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-  return regex.test(navigator.userAgent);
+    const regex = /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+    return regex.test(navigator.userAgent);
 }
 
 let isMobile = testMobile();
@@ -12,21 +12,21 @@ localStorage.setItem('exhibitHasShownSDK', 'false');
 let pixelWidth = 1210;
 let pixelHeight = 920;
 let config = {
-        type: Phaser.AUTO,
-        scale: {
-            mode: Phaser.Scale.FIT,
-            parent: "phaser-app",
-            width: 1210,
-            height: 920
-        },
-        antialias: !0,
-        transparent: true,
-        scene: {
-            preload: preload,
-            create: create,
-            update: update
-        }
+    type: Phaser.AUTO,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        parent: "phaser-app",
+        width: 1210,
+        height: 920
     },
+    antialias: !0,
+    transparent: true,
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+},
     globalScene,
     gameVars = {
         baseSway: .025,
@@ -74,7 +74,7 @@ let config = {
     phaserGame, selfMe;
 
 let game;
-setTimeout(() => {game = new Phaser.Game(config)}, 20)
+setTimeout(() => { game = new Phaser.Game(config) }, 20)
 
 let earlyAudio = [
     ["loadingMusic", "audio/loadingmusic.mp3"],
@@ -183,9 +183,9 @@ function preload() {
     gameDiv.innerHTML = "";
     handleBorders();
     sdkWrapperGameLoadingStart();
-    game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), 
-    this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"), 
-    this.load.image("headphones", "sprites/headphones.png")
+    game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"),
+        this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"),
+        this.load.image("headphones", "sprites/headphones.png")
 }
 
 function create() {
@@ -210,23 +210,23 @@ function onPreloadComplete(a) {
         fontSize: 36,
         color: "#777777",
         align: "center"
-    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), 
-    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"), 
-    gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"), 
-    gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"), 
-    gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
-        fontFamily: "Times New Roman",
-        fontSize: 22,
-        color: "#ffffff",
-        align: "center"
-    }), gameObjectsTemp.headphoneText.setOrigin(.5, .5), gameObjectsTemp.headphoneText.setDepth(1), a.load.on("progress", function(a) {
-        gameVarsTemp.loadAmt = a
-    }), a.load.on("complete", () => {
-        onLoadComplete(a)
-    }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"), 
-    a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
-    a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function() { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
-    a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
+    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1),
+        gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"),
+        gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"),
+        gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"),
+        gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
+            fontFamily: "Times New Roman",
+            fontSize: 22,
+            color: "#ffffff",
+            align: "center"
+        }), gameObjectsTemp.headphoneText.setOrigin(.5, .5), gameObjectsTemp.headphoneText.setDepth(1), a.load.on("progress", function (a) {
+            gameVarsTemp.loadAmt = a
+        }), a.load.on("complete", () => {
+            onLoadComplete(a)
+        }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"),
+        a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
+        a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
+        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
 }
 
 let gameLoadedOnce = false;
@@ -317,6 +317,15 @@ function loadDeferredAudio(a) {
             } else {
                 console.warn("loadDeferredAudio: audio failed to load: " + key);
             }
+        }
+        // These were built during setupGame, before the atlases above existed, so
+        // they picked up the __MISSING texture. Rebind them now that the real
+        // frames are in the texture manager.
+        if (a.textures.exists("flashScreens")) {
+            initFlashScreens();
+        }
+        if (a.textures.exists("roomClown2")) {
+            refreshCrawlClown();
         }
     });
     a.load.start()
@@ -544,7 +553,7 @@ function beginGameplay(a) {
             if (gameObjects.sounds.gladiatorx) {
                 gameObjects.sounds.gladiatorx.volume = 0.7;
             }
-            
+
         } else {
             gameVars.manualMuted = true;
             gameVars.soundMult = 0;
@@ -754,9 +763,9 @@ function update(w, s) {
             let m = gameObjectsTemp.loadingWelcome.rotation * (1 + gameObjectsTemp.loadingWelcome.rotation) * 4e3;
             gameObjects.loadingCntr.shakeAccX = -0.4 * gameObjects.loadingCntr.swayX + (Math.random() - .5) * m, gameObjects.loadingCntr.shakeAccY = -0.4 * gameObjects.loadingCntr.swayY + (Math.random() - .5) * m, gameObjects.loadingCntr.swayX += gameObjects.loadingCntr.shakeAccX, gameObjects.loadingCntr.swayY += gameObjects.loadingCntr.shakeAccY
         }
-            if (gameObjectsTemp.popup.rotation == 0) {
-                gameObjectsTemp.popup.y = gameVars.halfHeight + 22 - (gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.006)
-            }
+        if (gameObjectsTemp.popup.rotation == 0) {
+            gameObjectsTemp.popup.y = gameVars.halfHeight + 22 - (gameObjectsTemp.loadingBar.scaleX * gameObjectsTemp.loadingBar.scaleX * 0.006)
+        }
         return
     }
     if (handleViewShift(), gameVars.darkPoint) {
@@ -969,16 +978,21 @@ function adStarted() {
     }
 }
 
-function adFinished() {
+function restoreAdMutedSounds() {
     gameVars.masterAudio = 1, gameVars.isFrozen = !1;
-    let b = ["gladiator1", "gladiator2", "gladiatorx"];
-    for (let a = 0; a < b.length; a++) b[a], gameObjects.sounds.gladiatorx.volume = gameObjects.sounds.gladiatorx.oldVolume ? gameObjects.sounds.gladiatorx.oldVolume : 1
+    let c = ["gladiator1", "gladiator2", "gladiatorx"];
+    for (let a = 0; a < c.length; a++) {
+        let b = gameObjects.sounds[c[a]];
+        b && (b.volume = b.oldVolume ? b.oldVolume : 1)
+    }
+}
+
+function adFinished() {
+    restoreAdMutedSounds()
 }
 
 function adError() {
-    gameVars.masterAudio = 1, gameVars.isFrozen = !1;
-    let b = ["gladiator1", "gladiator2", "gladiatorx"];
-    for (let a = 0; a < b.length; a++) b[a], gameObjects.sounds.gladiatorx.volume = gameObjects.sounds.gladiatorx.oldVolume ? gameObjects.sounds.gladiatorx.oldVolume : 1
+    restoreAdMutedSounds()
 }
 
 function showAltReality(a, c = 1) {
@@ -989,7 +1003,7 @@ function showAltReality(a, c = 1) {
         b.destroy(), showAltReality(a, c)
     }, 1 === a.length ? 70 : 40)
 }
-window.addEventListener("resize", function(a, b) {
+window.addEventListener("resize", function (a, b) {
     handleBorders();
     currentResize && clearTimeout(currentResize), currentResize = setTimeout(sdkWrapperResizeBanners, 200)
 }, !1)
