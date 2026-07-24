@@ -165,7 +165,7 @@ function runEpilogue(background) {
 						        duration: 350,
 						        onComplete: () => {
 						        	playSound('doorslam');
-									sdkWrapperGameplayStop();
+									if (window.GameSDK && typeof window.GameSDK.gameplayStop === 'function') window.GameSDK.gameplayStop();
 									zoomTemp(1.04);
 									showStaticLite(6, 25, 4, 1);
     								globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, 'theEnd');
@@ -188,14 +188,6 @@ function runEpilogue(background) {
 									    	alpha: 1,
 									    	duration: 900,
 									    	onComplete: () => {
-
-									    		if (useSDK) {
-												    const div = document.getElementById('banner-container-end');
-												    gameVars.showingBannerBot = true;
-												    div.style.bottom = "0px";
-									    		}
-											    sdkWrapperRequestResponsiveBanner('banner-container-end')
-											
 											    gameObjectsTemp.endText2 = globalScene.add.text(100, 140, "Art by Theresa Kao", {fontFamily: 'Times New Roman', fontSize: 30, color: '#ffffff', align: 'left'});
 											    gameObjectsTemp.endText2.alpha = 0;
 											    globalScene.tweens.add({
@@ -249,8 +241,7 @@ function runEpilogue(background) {
 																		        globalScene,
 																		        undefined,
 																		        () => {
-
-																					sdkCommercialBreak(() => {}, () => {
+																					const restartGame = () => {
 																							gameVars = {
 																							baseSway: .025,
 																							gameStarted: !1,
@@ -291,12 +282,14 @@ function runEpilogue(background) {
 																							noteList: [],
 																							starPressSequence: []
 																						},
-																						updateFuncList = [],
-																						localStorage.setItem('exhibitHasShownSDK', 'true');
-																						localStorage.setItem('exhibitHasFullyReloaded', 'true');
+																						updateFuncList = [];
 																						location.reload();
-																					})
-																					
+																					};
+																					if (window.GameSDK && typeof window.GameSDK.showAd === 'function') {
+																						window.GameSDK.showAd('midgame', { onFinished: restartGame });
+																					} else {
+																						restartGame();
+																					}
 																		        },
 																		        {
 																		            "ref": "whitePixel",

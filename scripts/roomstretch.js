@@ -76,7 +76,7 @@ function setupRoomStretch(e, t, o) {
         isDraggable: !0,
         onDrop: () => {}
     }), 
-    gameObjects.roomStretchObjs.handButton.setOnMouseDownFunc(() => {sdkWrapperGameplayStart()}), 
+    gameObjects.roomStretchObjs.handButton.setOnMouseDownFunc(() => { if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart(); }), 
     gameObjects.roomStretchObjs.placard = new Button(e, o, () => {
         gameVars.horrorPoint ? gameObjects.roomStretchObjs.roomCompleted ? updateInfoText("...") : updateInfoText("Ms. Stretch") : gameVars.darkPoint ? updateInfoText("What is the furthest she could reach?") : updateInfoText("Ms. Stretch")
     }, {

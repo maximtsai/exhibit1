@@ -518,8 +518,8 @@ function createKey(e, t, a, s, o = !0, c) {
 	let n;
 
 	return playSound("keyfound"), (n = new Button(globalScene, s, () => {
-		sdkWrapperGameplayStop();
-		n.destroy(), o ? playSound("keyget") : playSound("keygetred"), tempFreeze(500), sdkWrapperGameplayStop(), gameObjects.exhibit.setCantMoveIdx(a, !1), setTimeout(() => {
+		if (window.GameSDK && typeof window.GameSDK.gameplayStop === 'function') window.GameSDK.gameplayStop();
+		n.destroy(), o ? playSound("keyget") : playSound("keygetred"), tempFreeze(500), gameObjects.exhibit.setCantMoveIdx(a, !1), setTimeout(() => {
 			enableMoveButtons(true), c && c()
 		}, 100)
 	}, {

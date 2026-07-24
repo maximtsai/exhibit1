@@ -6,8 +6,8 @@ function testMobile() {
 let isMobile = testMobile();
 
 var currentResize;
-sdkWrapperInit();
-localStorage.setItem('exhibitHasShownSDK', 'false');
+if (window.GameSDK && typeof window.GameSDK.init === 'function') window.GameSDK.init();
+setupHostAudioReconciliation();
 
 let pixelWidth = 1210;
 let pixelHeight = 920;
@@ -375,7 +375,7 @@ function preload() {
     let gameDiv = document.getElementById('preload-notice');
     if (gameDiv) gameDiv.innerHTML = "";
     handleBorders();
-    sdkWrapperGameLoadingStart();
+    if (window.GameSDK && typeof window.GameSDK.loadingStart === 'function') window.GameSDK.loadingStart();
     if (window.GameSDK && typeof window.GameSDK.firstFrameReady === 'function') {
         window.GameSDK.firstFrameReady();
     }
@@ -389,9 +389,7 @@ function create() {
 }
 
 function onPreloadComplete(a) {
-    sdkWrapperResizeBanners(), setTimeout(() => {
-        sdkWrapperRequestResponsiveBanner("banner-container-top"), gameVars.showingBannerTop = !0
-    }, 50), setupHand(a), globalScene = a, gameObjectsTemp.loadingBg = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel"), gameObjectsTemp.loadingBg.scaleX = 1e3, gameObjectsTemp.loadingBg.scaleY = 1e3, gameObjects.loadingCntr.add(gameObjectsTemp.loadingBg), gameObjectsTemp.loadingText = a.add.text(gameVars.halfWidth, gameVars.halfHeight + 155, "LOADING", {
+    setupHand(a), globalScene = a, gameObjectsTemp.loadingBg = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel"), gameObjectsTemp.loadingBg.scaleX = 1e3, gameObjectsTemp.loadingBg.scaleY = 1e3, gameObjects.loadingCntr.add(gameObjectsTemp.loadingBg), gameObjectsTemp.loadingText = a.add.text(gameVars.halfWidth, gameVars.halfHeight + 155, "LOADING", {
         fontFamily: "Times New Roman",
         fontSize: 38,
         color: "#ffffff",
@@ -466,9 +464,8 @@ function onLoadComplete(a) {
     })
 
     if (!gameLoadedOnce) {
-        sdkWrapperGameLoadingStop();
+        if (window.GameSDK && typeof window.GameSDK.loadingStop === 'function') window.GameSDK.loadingStop();
     }
-    localStorage.setItem('exhibitHasFullyReloaded', 'false');
 
     a.tweens.chain({
         targets: [gameObjectsTemp.loadingText, gameObjectsTemp.funlid, gameObjectsTemp.funbox],
@@ -578,10 +575,7 @@ function onLoadAnimComplete(a) {
 
 function startGame(a) {
     gameVars.gameplayBegan = false;
-    if (sdkWrapperGameplayStart(), sdkWrapperClearAllBanners(), useSDK) {
-        let b = document.getElementById("banner-container-top");
-        b.style.top = "-999px", gameVars.showingBannerTop = !1
-    }
+    if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
     gameObjects.loadingMusic = a.sound.add("loadingMusic"), gameObjects.loadingMusic.play(), gameObjects.startGameButton.destroy(), gameVars.gameStarted = !0, gameObjects.scene = a, setupGame(a), gameObjectsTemp.blackTeeth = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 50, "menu", "teethBlack"), gameObjectsTemp.blackTeeth.scaleX = 1.6, gameObjectsTemp.blackTeeth.scaleY = 1.6, gameObjectsTemp.blackTeethAnim = a.tweens.chain({
         targets: [gameObjectsTemp.blackTeeth],
         tweens: [{
@@ -877,7 +871,56 @@ function initializeSounds(a) {
     }
 }
 
+let hostAudioEnabled = true;
+
+function isHostAudioEnabled() {
+    if (!window.GameSDK || typeof window.GameSDK.isAudioEnabled !== 'function') return true;
+    try {
+        return window.GameSDK.isAudioEnabled() !== false;
+    } catch (e) {
+        return true;
+    }
+}
+
+function applyHostAudioState(forced) {
+    const enabled = typeof forced === 'boolean' ? forced : isHostAudioEnabled();
+    hostAudioEnabled = enabled;
+
+    if (typeof phaserGame !== 'undefined' && phaserGame && phaserGame.sound) {
+        phaserGame.sound.mute = !enabled;
+        if (enabled && phaserGame.sound.context && phaserGame.sound.context.state === 'suspended') {
+            phaserGame.sound.context.resume().catch(() => {});
+        }
+    }
+}
+
+function setupHostAudioReconciliation() {
+    if (window.GameSDK && typeof window.GameSDK.onAudioEnabledChange === 'function') {
+        window.GameSDK.onAudioEnabledChange((enabled) => applyHostAudioState(enabled !== false));
+    }
+    if (window.GameSDK && typeof window.GameSDK.onPause === 'function') {
+        window.GameSDK.onPause(() => {
+            applyHostAudioState(false);
+            if (typeof phaserGame !== 'undefined' && phaserGame && phaserGame.scene) {
+                phaserGame.scene.pause('default');
+            }
+        });
+    }
+    if (window.GameSDK && typeof window.GameSDK.onResume === 'function') {
+        window.GameSDK.onResume(() => {
+            applyHostAudioState();
+            if (typeof phaserGame !== 'undefined' && phaserGame && phaserGame.scene) {
+                phaserGame.scene.resume('default');
+            }
+        });
+    }
+    applyHostAudioState();
+    setInterval(() => applyHostAudioState(), 1000);
+}
+
 function playSound(d, a, e = 1) {
+    applyHostAudioState();
+    if (!hostAudioEnabled) return null;
     let b = "";
     void 0 !== a && (b = Math.floor(Math.random() * a) + 1);
     let c = d + b;
@@ -891,6 +934,7 @@ function playSound(d, a, e = 1) {
 }
 
 function tweenVolume(a, b, c = 1500) {
+    applyHostAudioState();
     if (!gameObjects.sounds[a]) {
         console.warn("tweenVolume: sound not registered: " + a);
         return null;
@@ -906,11 +950,14 @@ function tweenVolume(a, b, c = 1500) {
 }
 
 function playSoundOnce(a, b, c = 1) {
+    applyHostAudioState();
+    if (!hostAudioEnabled) return null;
     if (!gameObjects.sounds[a]) {
         console.warn("playSoundOnce: sound not registered: " + a);
         return null;
     }
     oneTimeScares[a] || (oneTimeScares[a] = !0, b ? setTimeout(() => {
+        if (!hostAudioEnabled) return;
         gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()
     }, b) : (gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()))
 }
@@ -1224,7 +1271,6 @@ function showAltReality(a, c = 1) {
 }
 window.addEventListener("resize", function (a, b) {
     handleBorders();
-    currentResize && clearTimeout(currentResize), currentResize = setTimeout(sdkWrapperResizeBanners, 200)
 }, !1)
 window.addEventListener('keydown', ev => {
     if (['ArrowDown', 'ArrowUp', ' '].includes(ev.key)) {
