@@ -2,6 +2,14 @@
     'use strict';
 
     // ===========================================================================
+    // 0. Crypto helpers — CrazyGames v3 requires AES-GCM encrypted scores.
+    //    The encryption key is a Base64-encoded 256-bit key from the Developer
+    //    Portal's Leaderboard tab.
+    // ===========================================================================
+
+
+
+    // ===========================================================================
     // 1. BaseSDKAdapter — defines the full interface all platforms must implement.
     //    Methods that a platform doesn't support should be no-ops or return
     //    sensible defaults (see each adapter below).
@@ -133,6 +141,12 @@
         // 'local' | 'crazygames' | 'youtube' | 'disabled'
         getEnvironment() { return 'local'; }
 
+        // --- Platform-Specific Engagement ---
+
+        // Opens a YouTube video by videoId. No-op on non-YT platforms.
+        // videoId: string
+        openYTContent(videoId) { }
+
         // Requests an ad.
         // type: 'midgame' | 'rewarded'
         // callbacks: { onStarted: () => void, onFinished: () => void, onError: (err) => void }
@@ -147,327 +161,299 @@
         // Platforms without detection should return false.
         hasAdblock() { return Promise.resolve(false); }
 
-        // Triggers haptic vibration feedback.
-        // pattern: number | Array<number> (e.g. 100 or [100, 50, 100])
-        vibrate(pattern) {
-            // Standard web vibration API — CrazyGames exposes no haptics module.
-            if (navigator.vibrate) {
-                try {
-                    navigator.vibrate(pattern);
-                } catch (e) {
-                    // Fail silently (e.g. when blocked in iframe sandboxes)
-                }
-            }
-        }
+        // --- Health / Diagnostics ---
+
+        // Reports that an error occurred to the platform's diagnostics
+        // (best-effort, no payload — the YT API takes no arguments).
+        logError() { }
+
+        // Reports a warning to the platform's diagnostics.
+        logWarning() { }
     }
 
 
 
-    // 3. CrazyGamesAdapter
-    //    Wraps the CrazyGames HTML5 SDK v3 (window.CrazyGames.SDK namespace).
-    //    SDK script: <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
-    //    Docs: https://docs.crazygames.com/sdk/
+    // 3. YouTubePlayablesAdapter
+    //    Wraps the YouTube Playables SDK (window.ytgame namespace).
+    //    SDK script: <script src="https://www.youtube.com/game_api/v1"></script>
+    //    Docs: https://developers.google.com/youtube/gaming/playables
     //
     //    Module map:
-    //      SDK.game  — lifecycle: loadingStart, loadingStop, gameplayStart,
-    //                  gameplayStop, happytime
-    //      SDK.ad    — ads: requestAd('midgame'|'rewarded', { adStarted,
-    //                  adFinished, adError }), hasAdblock
-    //      SDK.user  — player: getUser, isUserAccountAvailable, systemInfo
-    //      SDK.data  — cloud-synced storage: getItem, setItem, removeItem, clear
-    //      SDK.environment — 'local' | 'crazygames' | 'disabled'
-    //
-    //    Notes:
-    //      - CrazyGames no longer supports SDK leaderboards (addScore is a no-op
-    //        in the SDK), so setScore() is a no-op here — kept for interface parity.
-    //      - CrazyGames has no firstFrameReady / onPause / onResume /
-    //        onAudioEnabledChange / openYTContent hooks; those stay as no-op stubs
-    //        so existing game code can keep calling them.
+    //      ytgame.game       — lifecycle: firstFrameReady, gameReady, saveData, loadData
+    //      ytgame.system     — environment: isAudioEnabled, onPause, onResume, getLanguage
+    //      ytgame.engagement — player: sendScore, openYTContent
+    //      ytgame.ads        — ads: requestInterstitialAd, requestRewardedAd
     // ===========================================================================
-    class CrazyGamesAdapter extends BaseSDKAdapter {
+    class YouTubePlayablesAdapter extends BaseSDKAdapter {
         constructor() {
             super();
-            this.cg = null; // reference to window.CrazyGames.SDK once initialized
-            // Memoized init promise so init() is safe to call more than once.
-            this._initPromise = null;
-            // Blob save lives under this key in the CrazyGames data module.
-            this._saveKey = 'merge_mansion_save';
-            // Audio muting state from CG game settings.
-            this._muted = false;
-            // Registered callbacks for audio enabled changes.
-            this._audioCallbacks = [];
-            // Bound settings change listener so we can remove it in cleanup().
-            this._boundSettingsListener = null;
+            this.yt = null; // reference to window.ytgame
+            // Unsubscribe handles returned by onPause / onResume / onAudioEnabledChange.
+            this._unsubs = [];
+            // In-memory key-value store to replace local storage
+            this._storage = {};
         }
 
         init() {
-            if (this._initPromise) return this._initPromise;
-            this._initPromise = (async () => {
-                const sdk = (window.CrazyGames && window.CrazyGames.SDK) || null;
-                if (!sdk) {
-                    console.log('[CrazyGamesAdapter] CrazyGames SDK not present.');
-                    return false;
-                }
-                try {
-                    await sdk.init();
-                    this.cg = sdk;
-                    // Read initial muteAudio setting
-                    try {
-                        this._muted = !!(this.cg.game && this.cg.game.settings && this.cg.game.settings.muteAudio);
-                    } catch (e) { }
-                    // Register settings change listener to track muteAudio toggles
-                    if (this.cg.game && typeof this.cg.game.addSettingsChangeListener === 'function') {
-                        this._boundSettingsListener = (newSettings) => {
-                            const wasMuted = this._muted;
-                            this._muted = !!(newSettings && newSettings.muteAudio);
-                            if (wasMuted !== this._muted) {
-                                for (const cb of this._audioCallbacks) {
-                                    try { cb(!this._muted); } catch (e) { }
-                                }
-                            }
-                        };
-                        this.cg.game.addSettingsChangeListener(this._boundSettingsListener);
-                    }
-                    console.log('[CrazyGamesAdapter] SDK initialized. environment =', this.getEnvironment());
-                    return true;
-                } catch (e) {
-                    console.warn('[CrazyGamesAdapter] init failed:', e);
-                    return false;
-                }
-            })();
-            return this._initPromise;
+            this.yt = window.ytgame || null;
+            if (!this.yt) {
+                console.log('[YouTubePlayablesAdapter] ytgame SDK not present.');
+                return Promise.resolve(false);
+            }
+            console.log('[YouTubePlayablesAdapter] ytgame SDK detected.');
+            return Promise.resolve(true);
         }
 
-        // CrazyGames has no first-frame hook — YouTube-only no-op stub.
-        firstFrameReady() { }
-
-        // Signals to CrazyGames that the game has started loading assets.
-        loadingStart() {
-            if (!this.cg || !this.cg.game) return;
+        // Signals to YouTube that the first visual frame has rendered.
+        // Must be called as soon as any content appears on screen.
+        firstFrameReady() {
+            if (!this.yt || !this.yt.game) return;
             try {
-                this.cg.game.loadingStart();
+                this.yt.game.firstFrameReady();
             } catch (e) {
-                console.warn('[CrazyGamesAdapter] loadingStart failed:', e);
+                console.warn('[YouTubePlayablesAdapter] firstFrameReady failed:', e);
             }
         }
 
-        // Signals to CrazyGames that loading is complete and the game is playable.
+        // Signals to YouTube that all assets are loaded and the game is playable.
+        // Dismisses the YouTube loading UI.
         loadingStop() {
-            if (!this.cg || !this.cg.game) return;
+            if (!this.yt || !this.yt.game) return;
             try {
-                this.cg.game.loadingStop();
+                this.yt.game.gameReady();
+                console.log('[YouTubePlayablesAdapter] gameReady() called.');
             } catch (e) {
-                console.warn('[CrazyGamesAdapter] loadingStop failed:', e);
+                console.warn('[YouTubePlayablesAdapter] gameReady failed:', e);
             }
         }
 
-        // Signals that meaningful gameplay has begun/resumed (used for ad timing).
-        gameplayStart() {
-            if (!this.cg || !this.cg.game) return;
-            try {
-                this.cg.game.gameplayStart();
-            } catch (e) {
-                console.warn('[CrazyGamesAdapter] gameplayStart failed:', e);
-            }
-        }
+        // YouTube does not have separate gameplayStart/gameplayStop hooks — no-ops.
+        gameplayStart() { }
+        gameplayStop() { }
 
-        // Signals that gameplay has paused/stopped (menu opened, ad shown, etc.).
-        gameplayStop() {
-            if (!this.cg || !this.cg.game) return;
-            try {
-                this.cg.game.gameplayStop();
-            } catch (e) {
-                console.warn('[CrazyGamesAdapter] gameplayStop failed:', e);
-            }
-        }
+        // YouTube has no happyTime equivalent — no-op.
+        happyTime() { }
 
-        // Signals a celebratory player moment (merge streak, win, etc.).
-        happyTime() {
-            if (!this.cg || !this.cg.game) return;
-            try {
-                this.cg.game.happytime();
-            } catch (e) {
-                console.warn('[CrazyGamesAdapter] happytime failed:', e);
-            }
-        }
-
-        // Returns whether CrazyGames allows audio. Reads the SDK's muteAudio
-        // setting live, falling back to the cached value if the SDK isn't ready.
-        // Deliberately PURE (no write to this._muted): the settings-change
-        // listener is the sole writer, so its `wasMuted !== this._muted` edge
-        // detection stays reliable. A getter that also wrote _muted could pre-sync
-        // it — e.g. from the 1s poll — and make the change event miss its edge.
+        // Returns whether the YouTube container currently has audio enabled.
         isAudioEnabled() {
-            if (this.cg && this.cg.game && this.cg.game.settings && typeof this.cg.game.settings.muteAudio === 'boolean') {
-                return !this.cg.game.settings.muteAudio;
-            }
-            return !this._muted;
-        }
-
-        // CrazyGames has no pause/resume events — YouTube-only no-op
-        // stubs returning an unsubscribe function for interface parity.
-        onPause(cb) { return () => { }; }
-        onResume(cb) { return () => { }; }
-
-        // Registers a callback for muteAudio changes via CG game settings.
-        // cb: (enabled: boolean) => void
-        // Returns: an unsubscribe function.
-        onAudioEnabledChange(cb) {
-            this._audioCallbacks.push(cb);
-            return () => {
-                const idx = this._audioCallbacks.indexOf(cb);
-                if (idx !== -1) this._audioCallbacks.splice(idx, 1);
-            };
-        }
-
-        // Tears down the settings change listener and clears callbacks.
-        cleanup() {
-            if (this.cg && this.cg.game && typeof this.cg.game.removeSettingsChangeListener === 'function' && this._boundSettingsListener) {
-                try {
-                    this.cg.game.removeSettingsChangeListener(this._boundSettingsListener);
-                } catch (e) { }
-            }
-            this._boundSettingsListener = null;
-            this._audioCallbacks = [];
-        }
-
-        // CrazyGames removed SDK leaderboard support — no-op for interface parity.
-        setScore(score) { return Promise.resolve(false); }
-
-        // Returns the logged-in CrazyGames user, or null if unavailable/guest.
-        async getUser() {
-            if (!this.cg || !this.cg.user) return null;
+            if (!this.yt || !this.yt.system) return true;
             try {
-                if (typeof this.cg.user.isUserAccountAvailable === 'function' && !await this.cg.user.isUserAccountAvailable()) return null;
-                const user = await this.cg.user.getUser();
-                if (!user) return null;
-                return {
-                    username: user.username,
-                    profilePictureUrl: user.profilePictureUrl
-                };
+                return this.yt.system.isAudioEnabled();
             } catch (e) {
-                console.warn('[CrazyGamesAdapter] getUser failed:', e);
-                return null;
+                console.warn('[YouTubePlayablesAdapter] isAudioEnabled failed:', e);
+                return true;
             }
         }
 
-        // --- Data Persistence (blob) — CrazyGames data module (cloud-synced) ---
+        // Registers a callback fired when YouTube requests the game to pause.
+        // Returns the SDK's unsubscribe function.
+        onPause(cb) {
+            if (!this.yt || !this.yt.system) return () => { };
+            try {
+                const unsub = this.yt.system.onPause(cb);
+                if (typeof unsub === 'function') this._unsubs.push(unsub);
+                return unsub || (() => { });
+            } catch (e) {
+                console.warn('[YouTubePlayablesAdapter] onPause failed:', e);
+                return () => { };
+            }
+        }
+
+        // Registers a callback fired when YouTube requests the game to resume.
+        // Returns the SDK's unsubscribe function.
+        onResume(cb) {
+            if (!this.yt || !this.yt.system) return () => { };
+            try {
+                const unsub = this.yt.system.onResume(cb);
+                if (typeof unsub === 'function') this._unsubs.push(unsub);
+                return unsub || (() => { });
+            } catch (e) {
+                console.warn('[YouTubePlayablesAdapter] onResume failed:', e);
+                return () => { };
+            }
+        }
+
+        // Registers a callback fired when YouTube's audio enablement changes.
+        // Returns the SDK's unsubscribe function.
+        onAudioEnabledChange(cb) {
+            if (!this.yt || !this.yt.system) return () => { };
+            try {
+                const unsub = this.yt.system.onAudioEnabledChange(cb);
+                if (typeof unsub === 'function') this._unsubs.push(unsub);
+                return unsub || (() => { });
+            } catch (e) {
+                console.warn('[YouTubePlayablesAdapter] onAudioEnabledChange failed:', e);
+                return () => { };
+            }
+        }
+
+        // Unsubscribes all registered event listeners to prevent memory leaks.
+        cleanup() {
+            for (const unsub of this._unsubs) {
+                try { unsub(); } catch (e) {
+                    console.warn('[YouTubePlayablesAdapter] cleanup unsub failed:', e);
+                }
+            }
+            this._unsubs = [];
+        }
+
+        // Sends the player's score to YouTube.
+        // sendScore returns Promise<void> — we must await it and handle errors.
+        async setScore(score) {
+            if (!this.yt || !this.yt.engagement) return false;
+            try {
+                await this.yt.engagement.sendScore({ value: Math.floor(score) });
+                return true;
+            } catch (e) {
+                console.warn('[YouTubePlayablesAdapter] sendScore failed:', e);
+                return false;
+            }
+        }
+
+        // YouTube Playables does not expose user profile data directly to the game for privacy reasons.
+        getUser() {
+            return Promise.resolve(null);
+        }
+
+        // --- Data Persistence (blob) ---
 
         saveData(data) {
-            if (!this.cg || !this.cg.data) return Promise.resolve();
+            if (!this.yt || !this.yt.game) return Promise.resolve();
             try {
-                this.cg.data.setItem(this._saveKey, data);
+                // Wrap in Promise.resolve so an async rejection (e.g. SIZE_LIMIT_EXCEEDED)
+                // is caught here rather than surfacing as an unhandled rejection.
+                return Promise.resolve(this.yt.game.saveData(data)).catch((e) => {
+                    console.warn('[YouTubePlayablesAdapter] saveData failed:', e);
+                });
             } catch (e) {
-                console.warn('[CrazyGamesAdapter] saveData failed:', e);
+                console.warn('[YouTubePlayablesAdapter] saveData failed:', e);
+                return Promise.resolve();
             }
-            return Promise.resolve();
         }
 
         loadData() {
-            if (!this.cg || !this.cg.data) return Promise.resolve(null);
+            if (!this.yt || !this.yt.game) return Promise.resolve(null);
             try {
-                const val = this.cg.data.getItem(this._saveKey);
-                return Promise.resolve(val != null ? val : null);
+                return this.yt.game.loadData();
             } catch (e) {
-                console.warn('[CrazyGamesAdapter] loadData failed:', e);
+                console.warn('[YouTubePlayablesAdapter] loadData failed:', e);
                 return Promise.resolve(null);
             }
         }
 
-        // --- Data Persistence (key-value) — CrazyGames data module ---
+        // --- Data Persistence (in-memory key-value storage) ---
 
         async setItem(key, value) {
-            if (!this.cg || !this.cg.data) return;
-            try { this.cg.data.setItem(key, String(value)); } catch (e) {
-                console.warn('[CrazyGamesAdapter] setItem failed:', e);
-            }
+            this._storage[key] = String(value);
         }
 
         async getItem(key) {
-            if (!this.cg || !this.cg.data) return null;
-            try {
-                const val = this.cg.data.getItem(key);
-                return val != null ? val : null;
-            } catch (e) {
-                return null;
-            }
+            const val = this._storage[key];
+            return val !== undefined ? val : null;
         }
 
         async removeItem(key) {
-            if (!this.cg || !this.cg.data) return;
-            try { this.cg.data.removeItem(key); } catch (e) { }
+            delete this._storage[key];
         }
 
         async clearData() {
-            if (!this.cg || !this.cg.data) return;
-            try { this.cg.data.clear(); } catch (e) { }
+            this._storage = {};
         }
 
-        // Returns the user's locale (BCP-47) from CrazyGames, falling back to the browser.
         getLanguage() {
+            if (!this.yt || !this.yt.system) {
+                return navigator.language || 'en-US';
+            }
             try {
-                const info = this.cg && this.cg.user && this.cg.user.systemInfo;
-                if (info && info.locale) return info.locale;
-            } catch (e) { }
-            return navigator.language || 'en-US';
+                return this.yt.system.getLanguage();
+            } catch (e) {
+                console.warn('[YouTubePlayablesAdapter] getLanguage failed:', e);
+                return navigator.language || 'en-US';
+            }
         }
 
         getEnvironment() {
-            if (!this.cg) return 'disabled';
+            if (!this.yt) return 'disabled';
             try {
-                return this.cg.environment || 'local';
+                return this.yt.IN_PLAYABLES_ENV ? 'youtube' : 'local';
             } catch (e) {
-                return 'crazygames';
+                return 'youtube';
             }
         }
 
-        // --- Ads (CrazyGames) ---
-        //   requestAd fires adStarted when the ad begins, adFinished on completion
-        //   (or reward earned for 'rewarded'), and adError on failure/no-fill.
+        // Opens a YouTube video by its video ID in the YouTube app/site.
+        openYTContent(videoId) {
+            if (!this.yt || !this.yt.engagement) return;
+            try {
+                const contentType = (this.yt.engagement.ContentType && this.yt.engagement.ContentType.VIDEO) || 'VIDEO';
+                // openYTContent returns a Promise that rejects with SdkError on
+                // failure — catch it here or it surfaces as an unhandled rejection
+                // (the surrounding try/catch only covers synchronous throws).
+                Promise.resolve(this.yt.engagement.openYTContent({ id: videoId, contentType: contentType })).catch((e) => {
+                    console.warn('[YouTubePlayablesAdapter] openYTContent failed:', e);
+                });
+            } catch (e) {
+                console.warn('[YouTubePlayablesAdapter] openYTContent failed:', e);
+            }
+        }
+
+        // --- Ads (YouTube Playables) ---
+
         async showAd(type = 'midgame', callbacks = {}, rewardId = 'default-reward') {
-            if (!this.cg || !this.cg.ad) {
-                console.log(`[CrazyGamesAdapter] showAd(${type}) — ad module unavailable.`);
+            if (!this.yt || !this.yt.ads) {
+                console.log(`[YouTubePlayablesAdapter] showAd(${type}) — ytgame.ads not available.`);
                 if (callbacks.onFinished) callbacks.onFinished();
                 return true;
             }
-            // CrazyGames only supports 'midgame' and 'rewarded'.
-            const adType = type === 'rewarded' ? 'rewarded' : 'midgame';
-            return new Promise((resolve) => {
-                let settled = false;
-                const settle = (ok) => {
-                    if (settled) return;
-                    settled = true;
-                    resolve(ok);
-                };
-                try {
-                    this.cg.ad.requestAd(adType, {
-                        adStarted: () => {
-                            if (callbacks.onStarted) callbacks.onStarted();
-                        },
-                        adFinished: () => {
-                            if (callbacks.onFinished) callbacks.onFinished();
-                            settle(true);
-                        },
-                        adError: (err) => {
-                            console.warn('[CrazyGamesAdapter] ad error:', err);
-                            if (callbacks.onError) callbacks.onError(err);
-                            settle(false);
-                        }
-                    });
-                } catch (e) {
-                    console.warn('[CrazyGamesAdapter] showAd failed:', e);
-                    if (callbacks.onError) callbacks.onError(e);
-                    settle(false);
+            try {
+                if (callbacks.onStarted) callbacks.onStarted();
+
+                let rewarded = false;
+                if (type === 'rewarded') {
+                    rewarded = await this.yt.ads.requestRewardedAd(rewardId);
+                    if (rewarded) {
+                        if (callbacks.onFinished) callbacks.onFinished();
+                    } else {
+                        if (callbacks.onError) callbacks.onError('ad_closed_early');
+                    }
+                } else {
+                    await this.yt.ads.requestInterstitialAd();
+                    if (callbacks.onFinished) callbacks.onFinished();
+                    rewarded = true;
                 }
-            });
+
+                return rewarded;
+            } catch (e) {
+                console.warn('[YouTubePlayablesAdapter] showAd failed:', e);
+                if (callbacks.onError) callbacks.onError(e);
+                return false;
+            }
         }
 
-        async hasAdblock() {
-            if (!this.cg || !this.cg.ad) return false;
+        // YouTube manages adblock at the container level — game can't detect it.
+        hasAdblock() {
+            return Promise.resolve(false);
+        }
+
+        // --- Health / Diagnostics (ytgame.health) ---
+        // Best-effort, rate-limited by YouTube. logError/logWarning take no
+        // arguments — they only signal that an error/warning occurred.
+
+        logError() {
+            if (!this.yt || !this.yt.health || typeof this.yt.health.logError !== 'function') return;
             try {
-                return await this.cg.ad.hasAdblock();
+                this.yt.health.logError();
             } catch (e) {
-                return false;
+                // Never let diagnostics itself throw.
+            }
+        }
+
+        logWarning() {
+            if (!this.yt || !this.yt.health || typeof this.yt.health.logWarning !== 'function') return;
+            try {
+                this.yt.health.logWarning();
+            } catch (e) {
+                // Never let diagnostics itself throw.
             }
         }
     }
@@ -611,6 +597,10 @@
             console.log('[MockSDK] getEnvironment() → local');
             return 'local';
         }
+        openYTContent(videoId) {
+            console.log('[MockSDK] openYTContent(' + videoId + ') → opening in new tab');
+            window.open('https://www.youtube.com/watch?v=' + videoId, '_blank');
+        }
         showAd(type, callbacks = {}, rewardId = 'default-reward') {
             console.log(`[MockSDK] showAd(${type}, rewardId: ${rewardId}) → simulated (resolves instantly)`);
             console.log('[MockSDK] Simulating: onStarted → onFinished');
@@ -624,30 +614,78 @@
             console.log('[MockSDK] hasAdblock() → false');
             return Promise.resolve(false);
         }
-        vibrate(pattern) {
-            console.log('[MockSDK] vibrate() called with pattern:', pattern);
-            super.vibrate(pattern);
-        }
     }
 
 
     // Static Initialization
-    const DISABLE_CRAZYGAMES = false; // Set to false to re-enable CrazyGames SDK
     const params = new URLSearchParams(window.location.search);
     const force = params.get('sdk');
     let adapter;
 
-    if (!DISABLE_CRAZYGAMES && (force === 'crazygames' ||
-        (force !== 'local' && force !== 'mock' && window.CrazyGames && window.CrazyGames.SDK))) {
-        adapter = new CrazyGamesAdapter();
+    if (force === 'youtube' ||
+        window.location.hostname.includes('youtube.com') ||
+        (window.ytgame && window.ytgame.IN_PLAYABLES_ENV) ||
+        window.ytPlayablesActive) {
+        adapter = new YouTubePlayablesAdapter();
     } else {
         adapter = new MockDevAdapter();
     }
 
-    // Kick off initialization. CrazyGamesAdapter.init() memoizes its promise, so
-    // the awaited init() call in main.js reuses this same initialization.
     adapter.init();
 
     // Expose globally as window.GameSDK
     window.GameSDK = adapter;
+
+    // Backward compatibility shim functions for existing sdkWrapper calls across room scripts and main logic
+    window.sdkWrapperInit = function () {
+        if (window.GameSDK && typeof window.GameSDK.init === 'function') window.GameSDK.init();
+    };
+    window.sdkWrapperGameLoadingStart = function () {
+        if (window.GameSDK && typeof window.GameSDK.loadingStart === 'function') window.GameSDK.loadingStart();
+    };
+    window.sdkWrapperGameLoadingStop = function () {
+        if (window.GameSDK && typeof window.GameSDK.loadingStop === 'function') window.GameSDK.loadingStop();
+    };
+    window.sdkWrapperGameplayStart = function () {
+        if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
+    };
+    window.sdkWrapperGameplayStop = function () {
+        if (window.GameSDK && typeof window.GameSDK.gameplayStop === 'function') window.GameSDK.gameplayStop();
+    };
+    window.sdkWrapperRequestResponsiveBanner = function () { };
+    window.sdkWrapperClearAllBanners = function () { };
+    window.sdkWrapperResizeBanners = function () { };
+    window.sdkCommercialBreak = function (onStart, onResume) {
+        if (window.GameSDK && typeof window.GameSDK.showAd === 'function') {
+            window.GameSDK.showAd('midgame', { onStarted: onStart, onFinished: onResume });
+        } else {
+            if (onStart) onStart();
+            if (onResume) onResume();
+        }
+    };
+    window.sdkRewardedBreak = function (onStart, onFinished) {
+        if (window.GameSDK && typeof window.GameSDK.showAd === 'function') {
+            window.GameSDK.showAd('rewarded', { onStarted: onStart, onFinished: onFinished });
+        } else {
+            if (onStart) onStart();
+            if (onFinished) onFinished(true);
+        }
+    };
+
+    // Report uncaught errors and unhandled promise rejections to the platform's
+    // health diagnostics (ytgame.health on YouTube; no-op elsewhere). The API
+    // carries no payload — it only signals that an error occurred — and details
+    // still reach the console as normal since these listeners don't swallow
+    // anything. Self-throttled so an error inside the 60fps render loop doesn't
+    // hammer the SDK (YouTube rate-limits on its end too).
+    let lastHealthReport = 0;
+    const reportError = () => {
+        const now = Date.now();
+        if (now - lastHealthReport < 5000) return;
+        lastHealthReport = now;
+        try { adapter.logError(); } catch (e) { }
+    };
+    window.addEventListener('error', reportError);
+    window.addEventListener('unhandledrejection', reportError);
 })();
+

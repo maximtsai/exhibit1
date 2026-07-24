@@ -373,9 +373,12 @@ function onLoaderBatchComplete(a) {
 
 function preload() {
     let gameDiv = document.getElementById('preload-notice');
-    gameDiv.innerHTML = "";
+    if (gameDiv) gameDiv.innerHTML = "";
     handleBorders();
     sdkWrapperGameLoadingStart();
+    if (window.GameSDK && typeof window.GameSDK.firstFrameReady === 'function') {
+        window.GameSDK.firstFrameReady();
+    }
     game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), 
     this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"), 
     this.load.image("headphones", "sprites/headphones.png")
@@ -435,11 +438,18 @@ function onLoadComplete(a) {
     if (deferredAudioLoaded) {
         return;
     }
-    if (!document.location.href.includes('itch') && !document.location.href.includes('localhost:8124') && !document.location.href.includes('poki')) {
+    const currentHref = document.location.href;
+    const isValidDomain = currentHref.includes('itch') ||
+                          currentHref.includes('localhost') ||
+                          currentHref.includes('127.0.0.1') ||
+                          currentHref.includes('youtube') ||
+                          currentHref.includes('google') ||
+                          (window.GameSDK && typeof window.GameSDK.getEnvironment === 'function' && window.GameSDK.getEnvironment() === 'youtube');
+    if (!isValidDomain) {
         // Stops execution of rest of game
         let gameDiv = document.getElementById('preload-notice');
-        let invalidSite = document.location.href.substring(0, 25);
-        gameDiv.innerHTML = invalidSite + "...\nis an invalid site.\n\n" + "Try the game on itch.io!";
+        let invalidSite = currentHref.substring(0, 25);
+        if (gameDiv) gameDiv.innerHTML = invalidSite + "...\nis an invalid site.\n\n" + "Try the game on itch.io!";
         return;
     }
 
