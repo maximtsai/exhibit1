@@ -912,16 +912,51 @@ function isHostAudioEnabled() {
     }
 }
 
+// True while a platform ad is on screen. Kept separate from hostAudioEnabled so
+// the two can't clobber each other - an ad can end while the host still has
+// audio disabled, and the host can re-enable audio mid-ad.
+let adAudioSuspended = false;
+
 function applyHostAudioState(forced) {
     const enabled = typeof forced === 'boolean' ? forced : isHostAudioEnabled();
     hostAudioEnabled = enabled;
 
+    // An ad on screen wins over the host's audio state: a YouTube interstitial
+    // overlays the game rather than replacing it, so the game has to fall silent
+    // even though the host still reports audio as enabled.
+    const audible = enabled && !adAudioSuspended;
+
     if (typeof phaserGame !== 'undefined' && phaserGame && phaserGame.sound) {
-        phaserGame.sound.mute = !enabled;
-        if (enabled && phaserGame.sound.context && phaserGame.sound.context.state === 'suspended') {
+        // Keep Phaser's own flag in step (it emits GLOBAL_MUTE off this setter)...
+        phaserGame.sound.mute = !audible;
+
+        // ...but do not trust it to actually take effect. Phaser mutes with
+        // masterMuteNode.gain.setValueAtTime(v, 0) - always at the fixed
+        // timestamp 0 - so every toggle appends another event at the same past
+        // time. After enough toggling Chrome stops applying new ones and the
+        // game is stranded silent (or audible) for the rest of the session,
+        // with sound.mute still reporting the value we asked for. Clearing the
+        // timeline and asserting the gain directly makes it deterministic.
+        // Guarded: the HTML5 Audio fallback has no masterMuteNode.
+        let muteNode = phaserGame.sound.masterMuteNode;
+        if (muteNode && muteNode.gain) {
+            try { muteNode.gain.cancelScheduledValues(0); } catch (e) { }
+            muteNode.gain.value = audible ? 1 : 0;
+        }
+
+        if (audible && phaserGame.sound.context && phaserGame.sound.context.state === 'suspended') {
             phaserGame.sound.context.resume().catch(() => {});
         }
     }
+}
+
+// Called by the SDK bridge around every ad. Mutes the whole game rather than the
+// handful of music tracks an individual call site happens to know about - the
+// ambient loops (watergurgle, pumpamb, fan1/fan2) are started with direct
+// .play() calls and were audible under the ad.
+function setAdAudioSuspended(suspended) {
+    adAudioSuspended = !!suspended;
+    applyHostAudioState();
 }
 
 function setupHostAudioReconciliation() {

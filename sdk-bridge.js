@@ -182,29 +182,85 @@
     class YouTubePlayablesAdapter extends BaseSDKAdapter {
         constructor() {
             super();
-            this.yt = null; // reference to window.ytgame
             // Unsubscribe handles returned by onPause / onResume / onAudioEnabledChange.
             this._unsubs = [];
             // In-memory key-value store to replace local storage
             this._storage = {};
+            // Calls made before the SDK script finished executing, replayed once
+            // it appears. Without this a slow SDK load is indistinguishable from
+            // a missing one: gameReady() would be dropped and YouTube would sit
+            // on its own loading spinner forever with the game running behind it.
+            this._pending = { firstFrameReady: false, gameReady: false, subs: [] };
+            this._sdkWatchTimer = null;
+        }
+
+        // Resolved live rather than captured once in init(). The SDK is a separate
+        // network request from a third-party origin, so it can execute after this
+        // file does; caching window.ytgame at construction made any late arrival
+        // permanent failure.
+        get yt() {
+            return window.ytgame || null;
         }
 
         init() {
-            this.yt = window.ytgame || null;
-            if (!this.yt) {
-                console.log('[YouTubePlayablesAdapter] ytgame SDK not present.');
-                return Promise.resolve(false);
+            if (this.yt) {
+                console.log('[YouTubePlayablesAdapter] ytgame SDK detected.');
+                return Promise.resolve(true);
             }
-            console.log('[YouTubePlayablesAdapter] ytgame SDK detected.');
-            return Promise.resolve(true);
+            console.warn('[YouTubePlayablesAdapter] ytgame SDK not present yet — watching for it.');
+            this._watchForSdk();
+            return Promise.resolve(false);
+        }
+
+        // Poll for a late-loading SDK, then replay anything that was queued.
+        _watchForSdk(timeoutMs = 15000, intervalMs = 250) {
+            if (this._sdkWatchTimer || this.yt) return;
+            let waited = 0;
+            this._sdkWatchTimer = setInterval(() => {
+                if (this.yt) {
+                    clearInterval(this._sdkWatchTimer);
+                    this._sdkWatchTimer = null;
+                    console.log('[YouTubePlayablesAdapter] ytgame SDK arrived late — replaying queued calls.');
+                    this._flushPending();
+                    return;
+                }
+                waited += intervalMs;
+                if (waited >= timeoutMs) {
+                    clearInterval(this._sdkWatchTimer);
+                    this._sdkWatchTimer = null;
+                    console.error('[YouTubePlayablesAdapter] ytgame SDK never loaded after ' +
+                        (timeoutMs / 1000) + 's; continuing without platform integration.');
+                }
+            }, intervalMs);
+        }
+
+        _flushPending() {
+            let subs = this._pending.subs;
+            this._pending.subs = [];
+            for (let i = 0; i < subs.length; i++) {
+                this._subscribe(subs[i].name, subs[i].cb);
+            }
+            if (this._pending.firstFrameReady) {
+                this._pending.firstFrameReady = false;
+                this.firstFrameReady();
+            }
+            if (this._pending.gameReady) {
+                this._pending.gameReady = false;
+                this.loadingStop();
+            }
         }
 
         // Signals to YouTube that the first visual frame has rendered.
         // Must be called as soon as any content appears on screen.
         firstFrameReady() {
-            if (!this.yt || !this.yt.game) return;
+            let yt = this.yt;
+            if (!yt || !yt.game) {
+                this._pending.firstFrameReady = true;
+                this._watchForSdk();
+                return;
+            }
             try {
-                this.yt.game.firstFrameReady();
+                yt.game.firstFrameReady();
             } catch (e) {
                 console.warn('[YouTubePlayablesAdapter] firstFrameReady failed:', e);
             }
@@ -213,9 +269,14 @@
         // Signals to YouTube that all assets are loaded and the game is playable.
         // Dismisses the YouTube loading UI.
         loadingStop() {
-            if (!this.yt || !this.yt.game) return;
+            let yt = this.yt;
+            if (!yt || !yt.game) {
+                this._pending.gameReady = true;
+                this._watchForSdk();
+                return;
+            }
             try {
-                this.yt.game.gameReady();
+                yt.game.gameReady();
                 console.log('[YouTubePlayablesAdapter] gameReady() called.');
             } catch (e) {
                 console.warn('[YouTubePlayablesAdapter] gameReady failed:', e);
@@ -240,50 +301,48 @@
             }
         }
 
-        // Registers a callback fired when YouTube requests the game to pause.
-        // Returns the SDK's unsubscribe function.
-        onPause(cb) {
-            if (!this.yt || !this.yt.system) return () => { };
+        // Shared registration path. The game subscribes once at boot, which can be
+        // before the SDK script has executed - queue those and register them for
+        // real once it turns up, or pause/resume/mute events would be lost for the
+        // whole session.
+        _subscribe(name, cb) {
+            let yt = this.yt;
+            if (!yt || !yt.system || typeof yt.system[name] !== 'function') {
+                this._pending.subs.push({ name: name, cb: cb });
+                this._watchForSdk();
+                return () => {
+                    this._pending.subs = this._pending.subs.filter(s => s.cb !== cb);
+                };
+            }
             try {
-                const unsub = this.yt.system.onPause(cb);
+                const unsub = yt.system[name](cb);
                 if (typeof unsub === 'function') this._unsubs.push(unsub);
                 return unsub || (() => { });
             } catch (e) {
-                console.warn('[YouTubePlayablesAdapter] onPause failed:', e);
+                console.warn(`[YouTubePlayablesAdapter] ${name} failed:`, e);
                 return () => { };
             }
         }
+
+        // Registers a callback fired when YouTube requests the game to pause.
+        // Returns the SDK's unsubscribe function.
+        onPause(cb) { return this._subscribe('onPause', cb); }
 
         // Registers a callback fired when YouTube requests the game to resume.
         // Returns the SDK's unsubscribe function.
-        onResume(cb) {
-            if (!this.yt || !this.yt.system) return () => { };
-            try {
-                const unsub = this.yt.system.onResume(cb);
-                if (typeof unsub === 'function') this._unsubs.push(unsub);
-                return unsub || (() => { });
-            } catch (e) {
-                console.warn('[YouTubePlayablesAdapter] onResume failed:', e);
-                return () => { };
-            }
-        }
+        onResume(cb) { return this._subscribe('onResume', cb); }
 
         // Registers a callback fired when YouTube's audio enablement changes.
         // Returns the SDK's unsubscribe function.
-        onAudioEnabledChange(cb) {
-            if (!this.yt || !this.yt.system) return () => { };
-            try {
-                const unsub = this.yt.system.onAudioEnabledChange(cb);
-                if (typeof unsub === 'function') this._unsubs.push(unsub);
-                return unsub || (() => { });
-            } catch (e) {
-                console.warn('[YouTubePlayablesAdapter] onAudioEnabledChange failed:', e);
-                return () => { };
-            }
-        }
+        onAudioEnabledChange(cb) { return this._subscribe('onAudioEnabledChange', cb); }
 
         // Unsubscribes all registered event listeners to prevent memory leaks.
         cleanup() {
+            if (this._sdkWatchTimer) {
+                clearInterval(this._sdkWatchTimer);
+                this._sdkWatchTimer = null;
+            }
+            this._pending.subs = [];
             for (const unsub of this._unsubs) {
                 try { unsub(); } catch (e) {
                     console.warn('[YouTubePlayablesAdapter] cleanup unsub failed:', e);
@@ -442,6 +501,13 @@
             } catch (e) {
                 console.warn('[YouTubePlayablesAdapter] showAd failed:', e);
                 if (callbacks.onError) callbacks.onError(e);
+                // A mid-game ad that never played must still resume the game.
+                // Ad requests reject routinely (adblock, unfilled, no network), and
+                // callers use onFinished to unmute and continue — skipping it here
+                // left the music silenced forever and the endgame replay button
+                // dead. Rewarded ads deliberately do NOT resume this way, because
+                // their onFinished is what grants the reward.
+                if (type !== 'rewarded' && callbacks.onFinished) callbacks.onFinished();
                 return false;
             }
         }
@@ -649,6 +715,38 @@
 
     adapter.init();
 
+    // Silence the whole game for the duration of any ad. Individual call sites
+    // only mute the music tracks they happen to know about, which left the
+    // ambient loops (watergurgle, pumpamb, fan1/fan2 — all started with direct
+    // .play() calls) audible underneath a YouTube interstitial. main.js owns the
+    // actual mute so this cannot fight the host's own audio state.
+    function suspendGameAudioForAd(suspended) {
+        if (typeof window.setAdAudioSuspended === 'function') {
+            try { window.setAdAudioSuspended(suspended); } catch (e) { }
+        }
+    }
+
+    // Wrapped once here rather than inside each adapter so it covers every ad
+    // path, including callers that reach for GameSDK.showAd directly.
+    const _showAd = adapter.showAd.bind(adapter);
+    adapter.showAd = function (type, callbacks, rewardId) {
+        const cb = callbacks || {};
+        return _showAd(type, {
+            onStarted: () => {
+                suspendGameAudioForAd(true);
+                if (cb.onStarted) cb.onStarted();
+            },
+            onFinished: () => {
+                suspendGameAudioForAd(false);
+                if (cb.onFinished) cb.onFinished();
+            },
+            onError: (e) => {
+                suspendGameAudioForAd(false);
+                if (cb.onError) cb.onError(e);
+            }
+        }, rewardId);
+    };
+
     // Expose globally as window.GameSDK
     window.GameSDK = adapter;
 
@@ -679,9 +777,18 @@
             if (onResume) onResume();
         }
     };
-    window.sdkRewardedBreak = function (onStart, onFinished) {
+    // onError is required for correctness, not optional: rewarded ads reject
+    // routinely (adblock, unfilled, closed early), and onFinished cannot double as
+    // the resume hook because it is what grants the reward. Whatever onStart did,
+    // undo it in onError. Game-wide audio is handled centrally by the showAd
+    // wrapper above, so onError only needs to undo caller-specific state.
+    window.sdkRewardedBreak = function (onStart, onFinished, onError) {
         if (window.GameSDK && typeof window.GameSDK.showAd === 'function') {
-            window.GameSDK.showAd('rewarded', { onStarted: onStart, onFinished: onFinished });
+            window.GameSDK.showAd('rewarded', {
+                onStarted: onStart,
+                onFinished: onFinished,
+                onError: onError
+            });
         } else {
             if (onStart) onStart();
             if (onFinished) onFinished(true);
