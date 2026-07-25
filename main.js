@@ -84,41 +84,15 @@ let earlyAudio = [
     ["click3", "audio/click3.mp3"],
     ["click4", "audio/click4.mp3"],
     ["airpump", "audio/airpump.mp3"],
-    ["doorslam", "audio/doorslam.mp3"],
-    ["dooropen", "audio/dooropen.mp3"],
-    ["dooropen2", "audio/dooropen2.mp3"],
-    ["squeakopen", "audio/squeakopen.mp3"],
-    ["lidslam", "audio/lidslam.mp3"],
-    ["metalgrind1", "audio/metalgrind1.mp3"],
-    ["metalgrind2", "audio/metalgrind2.mp3"],
-    ["metalgrind3", "audio/metalgrind3.mp3"],
-    ["metalgrind4", "audio/metalgrind4.mp3"],
-    ["metalsqueak1", "audio/metalsqueak1.mp3"],
-    ["metalsqueak2", "audio/metalsqueak2.mp3"],
     ["keyfound", "audio/keyfound.mp3"],
     ["keyget", "audio/keyget.mp3"],
-    ["keygetred", "audio/keygetred.mp3"],
-    ["deepbell1", "audio/deepbell1.mp3"],
-    ["deepbell2", "audio/deepbell2.mp3"],
-    ["deepbell3", "audio/deepbell3.mp3"],
-    ["deepbell4", "audio/deepbell4.mp3"],
-    ["deepbell5", "audio/deepbell5.mp3"],
     ["fan1", "audio/fan1.mp3"],
     ["fan2", "audio/fan2.mp3"],
-    ["nyaha", "audio/nyaha.mp3"],
-    ["splurt", "audio/splurt.mp3"],
-    ["watergurgle", "audio/watergurgle.mp3"],
-    ["stopmusic", "audio/stopmusic.mp3"],
     ["gladiator0", "audio/gladiator0.mp3"],
     ["gladiator1", "audio/gladiator1.mp3"],
     ["gladiator2", "audio/gladiator2.mp3"],
     ["gladiatorx", "audio/gladiatorx.mp3"],
-    ["pumpamb", "audio/pumpamb.mp3"],
-    ["shout1", "audio/shout1.mp3"],
-    ["shout2", "audio/shout2.mp3"],
-    ["shout3", "audio/shout3.mp3"],
-    ["shout4", "audio/shout4.mp3"],
-    ["shout5", "audio/shout5.mp3"]
+    ["pumpamb", "audio/pumpamb.mp3"]
 ];
 let deferredAudio = [
     ["a7", "audio/notes/a7.mp3"],
@@ -171,11 +145,55 @@ let deferredAudio = [
     ["emerge2", "audio/emerge2.mp3"],
     ["squeak1", "audio/squeak1.mp3"],
     ["squeak2", "audio/squeak2.mp3"],
-    ["squeak3", "audio/squeak3.mp3"]
+    ["squeak3", "audio/squeak3.mp3"],
+    ["doorslam", "audio/doorslam.mp3"],
+    ["dooropen", "audio/dooropen.mp3"],
+    ["dooropen2", "audio/dooropen2.mp3"],
+    ["squeakopen", "audio/squeakopen.mp3"],
+    ["lidslam", "audio/lidslam.mp3"],
+    ["metalgrind1", "audio/metalgrind1.mp3"],
+    ["metalgrind2", "audio/metalgrind2.mp3"],
+    ["metalgrind3", "audio/metalgrind3.mp3"],
+    ["metalgrind4", "audio/metalgrind4.mp3"],
+    ["metalsqueak1", "audio/metalsqueak1.mp3"],
+    ["metalsqueak2", "audio/metalsqueak2.mp3"],
+    ["keygetred", "audio/keygetred.mp3"],
+    ["deepbell1", "audio/deepbell1.mp3"],
+    ["deepbell2", "audio/deepbell2.mp3"],
+    ["deepbell3", "audio/deepbell3.mp3"],
+    ["deepbell4", "audio/deepbell4.mp3"],
+    ["deepbell5", "audio/deepbell5.mp3"],
+    ["nyaha", "audio/nyaha.mp3"],
+    ["splurt", "audio/splurt.mp3"],
+    ["watergurgle", "audio/watergurgle.mp3"],
+    ["stopmusic", "audio/stopmusic.mp3"],
+    ["shout1", "audio/shout1.mp3"],
+    ["shout2", "audio/shout2.mp3"],
+    ["shout3", "audio/shout3.mp3"],
+    ["shout4", "audio/shout4.mp3"],
+    ["shout5", "audio/shout5.mp3"]
 ];
 let deferredAtlases = [
     ["roomClown2", "sprites/clown/clown2.json"],
     ["flashScreens", "sprites/flashscreens/flashscreens.json"]
+];
+let deferredImages = [
+    ["theEnd", "sprites/altreality/the_end.webp"],
+    ["stretch1", "sprites/altreality/stretch1.jpg"],
+    ["stretch2", "sprites/altreality/stretch2.jpg"],
+    ["stretch3", "sprites/altreality/stretch3.jpg"],
+    ["stretch4", "sprites/altreality/stretch4.jpg"],
+    ["stretch5", "sprites/altreality/stretch5.jpg"],
+    ["stretch6", "sprites/altreality/stretch6.jpg"],
+    ["floaty1", "sprites/altreality/floaty1.jpg"],
+    ["floaty2", "sprites/altreality/floaty2.jpg"],
+    ["floaty3", "sprites/altreality/floaty3.jpg"],
+    ["floaty4", "sprites/altreality/floaty4.jpg"],
+    ["balloon1", "sprites/altreality/balloon1.jpg"],
+    ["balloon2", "sprites/altreality/balloon2.jpg"],
+    ["balloon3", "sprites/altreality/balloon3.jpg"],
+    ["balloon4", "sprites/altreality/balloon4.jpg"],
+    ["balloon5", "sprites/altreality/balloon5.jpg"]
 ];
 let deferredAudioLoaded = !1;
 
@@ -451,7 +469,7 @@ function onPreloadComplete(a) {
         }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"),
         a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
         a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
-        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
+        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.start()
 }
 
 let gameLoadedOnce = false;
@@ -540,6 +558,7 @@ function loadDeferredAudio(a) {
     setupLoaderRetryHandlers(a);
     for (let d = 0; d < deferredAudio.length; d++) a.load.audio(deferredAudio[d][0], deferredAudio[d][1]);
     for (let t = 0; t < deferredAtlases.length; t++) a.load.multiatlas(deferredAtlases[t][0], deferredAtlases[t][1]);
+    for (let i = 0; i < deferredImages.length; i++) a.load.image(deferredImages[i][0], deferredImages[i][1]);
     let onDeferredComplete = () => {
         // A retry re-runs the loader; wait for the pass that follows it, or the
         // assets being retried would be written off as failed here.
@@ -551,6 +570,12 @@ function loadDeferredAudio(a) {
             let key = deferredAtlases[t][0];
             if (!a.textures.exists(key)) {
                 console.warn("loadDeferredAudio: atlas failed to load: " + key);
+            }
+        }
+        for (let i = 0; i < deferredImages.length; i++) {
+            let key = deferredImages[i][0];
+            if (!a.textures.exists(key)) {
+                console.warn("loadDeferredAudio: image failed to load: " + key);
             }
         }
         for (let d = 0; d < deferredAudio.length; d++) {
