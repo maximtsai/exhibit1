@@ -39,7 +39,7 @@ function setupRoomJack(e, a, o) {
         isDraggable: !0,
         onDrop: resetSpinnerButton
     }), addToUpdateFuncList(roomJackUpdate), resetSpinnerButton(), messageBus.subscribe("exhibitMove", (e, o) => {
-        e === a ? (tweenVolume("gladiator0", 0), tweenVolume("gladiator1", .9), tweenVolume("gladiator2", .1), tweenVolume("gladiatorx", .1), gameVars.darkPoint && (gameObjects.roomJackObjs.eyeOffsetX = 4, setTimeout(() => {
+        e === a ? (tweenVolume("gladiator0", 0), tweenVolume("gladiator1", .9), tweenVolume("gladiator2", .1), tweenVolume("gladiatorx", .1), gameVars.darkPoint && (gameObjects.roomJackObjs.eyeOffsetX = 4, gameDelay(() => {
             removeFromUpdateFuncList(shakeJackHead), gameObjects.roomJackObjs.eyeOffsetX = 0, gameObjects.roomJackObjs.dollHead.rotation = 0, gameObjects.roomJackObjs.dollHeadSmile.visible = !1
         }, 1300)), addGuideArrowToContainer(gameObjects.roomJackObjs.roomContainer), updateGuideArrow(0, -9999), gameObjects.roomJackObjs.shouldUpdate = !0, gameObjects.roomJackObjs.lightsReady && (gameObjects.moveLeftBtn.setOnMouseUpFunc(() => {
             gameObjects.roomJackObjs.eyeOffsetY += 1, gameObjects.moveLeftBtn.setState("disable"), updateInfoText("There is no reason to turn back", 4500), console.log("...")
@@ -49,9 +49,9 @@ function setupRoomJack(e, a, o) {
             scaleX: 2,
             scaleY: 2,
             duration: 3e3
-        }))) : (setTimeout(() => {
+        }))) : (gameDelay(() => {
             gameObjects.roomJackObjs.shouldUpdate = !1
-        }, 600), gameVars.darkPoint && e < a && o === a && (gameObjects.roomJackObjs.fakeEyes = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight + 20, "roomJack", "dollEyesFake"), gameObjects.roomJackObjs.fakeEyes.scaleY = .01, setTimeout(() => {
+        }, 600), gameVars.darkPoint && e < a && o === a && (gameObjects.roomJackObjs.fakeEyes = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight + 20, "roomJack", "dollEyesFake"), gameObjects.roomJackObjs.fakeEyes.scaleY = .01, gameDelay(() => {
             gameObjects.roomJackObjs.dollHeadSmile.visible = !0
         }, 250), globalScene.tweens.add({
             targets: gameObjects.roomJackObjs.fakeEyes,
@@ -97,7 +97,7 @@ function roomJackUpdate(e) {
                 b = 0;
             gameObjects.roomJackObjs.isAutopilot ? (b = r, gameObjects.roomJackObjs.spinnerButton.getIsDragged() && m < .01 && (b -= Math.min(.5 * r, Math.abs(.003 * m)))) : m > .01 && !gameVars.darkPoint ? b = Math.min(r, .02 * m) : gameVars.darkPoint && m < .01 && (b = Math.max(-r, .02 * m)), gameObjects.roomJackObjs.slowRotation && (b *= .45), Math.abs(b) > 1e-5 && (gameObjects.roomJackObjs.spinner.rotVel += b * e), gameObjects.roomJackObjs.spinner.rotation += gameObjects.roomJackObjs.spinner.rotVel, gameObjects.roomJackObjs.totalDistRotated += gameObjects.roomJackObjs.spinner.rotVel, gameVars.darkPoint ? checkMusicSequenceDark(gameObjects.roomJackObjs.spinner.rotVel) : gameVars.horrorPoint ? checkMusicSequenceHorror(gameObjects.roomJackObjs.spinner.rotVel, e) : checkMusicSequenceNormal(gameObjects.roomJackObjs.spinner.rotVel)
         }
-        gameObjects.roomJackObjs.spinnerButton.getIsDragged() && gameObjects.roomJackObjs.canSpin && updateGuideArrowJack(), gameObjects.roomJackObjs.spinner.rotVel *= .5, gameObjects.roomJackObjs.animateLid && (gameObjects.roomJackObjs.lid.rotation += gameObjects.roomJackObjs.lid.rotVel, gameObjects.roomJackObjs.lid.rotVel *= .831, gameObjects.roomJackObjs.lid.rotVel <= .01 && (gameObjects.roomJackObjs.animateLid = !1)), "jump" === gameObjects.roomJackObjs.jackJumpState && (gameObjects.roomJackObjs.lid.rotation += gameObjects.roomJackObjs.lid.rotVel, gameObjects.roomJackObjs.lid.rotVel *= .831, gameObjects.roomJackObjs.lid.rotation > 3 && (gameObjects.roomJackObjs.jackJumpState = "finished", gameVars.horrorPoint || setTimeout(() => {
+        gameObjects.roomJackObjs.spinnerButton.getIsDragged() && gameObjects.roomJackObjs.canSpin && updateGuideArrowJack(), gameObjects.roomJackObjs.spinner.rotVel *= .5, gameObjects.roomJackObjs.animateLid && (gameObjects.roomJackObjs.lid.rotation += gameObjects.roomJackObjs.lid.rotVel, gameObjects.roomJackObjs.lid.rotVel *= .831, gameObjects.roomJackObjs.lid.rotVel <= .01 && (gameObjects.roomJackObjs.animateLid = !1)), "jump" === gameObjects.roomJackObjs.jackJumpState && (gameObjects.roomJackObjs.lid.rotation += gameObjects.roomJackObjs.lid.rotVel, gameObjects.roomJackObjs.lid.rotVel *= .831, gameObjects.roomJackObjs.lid.rotation > 3 && (gameObjects.roomJackObjs.jackJumpState = "finished", gameVars.horrorPoint || gameDelay(() => {
             createKey(gameObjects.roomJackObjs.box.x, gameObjects.roomJackObjs.box.y - 60, gameObjects.roomJackObjs.roomIndex, gameObjects.roomJackObjs.roomContainer, !0)
         }, 250))), gameObjects.roomJackObjs.dollHead.x = gameObjects.roomJackObjs.dollCreepy.x, gameObjects.roomJackObjs.dollHead.y = gameObjects.roomJackObjs.dollCreepy.y - gameObjects.roomJackObjs.halfHeightDiffDoll, gameObjects.roomJackObjs.dollHead.scaleX = gameObjects.roomJackObjs.dollCreepy.scaleX, gameObjects.roomJackObjs.dollEyes.x = gameObjects.roomJackObjs.dollCreepy.x + gameObjects.roomJackObjs.eyeOffsetX, gameObjects.roomJackObjs.dollEyes.y = gameObjects.roomJackObjs.dollCreepy.y - gameObjects.roomJackObjs.halfHeightDiffDoll + gameObjects.roomJackObjs.eyeOffsetY, gameObjects.roomJackObjs.dollEyes.scaleX = gameObjects.roomJackObjs.dollCreepy.scaleX, gameObjects.roomJackObjs.dollHeadUnder.x = gameObjects.roomJackObjs.dollHead.x, gameObjects.roomJackObjs.dollHeadUnder.y = gameObjects.roomJackObjs.dollHead.y, gameObjects.roomJackObjs.dollHeadUnder.scaleX = gameObjects.roomJackObjs.dollHead.scaleX, updateJackArmsLeft(e), gameObjects.roomJackObjs.useAltArmMovement ? updateJackArmsRightAuto() : updateJackArmsRight()
     }
@@ -175,11 +175,11 @@ function checkMusicSequenceDark(e) {
     if (!gameObjects.exhibit.needCleanup) return;
     gameObjects.roomJackObjs.rotateMusicAccumulate -= e;
     let a = gameObjects.roomJackObjs.musicDataDark[gameObjects.roomJackObjs.noteCount];
-    a ? gameObjects.roomJackObjs.rotateMusicAccumulate > a.accumulate && (a.static ? showStaticRand(1, void 0, void 0, .06) : a.slowSpin ? gameObjects.roomJackObjs.slowRotation = !0 : (playMusicBoxNote(a.note, a.volume, a.tint), gameObjects.roomJackObjs.slowRotation = !1), gameObjects.roomJackObjs.noteCount++, gameObjects.roomJackObjs.rotateMusicAccumulate = 0) : (gameObjects.roomJackObjs.lid.rotation -= .09, gameObjects.roomJackObjs.dollCreepy.y = Math.min(2010, gameObjects.roomJackObjs.dollCreepy.y + 11), gameObjects.roomJackObjs.dollCreepy.scaleX = Math.max(.4, gameObjects.roomJackObjs.dollCreepy.scaleX - .07), gameObjects.roomJackObjs.dollHead.visible = !1, gameObjects.roomJackObjs.dollEyes.visible = !1, gameObjects.roomJackObjs.dollHeadUnder.visible = !0, gameObjects.roomJackObjs.playedSlam || (setTimeout(() => {
-        playSound("lidslam"), setTimeout(() => {
+    a ? gameObjects.roomJackObjs.rotateMusicAccumulate > a.accumulate && (a.static ? showStaticRand(1, void 0, void 0, .06) : a.slowSpin ? gameObjects.roomJackObjs.slowRotation = !0 : (playMusicBoxNote(a.note, a.volume, a.tint), gameObjects.roomJackObjs.slowRotation = !1), gameObjects.roomJackObjs.noteCount++, gameObjects.roomJackObjs.rotateMusicAccumulate = 0) : (gameObjects.roomJackObjs.lid.rotation -= .09, gameObjects.roomJackObjs.dollCreepy.y = Math.min(2010, gameObjects.roomJackObjs.dollCreepy.y + 11), gameObjects.roomJackObjs.dollCreepy.scaleX = Math.max(.4, gameObjects.roomJackObjs.dollCreepy.scaleX - .07), gameObjects.roomJackObjs.dollHead.visible = !1, gameObjects.roomJackObjs.dollEyes.visible = !1, gameObjects.roomJackObjs.dollHeadUnder.visible = !0, gameObjects.roomJackObjs.playedSlam || (gameDelay(() => {
+        playSound("lidslam"), gameDelay(() => {
             zoomTemp(1.028), gameObjects.roomJackObjs.dollCreepy.y = 2010, gameObjects.roomJackObjs.lid.rotation = 0
         }, 170)
-    }, 70), gameObjects.roomJackObjs.playedSlam = !0)), gameObjects.roomJackObjs.dollCreepy.y = Math.min(2010, gameObjects.roomJackObjs.dollCreepy.y - 5 * e), gameObjects.roomJackObjs.lid.rotation = Math.max(0, gameObjects.roomJackObjs.lid.rotation + .2 * e), gameObjects.roomJackObjs.lid.rotation <= .01 && (gameObjects.roomJackObjs.lid.rotation = 0, gameObjects.exhibit.needCleanup = !1, gameObjects.roomJackObjs.canSpin = !1, resetGuideArrowJack(), setTimeout(() => {
+    }, 70), gameObjects.roomJackObjs.playedSlam = !0)), gameObjects.roomJackObjs.dollCreepy.y = Math.min(2010, gameObjects.roomJackObjs.dollCreepy.y - 5 * e), gameObjects.roomJackObjs.lid.rotation = Math.max(0, gameObjects.roomJackObjs.lid.rotation + .2 * e), gameObjects.roomJackObjs.lid.rotation <= .01 && (gameObjects.roomJackObjs.lid.rotation = 0, gameObjects.exhibit.needCleanup = !1, gameObjects.roomJackObjs.canSpin = !1, resetGuideArrowJack(), gameDelay(() => {
         playSound("deepbell1"), updateInfoTextSoft("Room cleaned up.", 2500), window.GameSDK && typeof window.GameSDK.gameplayStop === 'function' && window.GameSDK.gameplayStop()
     }, 400))
 }
@@ -192,7 +192,7 @@ function checkMusicSequenceHorror(e, a = 1) {
             let a = .035 * e;
             gameObjects.roomJackObjs.dollface.scaleY = gameObjects.roomJackObjs.dollface.scaleY + a, gameObjects.roomJackObjs.dollface.scaleX = gameObjects.roomJackObjs.dollface.scaleY * (1 + .05 * Math.sin(20 * gameObjects.roomJackObjs.rotateMusicAccumulate)), showStaticLite(), gameObjects.roomJackObjs.dollface.y > 590 && (removeFromUpdateFuncList(roomJackUpdate), disableMoveLeftButton(), showFlashRand(5, void 0, () => {
                 showStaticRand(4), gameObjects.sounds.squeak3.stop(), gameObjects.exhibit.moveRight(!0), gameObjects.roomJackObjs.neck1.visible = !1, gameObjects.roomJackObjs.neck2.visible = !1, gameObjects.roomJackObjs.neck3.visible = !1, disableMoveButtons(), gameObjects.roomJackObjs.dollface.destroy(), gameObjects.roomJackObjs.dollmouth.destroy(), showFlashArr([5, 6, 7, 8, 17, 9, 17, 10, 18], () => {
-                    disableMoveLeftButton(), setTimeout(() => {
+                    disableMoveLeftButton(), gameDelay(() => {
                         disableMoveLeftButton()
                     }, 20)
                 })
@@ -208,17 +208,17 @@ function checkMusicSequenceHorror(e, a = 1) {
             showStaticRand(1, void 0, void 0, e)
         } else o.slowSpin ? gameObjects.roomJackObjs.slowRotation = !0 : o.popupHeadHorror ? (gameObjects.roomJackObjs.placard.setOnMouseUpFunc(() => {
             showStaticLite(), updateInfoText("TURN THE HANDLE")
-        }), gameObjects.roomJackObjs.jackJumpState = "jump", gameObjects.roomJackObjs.lid.rotVel = .4, gameObjects.roomJackObjs.dollHeadUnder.destroy(), animatePopUp(), playSound("nyaha"), playSound("squeakopen"), setTimeout(() => {
-            showStaticRand(2, void 0, void 0, .15), setTimeout(() => {
+        }), gameObjects.roomJackObjs.jackJumpState = "jump", gameObjects.roomJackObjs.lid.rotVel = .4, gameObjects.roomJackObjs.dollHeadUnder.destroy(), animatePopUp(), playSound("nyaha"), playSound("squeakopen"), gameDelay(() => {
+            showStaticRand(2, void 0, void 0, .15), gameDelay(() => {
                 showStaticRand(1, void 0, void 0, .07)
             }, 3e3)
-        }, 1600)) : o.startFinale ? startFinale() : o.showLeftArm ? (gameObjects.roomJackObjs.dollHeadFlash2.visible = !1, showFlashRand(2), jumpOutLeftArm(), showStaticRand(2, void 0, void 0, .15), setTimeout(() => {
-            gameObjects.roomJackObjs.passedSafePoint || (gameObjects.sounds.pumpamb.play(), gameObjects.sounds.pumpamb.volume = 1 * gameVars.soundMult, gameObjects.roomJackObjs.dollHeadFlash2.visible = !0, gameObjects.roomJackObjs.dollHeadFlash2.scaleX = .9, gameObjects.roomJackObjs.dollHeadFlash2.scaleY = .9, gameObjects.roomJackObjs.dollHead.visible = !1, gameObjects.roomJackObjs.dollEyes.visible = !1, gameObjects.roomJackObjs.dollCreepy.visible = !1, addToUpdateFuncList(shakeHeadFlashTwo), setTimeout(() => {
+        }, 1600)) : o.startFinale ? startFinale() : o.showLeftArm ? (gameObjects.roomJackObjs.dollHeadFlash2.visible = !1, showFlashRand(2), jumpOutLeftArm(), showStaticRand(2, void 0, void 0, .15), gameDelay(() => {
+            gameObjects.roomJackObjs.passedSafePoint || (gameObjects.sounds.pumpamb.play(), gameObjects.sounds.pumpamb.volume = 1 * gameVars.soundMult, gameObjects.roomJackObjs.dollHeadFlash2.visible = !0, gameObjects.roomJackObjs.dollHeadFlash2.scaleX = .9, gameObjects.roomJackObjs.dollHeadFlash2.scaleY = .9, gameObjects.roomJackObjs.dollHead.visible = !1, gameObjects.roomJackObjs.dollEyes.visible = !1, gameObjects.roomJackObjs.dollCreepy.visible = !1, addToUpdateFuncList(shakeHeadFlashTwo), gameDelay(() => {
                 gameObjects.sounds.pumpamb.stop(), gameObjects.roomJackObjs.dollHeadFlash2.visible = !1, removeFromUpdateFuncList(shakeHeadFlashTwo), showStaticRand(1), showFlashRand(1), gameObjects.roomJackObjs.dollHead.visible = !0, gameObjects.roomJackObjs.dollEyes.visible = !0, gameObjects.roomJackObjs.dollCreepy.visible = !0
             }, 385))
-        }, 7e3)) : o.showRightArm ? (gameObjects.roomJackObjs.dollHead.visible = !1, gameObjects.roomJackObjs.dollEyes.visible = !1, gameObjects.roomJackObjs.dollCreepy.visible = !1, gameObjects.roomJackObjs.lights.alpha *= .5, gameObjects.roomJackObjs.dollHeadFlash1.visible = !0, gameObjects.roomJackObjs.dollHeadFlash1.scaleX = .8, gameObjects.roomJackObjs.dollHeadFlash1.scaleY = .8, addToUpdateFuncList(shakeHeadFlashOne), showFlashRand(2), setTimeout(() => {
+        }, 7e3)) : o.showRightArm ? (gameObjects.roomJackObjs.dollHead.visible = !1, gameObjects.roomJackObjs.dollEyes.visible = !1, gameObjects.roomJackObjs.dollCreepy.visible = !1, gameObjects.roomJackObjs.lights.alpha *= .5, gameObjects.roomJackObjs.dollHeadFlash1.visible = !0, gameObjects.roomJackObjs.dollHeadFlash1.scaleX = .8, gameObjects.roomJackObjs.dollHeadFlash1.scaleY = .8, addToUpdateFuncList(shakeHeadFlashOne), showFlashRand(2), gameDelay(() => {
             showFlashRand(1), playSound("squeak1")
-        }, 150), playSound("void"), playSound("stopmusic"), setTimeout(() => {
+        }, 150), playSound("void"), playSound("stopmusic"), gameDelay(() => {
             showFlashRand(2), gameObjects.roomJackObjs.dollHead.visible = !0, gameObjects.roomJackObjs.dollEyes.visible = !0, gameObjects.roomJackObjs.dollCreepy.visible = !0, removeFromUpdateFuncList(shakeHeadFlashOne), gameObjects.roomJackObjs.dollHeadFlash1.destroy(), gameObjects.roomJackObjs.lights.alpha *= 2, jumpOutRightArm(), gameObjects.sounds.void.stop()
         }, 475), showStaticRand(2, void 0, void 0, .15)) : o.message ? messageBus.publish(o.message) : o.startAutoSpin ? (gameObjects.roomJackObjs.spinnerButton.destroy(), gameObjects.roomJackObjs.speedRatio = 12.5, flipToAutoSpinArm()) : o.updateProp ? gameObjects.roomJackObjs[o.updateProp] = o.updateVal : o.special || (playMusicBoxNote(o.note, o.volume, o.tint), gameObjects.roomJackObjs.slowRotation = !1);
         gameObjects.roomJackObjs.noteCount++, gameObjects.roomJackObjs.rotateMusicAccumulate = 0
@@ -831,10 +831,10 @@ function setupJackMusicSequence() {
 }
 
 function playLastNotes() {
-    setTimeout(() => {
-        playMusicBoxNote("d7", void 0, 56831), setTimeout(() => {
-            playMusicBoxNote("f7", void 0, 16776960), setTimeout(() => {
-                playMusicBoxNote("e7", void 0, 65280), setTimeout(() => {
+    gameDelay(() => {
+        playMusicBoxNote("d7", void 0, 56831), gameDelay(() => {
+            playMusicBoxNote("f7", void 0, 16776960), gameDelay(() => {
+                playMusicBoxNote("e7", void 0, 65280), gameDelay(() => {
                     playMusicBoxNote("c7", void 0, 4607)
                 }, 400)
             }, 200)
@@ -983,7 +983,7 @@ function flipToAutoSpinArm() {
         ease: "Quad.easeIn",
         duration: 225,
         onComplete: () => {
-            gameObjects.roomJackObjs.isAutopilot = !0, gameObjects.roomJackObjs.readyToGrabSpinner = !0, setTimeout(() => {
+            gameObjects.roomJackObjs.isAutopilot = !0, gameObjects.roomJackObjs.readyToGrabSpinner = !0, gameDelay(() => {
                 gameObjects.sounds.squeak3.play({
                     loop: !0
                 }), gameObjects.sounds.squeak3.volume = 1 * gameVars.soundMult, showStaticLite()
@@ -991,7 +991,7 @@ function flipToAutoSpinArm() {
             let e = gameObjects.roomJackObjs.rightHand.x,
                 a = gameObjects.roomJackObjs.rightHand.y;
             gameObjects.roomJackObjs.rightHand.rotation;
-            gameObjects.roomJackObjs.rightHand.destroy(), gameObjects.roomJackObjs.rightHand = globalScene.add.image(e, a, "roomJack", "hand3"), gameObjects.roomJackObjs.rightHand.rotation = 0, gameObjects.roomJackObjs.rightHand.scaleY = 1.08, gameObjects.roomJackObjs.rightArm3.scaleY = 1.15, zoomTemp(1.01), gameObjects.roomJackObjs.roomContainer.add(gameObjects.roomJackObjs.rightHand), resetJackLights(), gameObjects.roomJackObjs.lights.alpha *= .5, setTimeout(() => {
+            gameObjects.roomJackObjs.rightHand.destroy(), gameObjects.roomJackObjs.rightHand = globalScene.add.image(e, a, "roomJack", "hand3"), gameObjects.roomJackObjs.rightHand.rotation = 0, gameObjects.roomJackObjs.rightHand.scaleY = 1.08, gameObjects.roomJackObjs.rightArm3.scaleY = 1.15, zoomTemp(1.01), gameObjects.roomJackObjs.roomContainer.add(gameObjects.roomJackObjs.rightHand), resetJackLights(), gameObjects.roomJackObjs.lights.alpha *= .5, gameDelay(() => {
                 gameObjects.roomJackObjs.lights.alpha *= 2
             }, 80), globalScene.tweens.add({
                 targets: [gameObjects.roomJackObjs.rightHand, gameObjects.roomJackObjs.rightArm3],
@@ -1046,8 +1046,8 @@ function jumpOutLeftArm() {
                                         ease: "Cubic.easeIn",
                                         scaleY: -1,
                                         duration: 250
-                                    }), gameObjects.roomJackObjs.portraitGiraffe.destroy(), gameObjects.roomJackObjs.portraitGiraffe2.visible = !0, gameObjects.roomJackObjs.portraitBox.destroy(), gameObjects.roomJackObjs.portraitBox2.visible = !0, gameObjects.roomJackObjs.streamers.destroy(), gameObjects.roomJackObjs.neck1.visible = !0, gameObjects.roomJackObjs.neck2.visible = !0, gameObjects.roomJackObjs.neck3.visible = !0, setTimeout(() => {
-                                        gameObjects.roomJackObjs.lights.alpha *= .5, setTimeout(() => {
+                                    }), gameObjects.roomJackObjs.portraitGiraffe.destroy(), gameObjects.roomJackObjs.portraitGiraffe2.visible = !0, gameObjects.roomJackObjs.portraitBox.destroy(), gameObjects.roomJackObjs.portraitBox2.visible = !0, gameObjects.roomJackObjs.streamers.destroy(), gameObjects.roomJackObjs.neck1.visible = !0, gameObjects.roomJackObjs.neck2.visible = !0, gameObjects.roomJackObjs.neck3.visible = !0, gameDelay(() => {
+                                        gameObjects.roomJackObjs.lights.alpha *= .5, gameDelay(() => {
                                             gameObjects.roomJackObjs.lights.alpha *= 2
                                         }, 80)
                                     }, 50)
@@ -1155,16 +1155,16 @@ function jumpOutRightArm() {
                                         ease: "Cubic.easeIn",
                                         scaleY: 1,
                                         duration: 250
-                                    }), gameObjects.roomJackObjs.portraitGiraffe2.destroy(), gameObjects.roomJackObjs.portraitGiraffe3.visible = !0, gameObjects.roomJackObjs.portraitBox2.destroy(), gameObjects.roomJackObjs.portraitBox3.visible = !0, setTimeout(() => {
+                                    }), gameObjects.roomJackObjs.portraitGiraffe2.destroy(), gameObjects.roomJackObjs.portraitGiraffe3.visible = !0, gameObjects.roomJackObjs.portraitBox2.destroy(), gameObjects.roomJackObjs.portraitBox3.visible = !0, gameDelay(() => {
                                         playSound("metalsqueak2"), gameObjects.roomJackObjs.placard.tweenScale({
                                             y: "+= 1",
                                             rotation: .5,
                                             duration: 200,
                                             ease: "Cubic.easeOut"
                                         }), gameObjects.roomJackObjs.placard.setOnMouseUpFunc(showTurnHandleLots)
-                                    }, 300), gameObjects.roomJackObjs.lights.alpha *= .5, setTimeout(() => {
+                                    }, 300), gameObjects.roomJackObjs.lights.alpha *= .5, gameDelay(() => {
                                         gameObjects.roomJackObjs.lights.alpha *= 2
-                                    }, 80), setTimeout(() => {
+                                    }, 80), gameDelay(() => {
                                         flipToAutoSpinArm()
                                     }, 7500)
                                 }
@@ -1272,7 +1272,7 @@ function showTurnHandleLots() {
         text: " ",
         time: 800
     }];
-    showInfoTextLoop(e, void 0, !1), setTimeout(() => {
+    showInfoTextLoop(e, void 0, !1), gameDelay(() => {
         flipToAutoSpinArm()
     }, 3300)
 }

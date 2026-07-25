@@ -1,3 +1,18 @@
+// Drop-in for setTimeout that uses Phaser's clock so delays pause with the
+// scene (YouTube onPause). Same signature as setTimeout(fn, ms). Falls back
+// to wall-clock setTimeout if the scene is not up yet.
+function gameDelay(callback, ms) {
+	const scene = (typeof globalScene !== 'undefined' && globalScene && globalScene.time)
+		? globalScene
+		: (typeof phaserGame !== 'undefined' && phaserGame && phaserGame.time)
+			? phaserGame
+			: null;
+	if (scene) {
+		return scene.time.delayedCall(ms == null ? 0 : ms, callback);
+	}
+	return setTimeout(callback, ms);
+}
+
 function updateInfoText(e, t = 3200, a) {
 	gameObjects.infoText.setText("\n " + e + " \n"), a && (gameObjects.infoText.setOrigin(0, .5), gameObjects.infoText.x = gameVars.halfWidth - 360, gameObjects.infoText.y = gameVars.halfHeight + 220),  gameVarsTemp.updateTextAnim && gameVarsTemp.updateTextAnim.isPlaying() && gameVarsTemp.updateTextAnim.stop(), gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.chain({
 		targets: gameObjects.infoText,
@@ -134,11 +149,11 @@ function undoCreditsClick(e) {
 
 function shakeImage(e, t, a, s) {
 	// Bail out once the duration runs out, or if the image was already destroyed,
-	// otherwise this setTimeout chain keeps ticking for the rest of the session.
+	// otherwise this delay chain keeps ticking for the rest of the session.
 	if (t <= 0 || !e || !e.scene) return;
 	let o = e.x,
 		c = e.y;
-	a && (o = a), s && (c = s), e.x += 7 * (Math.random() - .5) * e.scaleX, e.y += 7 * (Math.random() - .5) * e.scaleY, setTimeout(() => {
+	a && (o = a), s && (c = s), e.x += 7 * (Math.random() - .5) * e.scaleX, e.y += 7 * (Math.random() - .5) * e.scaleY, gameDelay(() => {
 		shakeImage(e, t - 20, o, c)
 	}, 20)
 }
@@ -216,7 +231,7 @@ function getDownBtnFromIndex(e) {
 }
 
 function onExitClick(e) {
-	if (!gameVarsTemp.doorNotClickable) return gameVars.finishedDarkPoint ? (gameObjects.exitDoor.disappear(), gameObjects.exitDoorWhite = e.add.image(-215, 507, "buttons", "exitDoorWhite"), gameObjects.exitDoorWhite.setOrigin(0, .5), gameObjects.gameCtnr0.add(gameObjects.exitDoorWhite), gameObjects.exitDoorOpen = e.add.image(-215, 507, "buttons", "exitDoorOpen"), gameObjects.exitDoorOpen.setOrigin(0, .5), gameObjects.gameCtnr0.add(gameObjects.exitDoorOpen), gameObjects.clownDoor = e.add.image(-42, 385, "roomClown", "clowndoor"), gameObjects.clownDoor.setScale(.6), gameObjects.gameCtnr0.add(gameObjects.clownDoor), gameObjects.exitDoorAnimated = e.add.image(-193, 507, "buttons", "exitDoorNormal"), gameObjects.exitDoorAnimated.setOrigin(.05, .5), gameObjects.gameCtnr0.add(gameObjects.exitDoorAnimated), disableMoveButtons(), gameVarsTemp.doorNotClickable = !0, setTimeout(() => {
+	if (!gameVarsTemp.doorNotClickable) return gameVars.finishedDarkPoint ? (gameObjects.exitDoor.disappear(), gameObjects.exitDoorWhite = e.add.image(-215, 507, "buttons", "exitDoorWhite"), gameObjects.exitDoorWhite.setOrigin(0, .5), gameObjects.gameCtnr0.add(gameObjects.exitDoorWhite), gameObjects.exitDoorOpen = e.add.image(-215, 507, "buttons", "exitDoorOpen"), gameObjects.exitDoorOpen.setOrigin(0, .5), gameObjects.gameCtnr0.add(gameObjects.exitDoorOpen), gameObjects.clownDoor = e.add.image(-42, 385, "roomClown", "clowndoor"), gameObjects.clownDoor.setScale(.6), gameObjects.gameCtnr0.add(gameObjects.clownDoor), gameObjects.exitDoorAnimated = e.add.image(-193, 507, "buttons", "exitDoorNormal"), gameObjects.exitDoorAnimated.setOrigin(.05, .5), gameObjects.gameCtnr0.add(gameObjects.exitDoorAnimated), disableMoveButtons(), gameVarsTemp.doorNotClickable = !0, gameDelay(() => {
 		showStaticRand(3, void 0, () => {
 			showFlashRand(1)
 		}), e.tweens.add({
@@ -236,7 +251,7 @@ function onExitClick(e) {
 				})
 			}
 		})
-	}, 2750), gameObjects.exitDoorAnimated.scaleX = .98, setTimeout(() => {
+	}, 2750), gameObjects.exitDoorAnimated.scaleX = .98, gameDelay(() => {
 		playSound("dooropen")
 	}, 50), e.tweens.add({
 		targets: gameObjects.exitDoorAnimated,
@@ -244,8 +259,8 @@ function onExitClick(e) {
 		duration: 3e3,
 		ease: "Cubic.easeIn",
 		onComplete: () => {
-			setTimeout(() => {
-				setTimeout(() => {
+			gameDelay(() => {
+				gameDelay(() => {
 					playSound("doorslam")
 				}, 120), e.tweens.add({
 					targets: gameObjects.exitDoorAnimated,
@@ -263,10 +278,10 @@ function onExitClick(e) {
 							scaleY: 330,
 							alpha: .01
 						}), new Button(e, gameObjects.gameCtnr0, () => {
-							updateInfoText("Emergency power is on. It might not last long.", 4500), gameObjectsTemp.emergencyLightsFlag || (gameObjectsTemp.emergencyLightsFlag = !0, setTimeout(() => {
-								gameObjects.generalDarkness.alpha = .1, setTimeout(() => {
-									gameObjects.generalDarkness.alpha = 0, setTimeout(() => {
-										gameObjects.generalDarkness.alpha = .1, setTimeout(() => {
+							updateInfoText("Emergency power is on. It might not last long.", 4500), gameObjectsTemp.emergencyLightsFlag || (gameObjectsTemp.emergencyLightsFlag = !0, gameDelay(() => {
+								gameObjects.generalDarkness.alpha = .1, gameDelay(() => {
+									gameObjects.generalDarkness.alpha = 0, gameDelay(() => {
+										gameObjects.generalDarkness.alpha = .1, gameDelay(() => {
 											gameObjects.generalDarkness.alpha = 0
 										}, 50)
 									}, 800)
@@ -284,7 +299,7 @@ function onExitClick(e) {
 						let t = gameObjectsTemp.starReplace.getXPos(),
 							a = gameObjectsTemp.starReplace.getYPos(),
 							s = e.add.image(t, a, "menu", "spareeye");
-						gameObjects.gameCtnr1.add(s), gameObjectsTemp.starReplace.disappear(), showStaticLite(15, 20, 2.5), setTimeout(() => {
+						gameObjects.gameCtnr1.add(s), gameObjectsTemp.starReplace.disappear(), showStaticLite(15, 20, 2.5), gameDelay(() => {
 							gameObjects.tempTeeth.scaleY = 1.2, e.tweens.add({
 								targets: gameObjects.tempTeeth,
 								scaleY: 1,
@@ -292,8 +307,8 @@ function onExitClick(e) {
 								ease: "Quad.easeIn",
 								onComplete: () => {
 									gameObjects.tempTeeth.destroy(), showFlashRand(3, void 0, () => {
-										showStaticRand(3), setTimeout(() => {
-											showStaticRand(1), setTimeout(() => {
+										showStaticRand(3), gameDelay(() => {
+											showStaticRand(1), gameDelay(() => {
 												s.destroy(), gameObjectsTemp.starReplace.reappear()
 											}, 3e3)
 										}, 20)
@@ -311,7 +326,7 @@ function onExitClick(e) {
 		zoom: 1.4,
 		ease: "Quad.easeIn",
 		duration: 2950
-	})) : void(gameVarsTemp.doorFailed ? (gameObjects.generalDarkness.alpha = 1, gameObjects.exitDoor.setState("disable"), setTimeout(() => {
+	})) : void(gameVarsTemp.doorFailed ? (gameObjects.generalDarkness.alpha = 1, gameObjects.exitDoor.setState("disable"), gameDelay(() => {
 		gameObjects.generalDarkness.alpha = 0
 	}, 50)) : gameVars.darkPoint ? updateInfoText("Turn on the lights first", 3e3) : updateInfoText("You just arrived\nExibits to the right! ->", 3500))
 }
@@ -351,9 +366,9 @@ function setupGameplayButtons(e) {
 		ref: "powerSwitchDisabled"
 	}), gameObjects.musicBoxNote = globalScene.add.image(345, gameVars.halfHeight + 30, "misc", "note"), gameObjects.musicBoxNote.origX = gameObjects.musicBoxNote.x, gameObjects.musicBoxNote.origY = gameObjects.musicBoxNote.y, gameObjects.musicBoxNote.velY = -2.5, gameObjects.gameCtnr0.add(gameObjects.musicBoxNote), gameObjects.musicBoxNote2 = globalScene.add.image(-635, gameVars.halfHeight + 20, "misc", "note"), gameObjects.musicBoxNote2.origX = gameObjects.musicBoxNote2.x, gameObjects.musicBoxNote2.origY = gameObjects.musicBoxNote2.y, gameObjects.musicBoxNote2.velY = -5, gameObjects.gameCtnr1.add(gameObjects.musicBoxNote2), gameObjects.musicBox, gameObjects.musicBoxButton = new Button(e, gameObjects.gameCtnr0, () => {
 		if (!gameObjectsTemp.cantPressMusicBox)
-			if (gameObjectsTemp.cantPressMusicBox = !0, setTimeout(() => {
+			if (gameObjectsTemp.cantPressMusicBox = !0, gameDelay(() => {
 					gameObjectsTemp.cantPressMusicBox = !1
-				}, 450), setTimeout(() => {
+				}, 450), gameDelay(() => {
 					gameObjects.sounds.gladiator0.stop(), gameObjects.musicBoxNote.alpha = 0, gameObjects.musicBoxNote2.alpha = 0, gameObjects.sounds.gladiator1.stop(), gameObjects.sounds.gladiator2.stop()
 				}, 120), gameObjectsTemp.boxBroken) gameVars.darkPoint ? updateInfoText("The music box is... broken?") : (gameVarsTemp.brokeMusicBox = !0, updateInfoText("The music box won't turn on now."));
 			else if (gameObjectsTemp.stoppedMusic)
@@ -376,7 +391,7 @@ function setupGameplayButtons(e) {
 						duration: 250,
 						onComplete: () => {
 							let e = gameObjects.musicBox.x;
-							gameObjects.musicBox.destroy(), gameObjects.musicBox = globalScene.add.image(e, gameVars.height - 105, "buttons", "musicBoxBroken"), gameObjects.gameCtnr0.add(gameObjects.musicBox), gameObjects.gameCtnr0.bringToTop(gameObjects.musicBoxStand), playSound("glassbreak"), setTimeout(() => {
+							gameObjects.musicBox.destroy(), gameObjects.musicBox = globalScene.add.image(e, gameVars.height - 105, "buttons", "musicBoxBroken"), gameObjects.gameCtnr0.add(gameObjects.musicBox), gameObjects.gameCtnr0.bringToTop(gameObjects.musicBoxStand), playSound("glassbreak"), gameDelay(() => {
 								playSound("horrortrack1")
 							}, 3500), gameObjectsTemp.boxBroken = !0, gameObjects.musicBoxHandle.destroy(), gameObjects.musicBoxButton.setHoverAlpha(.15)
 						}
@@ -445,7 +460,7 @@ function setupGameplayButtons(e) {
 		scaleY: 330,
 		alpha: .001
 	}), gameObjects.undoCreditsButton.disappear()
-	setTimeout(() => {
+	gameDelay(() => {
 		gameObjects.clownWelcomePic.setFrame('framesEnter1');
 		playSound('click4', undefined, 0.25)
 	}, 3900)
@@ -476,10 +491,10 @@ function setupInstructionsStand(e) {
 }
 
 function onTurnOnPower() {
-	gameVars.finishedDarkPoint || (gameVars.darkPoint ? (gameVars.finishedDarkPoint = !0, playSoundOnce("flickeron"), gameObjects.powerSwitch.setState("disable"), gameObjects.candleDark.alpha = .25, gameObjects.candleBright.alpha = 0, setTimeout(() => {
-		gameObjects.candleDark.alpha = 1, setTimeout(() => {
-			gameObjects.candleDark.alpha = .25, setTimeout(() => {
-				gameObjects.candleDark.alpha = .9, setTimeout(() => {
+	gameVars.finishedDarkPoint || (gameVars.darkPoint ? (gameVars.finishedDarkPoint = !0, playSoundOnce("flickeron"), gameObjects.powerSwitch.setState("disable"), gameObjects.candleDark.alpha = .25, gameObjects.candleBright.alpha = 0, gameDelay(() => {
+		gameObjects.candleDark.alpha = 1, gameDelay(() => {
+			gameObjects.candleDark.alpha = .25, gameDelay(() => {
+				gameObjects.candleDark.alpha = .9, gameDelay(() => {
 					gameVars.darkPoint = !1, gameVars.horrorPoint = !0, gameObjects.candleDark.alpha = 0, gameObjects.candleBright.alpha = 0, gameObjects.flashDim.alpha = 0
 				}, 200)
 			}, 75)
@@ -519,7 +534,7 @@ function createKey(e, t, a, s, o = !0, c) {
 
 	return playSound("keyfound"), (n = new Button(globalScene, s, () => {
 		if (window.GameSDK && typeof window.GameSDK.gameplayStop === 'function') window.GameSDK.gameplayStop();
-		n.destroy(), o ? playSound("keyget") : playSound("keygetred"), tempFreeze(500), gameObjects.exhibit.setCantMoveIdx(a, !1), setTimeout(() => {
+		n.destroy(), o ? playSound("keyget") : playSound("keygetred"), tempFreeze(500), gameObjects.exhibit.setCantMoveIdx(a, !1), gameDelay(() => {
 			enableMoveButtons(true), c && c()
 		}, 100)
 	}, {
@@ -530,10 +545,10 @@ function createKey(e, t, a, s, o = !0, c) {
 	}, {
 		atlas: "buttons",
 		ref: o ? "key_yellow_glow" : "key_red_glow"
-	})).setScale(.98), setTimeout(() => {
-		n.setScale(1.02), n.setPos(n.getPosX(), n.getPosY() + 5), setTimeout(() => {
-			n.setScale(1), n.setPos(n.getPosX(), n.getPosY() + 2.5), setTimeout(() => {
-				n.setPos(n.getPosX(), n.getPosY() + 1), setTimeout(() => {
+	})).setScale(.98), gameDelay(() => {
+		n.setScale(1.02), n.setPos(n.getPosX(), n.getPosY() + 5), gameDelay(() => {
+			n.setScale(1), n.setPos(n.getPosX(), n.getPosY() + 2.5), gameDelay(() => {
+				n.setPos(n.getPosX(), n.getPosY() + 1), gameDelay(() => {
 					n.setPos(n.getPosX(), n.getPosY() + .5)
 				}, 30)
 			}, 30)
@@ -577,7 +592,7 @@ function showFlashArr(e, t) {
 	if (e.length > 0) {
 		let a = e[0],
 			newArr = e.slice(1);
-		gameObjects.flashScreens[a].alpha = 1, setTimeout(() => {
+		gameObjects.flashScreens[a].alpha = 1, gameDelay(() => {
 			gameObjects.flashScreens[a].alpha = 0, showFlashArr(newArr, t)
 		}, 50)
 	} else t && t()
@@ -592,7 +607,7 @@ function showFlashRand(e = 1, t, a, s = 1, o) {
 	}
 	if (e >= 1) {
 		let c = Math.floor(7 * Math.random()) + 5;
-		c === t && (c = Math.floor(7 * Math.random()) + 5), gameObjects.flashScreens[c].alpha = s, setTimeout(() => {
+		c === t && (c = Math.floor(7 * Math.random()) + 5), gameObjects.flashScreens[c].alpha = s, gameDelay(() => {
 			gameObjects.flashScreens[c].alpha = 0, showFlashRand(e - 1, c, a, s, o)
 		}, 40)
 	} else a && a()
@@ -607,7 +622,7 @@ function showStaticRand(e = 1, t = !1, a, s = 1, o = !0) {
 	}
 	if (e >= 1) {
 		let o = Math.floor(Math.random() * gameObjects.staticScreens.length);
-		gameObjects.staticScreens[o].alpha = 1 === e ? Math.min(.2, s) : Math.min(1, s + .2 * (Math.random() - .5)), gameObjects.staticScreens[o].scaleX = t ? -1.5 - .1 * Math.random() : 1.5 + .1 * Math.random(), setTimeout(() => {
+		gameObjects.staticScreens[o].alpha = 1 === e ? Math.min(.2, s) : Math.min(1, s + .2 * (Math.random() - .5)), gameObjects.staticScreens[o].scaleX = t ? -1.5 - .1 * Math.random() : 1.5 + .1 * Math.random(), gameDelay(() => {
 			gameObjects.staticScreens[o].alpha = 0, showStaticRand(e - 1, !t, a, s, !1)
 		}, 30)
 	} else void 0 !== a && a()
@@ -617,7 +632,7 @@ function showStaticLite(e = 4, t = 4, a = 2, s = .15) {
 	if (0 === e) return;
 	let o = 0;
 	for (; o < t;) o++, showStaticLiteObj(a, s);
-	setTimeout(() => {
+	gameDelay(() => {
 		showStaticLite(e - 1, t, a, s)
 	}, 50)
 }
@@ -644,7 +659,7 @@ function showStaticLiteObj(e, t) {
 		c.scaleX *= .5 + e * i, c.scaleY *= .5 + e, c.rotation = 6.28 * Math.random()
 	}
 	let g = 10 + 100 * Math.random();
-	setTimeout(() => {
+	gameDelay(() => {
 		c.alpha = 0, c.isFree = !0
 	}, g)
 }
@@ -668,9 +683,9 @@ function showFlashCustom(e) {
 
 function flipEntryLights(e = 1) {
 	let t = gameVars.horrorPoint ? 20 + 150 * Math.random() : 75;
-	"brighten" === gameObjects.entrance.entryLights1.status ? (gameObjects.entrance.entryLights1.counter += e, gameObjects.entrance.entryLights1.counter > t && (gameObjects.entrance.entryLights1.counter = 0, gameObjects.entrance.entryLights1.status = "dim", gameObjects.entrance.entryLights1.alpha = .1, gameObjects.entrance.entryLights2.alpha = .85, setTimeout(() => {
+	"brighten" === gameObjects.entrance.entryLights1.status ? (gameObjects.entrance.entryLights1.counter += e, gameObjects.entrance.entryLights1.counter > t && (gameObjects.entrance.entryLights1.counter = 0, gameObjects.entrance.entryLights1.status = "dim", gameObjects.entrance.entryLights1.alpha = .1, gameObjects.entrance.entryLights2.alpha = .85, gameDelay(() => {
 		gameObjects.entrance.entryLights1.alpha = 0, gameObjects.entrance.entryLights2.alpha = 1
-	}, 60))) : "dim" === gameObjects.entrance.entryLights1.status && (gameObjects.entrance.entryLights1.counter += e, gameObjects.entrance.entryLights1.counter > t && (gameObjects.entrance.entryLights1.counter = 0, gameObjects.entrance.entryLights1.status = "brighten", gameObjects.entrance.entryLights1.alpha = .85, gameObjects.entrance.entryLights2.alpha = .1, setTimeout(() => {
+	}, 60))) : "dim" === gameObjects.entrance.entryLights1.status && (gameObjects.entrance.entryLights1.counter += e, gameObjects.entrance.entryLights1.counter > t && (gameObjects.entrance.entryLights1.counter = 0, gameObjects.entrance.entryLights1.status = "brighten", gameObjects.entrance.entryLights1.alpha = .85, gameObjects.entrance.entryLights2.alpha = .1, gameDelay(() => {
 		gameObjects.entrance.entryLights1.alpha = 1, gameObjects.entrance.entryLights2.alpha = 0
 	}, 60)))
 }
@@ -692,7 +707,7 @@ function ftueMoveButton(e = !1) {
 			ease: "Quad.easeOut",
 			duration: 2e3,
 			onComplete: () => {
-				setTimeout(() => {
+				gameDelay(() => {
 					gameVarsTemp.hasMoved || ftueMoveButton(!0)
 				}, 7e3)
 			}

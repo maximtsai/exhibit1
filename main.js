@@ -829,13 +829,13 @@ function beginGameplay(a) {
 
     for (let b in removeFromUpdateFuncList(updateWelcomeFollower), gameObjects.loadingMusic.stop(), gameVars.gameConstructed = !0, gameObjects.loadingWelcomes) gameObjects.loadingWelcomes[b].destroy();
     for (let a = 0; a < gameObjectsTemp.circleLoading.length; a++) gameObjectsTemp.circleLoading[a].destroy();
-    gameObjectsTemp.brightLight.destroy(), gameObjects.clickBlocker.destroy(), gameObjectsTemp.loadingBg.destroy(), gameObjectsTemp.blackTeeth.destroy(), gameObjectsTemp.blackTeethAnim.destroy(), setTimeout(() => {
+    gameObjectsTemp.brightLight.destroy(), gameObjects.clickBlocker.destroy(), gameObjectsTemp.loadingBg.destroy(), gameObjectsTemp.blackTeeth.destroy(), gameObjectsTemp.blackTeethAnim.destroy(), gameDelay(() => {
         gameObjects.sounds.gladiator0.play({
             loop: !0
         }), gameObjects.sounds.gladiator0.volume = .6, tweenVolume("gladiator0", .7, 50)
-    }, 0), setTimeout(() => {
+    }, 0), gameDelay(() => {
         addToUpdateFuncList(flipEntryLights)
-    }, 350), setTimeout(() => {
+    }, 350), gameDelay(() => {
         gameVarsTemp.hasMoved || ftueMoveButton()
     }, 4e3)
 }
@@ -1025,7 +1025,7 @@ function playSoundOnce(a, b, c = 1) {
         console.warn("playSoundOnce: sound not registered: " + a);
         return null;
     }
-    oneTimeScares[a] || (oneTimeScares[a] = !0, b ? setTimeout(() => {
+    oneTimeScares[a] || (oneTimeScares[a] = !0, b ? gameDelay(() => {
         if (!hostAudioEnabled) return;
         gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()
     }, b) : (gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()))
@@ -1123,12 +1123,12 @@ function update(w, s) {
         let v = .01 + .1 * Math.random();
         gameObjects.generalDarkness.alpha += v;
         let i = 12 * Math.random() + 5;
-        setTimeout(() => {
-            gameObjects.generalDarkness.alpha -= v, .6 > Math.random() && setTimeout(() => {
+        gameDelay(() => {
+            gameObjects.generalDarkness.alpha -= v, .6 > Math.random() && gameDelay(() => {
                 let a = 15 * Math.random();
                 a = Math.floor(a * a);
                 let b = .03 + .06 * Math.random();
-                gameObjects.generalDarkness.alpha += b, setTimeout(() => {
+                gameObjects.generalDarkness.alpha += b, gameDelay(() => {
                     gameObjects.generalDarkness.alpha -= b
                 }, a)
             }, 800 + 1200 * Math.random())
@@ -1264,7 +1264,7 @@ function setupMoveButtons(a) {
 }
 
 function tempFreeze(a = 1e3) {
-    gameVars.isFrozen = !0, setTimeout(() => {
+    gameVars.isFrozen = !0, gameDelay(() => {
         gameVars.isFrozen = !1
     }, a)
 }
@@ -1294,7 +1294,7 @@ function initOneTimeListeners() {
             targets: gameObjects.sounds.gladiatorx,
             volume: .7,
             duration: 5e3
-        }), setTimeout(() => {
+        }), gameDelay(() => {
             tweenVolume("gladiatorx", .9)
         }, 5e3);
         let c = gameObjects.clownWelcomePic.x,
@@ -1334,7 +1334,7 @@ function showAltReality(a, c = 1) {
     if (!a || 0 === a.length) return;
     let d = a.shift(),
         b = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, d);
-    b.depth = 1, b.scaleX = c, b.scaleY = c, setTimeout(() => {
+    b.depth = 1, b.scaleX = c, b.scaleY = c, gameDelay(() => {
         b.destroy(), showAltReality(a, c)
     }, 1 === a.length ? 70 : 40)
 }

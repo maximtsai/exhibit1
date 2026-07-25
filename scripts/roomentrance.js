@@ -101,7 +101,7 @@ function setupRoomEntrance(e, t, a) {
 
     refreshCrawlClown();
 
-	setTimeout(() => {
+	gameDelay(() => {
 		globalScene.tweens.add({
             targets: asdfJack,
             x: 305,
@@ -139,21 +139,21 @@ function setupRoomEntrance(e, t, a) {
         });
 	}, 18000)
     a.add(r), gameObjects.entrance.lines.push(r), gameObjectsTemp.starReplace = createStarButton(s, a, "star1", 1), createStarButton(o, a, "star2", 2), createStarButton(i, a, "star3", 3), createStarButton(n, a, "star2", 4), createStarButton(r, a, "star3", 5), messageBus.subscribe("exhibitMove", e => {
-        1 === e ? gameVars.horrorPoint ? gameObjectsTemp.entranceFlicker || (gameObjectsTemp.entranceFlicker = !0, setTimeout(() => {
-            gameObjects.generalDarkness.alpha = .04, setTimeout(() => {
-                gameObjects.generalDarkness.alpha = 0, setTimeout(() => {
-                    gameObjects.generalDarkness.alpha = .07, setTimeout(() => {
+        1 === e ? gameVars.horrorPoint ? gameObjectsTemp.entranceFlicker || (gameObjectsTemp.entranceFlicker = !0, gameDelay(() => {
+            gameObjects.generalDarkness.alpha = .04, gameDelay(() => {
+                gameObjects.generalDarkness.alpha = 0, gameDelay(() => {
+                    gameObjects.generalDarkness.alpha = .07, gameDelay(() => {
                         gameObjects.generalDarkness.alpha = 0, gameVarsTemp.startDarkFlicker = !0
                     }, 20)
                 }, 1800)
             }, 150)
-        }, 2400)) : (tweenVolume("gladiator0", .85), gameVars.darkPoint && (tweenVolume("gladiator1", 0), tweenVolume("gladiator2", 1))) : 0 === e && (gameVars.horrorPoint || (tweenVolume("gladiator0", 1), gameVars.darkPoint && (tweenVolume("gladiator1", 0, 1500), tweenVolume("gladiator2", 0, 1500), setTimeout(() => {
+        }, 2400)) : (tweenVolume("gladiator0", .85), gameVars.darkPoint && (tweenVolume("gladiator1", 0), tweenVolume("gladiator2", 1))) : 0 === e && (gameVars.horrorPoint || (tweenVolume("gladiator0", 1), gameVars.darkPoint && (tweenVolume("gladiator1", 0, 1500), tweenVolume("gladiator2", 0, 1500), gameDelay(() => {
             gameObjects.musicBoxNote.alpha = 0, gameObjects.musicBoxNote2.alpha = 0, gameObjectsTemp.stoppedMusic = !0, gameObjects.sounds.gladiator1.stop(), gameObjects.sounds.gladiator2.stop()
         }, 1500))))
 
         if (1 === e && gameVars.darkPoint && !gameVars.clownRun) {
             gameVars.clownRun = true;
-            setTimeout(() => {
+            gameDelay(() => {
                 gameObjects.crawlClown.setVisible(true);
                 gameObjects.crawlClown.play('clownCrawl')
                 playSound("clownhorn", undefined, 0.65);
@@ -220,7 +220,7 @@ function showInfoTextLoop(e, t = 0, a = !0) {
         let s = e.shift(),
             o = t + s.time,
             i = 3500 - o;
-        updateInfoText(s.text, i, a), setTimeout(() => {
+        updateInfoText(s.text, i, a), gameDelay(() => {
             showInfoTextLoop(e, o, a)
         }, s.time)
     }

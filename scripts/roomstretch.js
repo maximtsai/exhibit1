@@ -87,18 +87,18 @@ function setupRoomStretch(e, t, o) {
     }, {
         atlas: "buttons",
         ref: "placard_hover"
-    }), setTimeout(() => {
+    }), gameDelay(() => {
         addToUpdateFuncList(roomStretchUpdate)
     }, 500), messageBus.subscribe("exhibitMove", e => {
         if (e === t) {
             if (tweenVolume("gladiator0", .1), tweenVolume("gladiator1", .8), tweenVolume("gladiator2", .2), gameObjects.roomStretchObjs.shouldUpdate = !0, !gameObjects.roomStretchObjs.oneTimeStreamers) {
                 gameObjects.roomStretchObjs.oneTimeStreamers = !0;
                 for (let e = 0; e < 8; e++) gameObjects.roomStretchObjs.streamersList[e].scaleY = .8 + .4 * Math.random(), gameObjects.roomStretchObjs.streamersList[e].velY = .1 * (Math.random() - .5);
-                addToUpdateFuncList(updateStreamers), setTimeout(() => {
+                addToUpdateFuncList(updateStreamers), gameDelay(() => {
                     removeFromUpdateFuncList(updateStreamers)
                 }, 2e4)
             }
-        } else setTimeout(() => {
+        } else gameDelay(() => {
             gameObjects.roomStretchObjs.shouldUpdate = !1
         }, 700)
     }), r = messageBus.subscribe("startDarkSequence", e => {
@@ -183,7 +183,7 @@ function roomStretchUpdate(e) {
         if (Math.abs(i) + Math.abs(u) < 20) {
             if (!gameObjects.roomStretchObjs.roomUnlocked) {
                 if (gameObjects.roomStretchObjs.roomUnlocked = !0, gameObjects.roomStretchObjs.doHorrorSection) {
-                    gameObjects.roomStretchObjs.roomCompleted = !0, setTimeout(() => {
+                    gameObjects.roomStretchObjs.roomCompleted = !0, gameDelay(() => {
                         removeFromUpdateFuncList(roomStretchUpdate)
                     }, 1e4), gameObjects.roomStretchObjs.frame2.destroy(), gameObjects.roomStretchObjs.frame2x.alpha = 1, gameObjects.roomStretchObjs.handButton.destroy(), playSound("tear6"), showStaticLite(9, 10, 2), showAltReality(["stretch2", "stretch3", "stretch4", "stretch4", "stretch5", "stretch5", "stretch6"], 1.2), gameObjects.sounds.pumpamb.stop(), gameObjects.roomStretchObjs.hand.alpha = 0, gameObjects.roomStretchObjs.hand.x = gameObjects.roomStretchObjs.dollPosX + 25, gameObjects.roomStretchObjs.hand.y = 500;
                     let e = globalScene.add.image(gameObjects.roomStretchObjs.touchspot.x, gameObjects.roomStretchObjs.touchspot.y, "roomStretch", "hand");
@@ -213,20 +213,20 @@ function roomStretchUpdate(e) {
                         }]
                     })
                 }
-                setTimeout(() => {
+                gameDelay(() => {
                     if (gameVars.horrorPoint && !gameObjects.roomStretchObjs.doHorrorSection) {
                         let e = globalScene.add.image(gameObjects.roomStretchObjs.dollPosX - 100, gameObjects.roomStretchObjs.dollPosY - 30, "buttons", "key_yellow");
-                        playSound("keyfound"), gameObjects.roomStretchObjs.roomContainer.add(e), setTimeout(() => {
-                            showStaticRand(1), setTimeout(() => {
+                        playSound("keyfound"), gameObjects.roomStretchObjs.roomContainer.add(e), gameDelay(() => {
+                            showStaticRand(1), gameDelay(() => {
                                 e.destroy(), gameObjects.roomStretchObjs.doDarkCleanup = !0, showStaticRand(3, void 0, () => {
                                     showFlashRand(3), messageBus.publish("startTrueStretchHorror")
                                 })
                             }, 550)
                         }, 800)
-                    } else createKey(gameObjects.roomStretchObjs.dollPosX - 100, gameObjects.roomStretchObjs.dollPosY - 30, gameObjects.roomStretchObjs.roomIndex, gameObjects.roomStretchObjs.roomContainer, !gameVars.horrorPoint), gameVars.horrorPoint && setTimeout(() => {
-                        gameObjects.generalDarkness.alpha = .1, setTimeout(() => {
-                            gameObjects.generalDarkness.alpha = .04, setTimeout(() => {
-                                gameObjects.generalDarkness.alpha = .15, setTimeout(() => {
+                    } else createKey(gameObjects.roomStretchObjs.dollPosX - 100, gameObjects.roomStretchObjs.dollPosY - 30, gameObjects.roomStretchObjs.roomIndex, gameObjects.roomStretchObjs.roomContainer, !gameVars.horrorPoint), gameVars.horrorPoint && gameDelay(() => {
+                        gameObjects.generalDarkness.alpha = .1, gameDelay(() => {
+                            gameObjects.generalDarkness.alpha = .04, gameDelay(() => {
+                                gameObjects.generalDarkness.alpha = .15, gameDelay(() => {
                                     gameObjects.generalDarkness.alpha = .07
                                 }, 100)
                             }, 350)
@@ -252,22 +252,22 @@ function roomStretchUpdate(e) {
         playSoundOnce("tear5", 250), setStretchDollImage("dollHorrified"), gameObjects.roomStretchObjs.doll.rotation += .16 * (Math.random() - .25);
         let e = 3 * Math.random() - 1.5;
         gameObjects.roomStretchObjs.doll.x = gameObjects.roomStretchObjs.dollPosX + e + 9, gameObjects.roomStretchObjs.dollBody.x = gameObjects.roomStretchObjs.dollPosX + e, gameObjects.roomStretchObjs.armseg1.x = gameObjects.roomStretchObjs.dollPosX + 35.5 + e
-    } else o < 120 ? setStretchDollImage("dollNeutral") : o < 230 ? setStretchDollImage("dollExpectant") : o < 290 ? o > 260 && !gameObjects.roomStretchObjs.flashFear ? (setStretchDollImage("dollFearful"), playSoundOnce("tear2"), showStaticLite(1, 4, 1.5), setTimeout(() => {
+    } else o < 120 ? setStretchDollImage("dollNeutral") : o < 230 ? setStretchDollImage("dollExpectant") : o < 290 ? o > 260 && !gameObjects.roomStretchObjs.flashFear ? (setStretchDollImage("dollFearful"), playSoundOnce("tear2"), showStaticLite(1, 4, 1.5), gameDelay(() => {
         gameObjects.roomStretchObjs.flashFear || (gameObjects.roomStretchObjs.armMinDist += 5), gameObjects.roomStretchObjs.flashFear = !0
-    }, 150)) : (gameObjects.roomStretchObjs.flashStaticOnce || (gameObjects.roomStretchObjs.flashStaticOnce = !0, showStaticLite(2, 8, 1, .1), gameObjects.roomStretchObjs.armMinDist += 2, setTimeout(() => {
-        gameObjects.roomStretchObjs.armMinDist += 1, setTimeout(() => {
+    }, 150)) : (gameObjects.roomStretchObjs.flashStaticOnce || (gameObjects.roomStretchObjs.flashStaticOnce = !0, showStaticLite(2, 8, 1, .1), gameObjects.roomStretchObjs.armMinDist += 2, gameDelay(() => {
+        gameObjects.roomStretchObjs.armMinDist += 1, gameDelay(() => {
             gameObjects.roomStretchObjs.armMinDist += 1
         }, 20)
     }, 20)), playSoundOnce("tear1"), setStretchDollImage("dollAnxious")) : (gameObjects.roomStretchObjs.overstretched || (gameObjects.roomStretchObjs.overstretched = !0, gameObjects.sounds.pumpamb.play({
         loop: !0
-    }), gameObjects.sounds.pumpamb.volume = .01, gameObjects.roomStretchObjs.armseg2.setOrigin(.022, .5), gameObjects.roomStretchObjs.armMinDist += 1, setTimeout(() => {
+    }), gameObjects.sounds.pumpamb.volume = .01, gameObjects.roomStretchObjs.armseg2.setOrigin(.022, .5), gameObjects.roomStretchObjs.armMinDist += 1, gameDelay(() => {
         playSoundOnce("tear3"), showAltReality(["stretch1", "stretch2", "stretch3", "stretch4"], 1.06), gameObjects.roomStretchObjs.armMinDist += 8
     }, 100)), setStretchDollImage("dollFearful"));
     gameObjects.roomStretchObjs.doll.rotation *= .75
 }
 
 function stretchCleanup() {
-    gameObjects.roomStretchObjs.doDarkCleanup = !0, gameObjects.roomStretchObjs.cleanupButton.destroy(), gameObjects.exhibit.needCleanup = !1, setTimeout(() => {
+    gameObjects.roomStretchObjs.doDarkCleanup = !0, gameObjects.roomStretchObjs.cleanupButton.destroy(), gameObjects.exhibit.needCleanup = !1, gameDelay(() => {
         playSound("deepbell2"), updateInfoTextSoft("Room cleaned up.", 2250)
     }, 400)
 }
@@ -282,14 +282,14 @@ function setStretchDollImage(e, t = !1) {
     }
     gameObjects.roomStretchObjs.dollImages[e].visible = !0, gameObjects.roomStretchObjs.doll = gameObjects.roomStretchObjs.dollImages[e];
     gameObjects.roomStretchObjs.doHorrorSection;
-    gameObjects.roomStretchObjs.doll.x = gameObjects.roomStretchObjs.dollPosX + 9, gameObjects.roomStretchObjs.doll.y = gameObjects.roomStretchObjs.dollPosY + -91, t ? (gameObjects.roomStretchObjs.doll.rotation = .075, gameObjects.roomStretchObjs.dollBody.scaleX = 1.01, gameObjects.roomStretchObjs.dollBody.scaleY = 1.01, gameObjects.roomStretchObjs.doll.scaleX = 1.015, gameObjects.roomStretchObjs.doll.scaleY = 1.02, setTimeout(() => {
-        gameObjects.roomStretchObjs.dollBody.scaleX = 1.004, gameObjects.roomStretchObjs.dollBody.scaleY = 1.004, gameObjects.roomStretchObjs.doll.scaleX = 1.006, gameObjects.roomStretchObjs.doll.scaleY = 1.008, setTimeout(() => {
-            gameObjects.roomStretchObjs.dollBody.scaleX = 1.001, gameObjects.roomStretchObjs.dollBody.scaleY = 1.001, gameObjects.roomStretchObjs.doll.scaleX = 1.002, gameObjects.roomStretchObjs.doll.scaleY = 1.003, setTimeout(() => {
+    gameObjects.roomStretchObjs.doll.x = gameObjects.roomStretchObjs.dollPosX + 9, gameObjects.roomStretchObjs.doll.y = gameObjects.roomStretchObjs.dollPosY + -91, t ? (gameObjects.roomStretchObjs.doll.rotation = .075, gameObjects.roomStretchObjs.dollBody.scaleX = 1.01, gameObjects.roomStretchObjs.dollBody.scaleY = 1.01, gameObjects.roomStretchObjs.doll.scaleX = 1.015, gameObjects.roomStretchObjs.doll.scaleY = 1.02, gameDelay(() => {
+        gameObjects.roomStretchObjs.dollBody.scaleX = 1.004, gameObjects.roomStretchObjs.dollBody.scaleY = 1.004, gameObjects.roomStretchObjs.doll.scaleX = 1.006, gameObjects.roomStretchObjs.doll.scaleY = 1.008, gameDelay(() => {
+            gameObjects.roomStretchObjs.dollBody.scaleX = 1.001, gameObjects.roomStretchObjs.dollBody.scaleY = 1.001, gameObjects.roomStretchObjs.doll.scaleX = 1.002, gameObjects.roomStretchObjs.doll.scaleY = 1.003, gameDelay(() => {
                 gameObjects.roomStretchObjs.dollBody.scaleX = 1, gameObjects.roomStretchObjs.dollBody.scaleY = 1, gameObjects.roomStretchObjs.doll.scaleX = 1, gameObjects.roomStretchObjs.doll.scaleY = 1
             }, 40)
         }, 40)
-    }, 50)) : (gameObjects.roomStretchObjs.doll.rotation = .04, gameObjects.roomStretchObjs.dollBody.scaleY = 1.008, gameObjects.roomStretchObjs.doll.scaleY = 1.012, setTimeout(() => {
-        gameObjects.roomStretchObjs.dollBody.scaleY = 1.003, gameObjects.roomStretchObjs.doll.scaleY = 1.004, setTimeout(() => {
+    }, 50)) : (gameObjects.roomStretchObjs.doll.rotation = .04, gameObjects.roomStretchObjs.dollBody.scaleY = 1.008, gameObjects.roomStretchObjs.doll.scaleY = 1.012, gameDelay(() => {
+        gameObjects.roomStretchObjs.dollBody.scaleY = 1.003, gameObjects.roomStretchObjs.doll.scaleY = 1.004, gameDelay(() => {
             gameObjects.roomStretchObjs.dollBody.scaleY = 1, gameObjects.roomStretchObjs.doll.scaleY = 1
         }, 40)
     }, 50))
@@ -323,7 +323,7 @@ function pullbackStreamers() {
         let t = gameObjects.roomStretchObjs.streamersList[e];
         t.y -= 50, 5 !== e && 6 !== e || (t.y -= 100), t.scaleY += .03 + .08 * Math.random()
     }
-    addToUpdateFuncList(updateStreamers), setTimeout(() => {
+    addToUpdateFuncList(updateStreamers), gameDelay(() => {
         removeFromUpdateFuncList(updateStreamers)
     }, 2e4)
 }

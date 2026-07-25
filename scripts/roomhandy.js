@@ -152,9 +152,9 @@ function setupRoomHandy(e, a, o) {
     }, gameObjects.roomHandyObjs.dollArms = e.add.image(0, gameVars.height - 260, "roomHandy", "arms"), o.add(gameObjects.roomHandyObjs.dollArms), gameObjects.roomHandyObjs.dollBody = e.add.image(0, gameVars.height - 260, "roomHandy", "dollBody"), o.add(gameObjects.roomHandyObjs.dollBody),
 gameObjects.roomHandyObjs.dollPicture = e.add.sprite(4, 188, "roomHandy", "handy1").setVisible(false), o.add(gameObjects.roomHandyObjs.dollPicture),
     setHandyDollImage("dollNeutral"), o.add(gameObjects.roomHandyObjs.doll), gameObjects.roomHandyObjs.leftHand = e.add.image(-285, 359, "roomHandy", "lefthand1"), gameObjects.roomHandyObjs.rightHand = e.add.image(290, 359, "roomHandy", "righthand1"), o.add(gameObjects.roomHandyObjs.leftHand), o.add(gameObjects.roomHandyObjs.rightHand), initFingerButton(), gameObjects.roomHandyObjs.placard = new Button(e, o, () => {
-        gameVars.horrorPoint ? gameObjects.roomHandyObjs.roomComplete ? gameObjects.roomHandyObjs.playedOneTimeText ? updateInfoText("Mr.            ") : (gameObjects.roomHandyObjs.playedOneTimeText = !0, updateInfoText("Mr. Handy"), setTimeout(() => {
-            updateInfoText("Mr. H̵a̵n̸d̸ "), setTimeout(() => {
-                updateInfoText("Mr. H̴a̸      "), setTimeout(() => {
+        gameVars.horrorPoint ? gameObjects.roomHandyObjs.roomComplete ? gameObjects.roomHandyObjs.playedOneTimeText ? updateInfoText("Mr.            ") : (gameObjects.roomHandyObjs.playedOneTimeText = !0, updateInfoText("Mr. Handy"), gameDelay(() => {
+            updateInfoText("Mr. H̵a̵n̸d̸ "), gameDelay(() => {
+                updateInfoText("Mr. H̴a̸      "), gameDelay(() => {
                     updateInfoText("Mr.            ")
                 }, 100)
             }, 100)
@@ -244,23 +244,23 @@ function fingerPress() {
                 updateGuideArrowFat(a.x + a.arrOffX, a.y - 200 + a.arrOffY, .5 * Math.PI + a.arrOffRot)
             } else {
                 let a = gameObjects.roomHandyObjs.listOfButtonPos[e];
-                updateHandyExpression(gameObjects.roomHandyObjs.fingerState), 8 === gameObjects.roomHandyObjs.fingerState ? (gameObjects.roomHandyObjs.fingerButton.setPos(a.x, -9999), updateGuideArrowFat(a.x, -9999, .5 * Math.PI), setTimeout(() => {
+                updateHandyExpression(gameObjects.roomHandyObjs.fingerState), 8 === gameObjects.roomHandyObjs.fingerState ? (gameObjects.roomHandyObjs.fingerButton.setPos(a.x, -9999), updateGuideArrowFat(a.x, -9999, .5 * Math.PI), gameDelay(() => {
                     gameObjects.roomHandyObjs.fingerButton.setPos(a.x, a.y), updateGuideArrowFat(a.x + a.arrOffX, a.y - 200 + a.arrOffY, .5 * Math.PI + a.arrOffRot)
-                }, 1500)) : gameObjects.roomHandyObjs.fingerState > 8 ? (gameObjects.roomHandyObjs.fingerButton.setPos(a.x, -9999), updateGuideArrowFat(a.x, -9999, .5 * Math.PI), setTimeout(() => {
+                }, 1500)) : gameObjects.roomHandyObjs.fingerState > 8 ? (gameObjects.roomHandyObjs.fingerButton.setPos(a.x, -9999), updateGuideArrowFat(a.x, -9999, .5 * Math.PI), gameDelay(() => {
                     if (12 === gameObjects.roomHandyObjs.fingerState) {
                         showStaticRand(3, void 0, void 0, .4);
                         let e = globalScene.add.image(gameObjects.roomHandyObjs.leftHand.x, gameObjects.roomHandyObjs.leftHand.y, "roomHandy", "lefthandX");
-                        gameObjects.roomHandyObjs.roomContainer.add(e), e.scaleX = 1.01, e.scaleY = 1.01, setTimeout(() => {
-                            e.scaleX = 1, e.scaleY = 1, setTimeout(() => {
+                        gameObjects.roomHandyObjs.roomContainer.add(e), e.scaleX = 1.01, e.scaleY = 1.01, gameDelay(() => {
+                            e.scaleX = 1, e.scaleY = 1, gameDelay(() => {
                                 e.destroy(), showFlashRand(1)
                             }, 30)
                         }, 30)
                     }
-                }, 0), setTimeout(() => {
+                }, 0), gameDelay(() => {
                     gameObjects.roomHandyObjs.fingerButton.setPos(a.x, a.y), updateGuideArrowFat(a.x + a.arrOffX, a.y - 200 + a.arrOffY, .5 * Math.PI + a.arrOffRot)
                 }, 800)) : (gameObjects.roomHandyObjs.fingerButton.setPos(a.x, a.y), updateGuideArrowFat(a.x + a.arrOffX, a.y - 200 + a.arrOffY, .5 * Math.PI + a.arrOffRot))
             }
-    else gameObjects.roomHandyObjs.roomComplete = !0, updateHandyExpression(gameObjects.roomHandyObjs.fingerState + 1), gameObjects.roomHandyObjs.fingerButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), tweenVolume("gladiatorx", .85), gameObjects.guideArrowFat.alpha = 0, setTimeout(() => {
+    else gameObjects.roomHandyObjs.roomComplete = !0, updateHandyExpression(gameObjects.roomHandyObjs.fingerState + 1), gameObjects.roomHandyObjs.fingerButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), tweenVolume("gladiatorx", .85), gameObjects.guideArrowFat.alpha = 0, gameDelay(() => {
         gameObjects.hand.switchHand();
         createKey(-15, gameVars.halfHeight - 10, gameObjects.roomHandyObjs.roomIndex, gameObjects.roomHandyObjs.roomContainer, !1)
     }, 1200);
@@ -268,10 +268,10 @@ function fingerPress() {
         gameObjects.roomHandyObjs.fingerState = e, updateHandyExpression(gameObjects.roomHandyObjs.fingerState);
         let a = null;
         a = gameVars.darkPoint ? gameObjects.roomHandyObjs.listOfInverseButtonPos[e] : gameObjects.roomHandyObjs.listOfButtonPos[e], gameObjects.roomHandyObjs.fingerButton.setPos(a.x, a.y), updateGuideArrowFat(a.x + a.arrOffX, a.y - 200 + a.arrOffY, .5 * Math.PI + a.arrOffRot), addGuideArrowFatToContainer(gameObjects.roomHandyObjs.roomContainer)
-    } else gameObjects.roomHandyObjs.fingerButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), updateHandyExpression(gameObjects.roomHandyObjs.fingerState + 1), gameObjects.guideArrowFat.alpha = 0, setTimeout(() => {
-        gameObjects.roomHandyObjs.doll.scaleY = .97, setTimeout(() => {
-            gameObjects.roomHandyObjs.doll.scaleY = 1.05, setTimeout(() => {
-                gameObjects.roomHandyObjs.doll.scaleY = 1.04, setTimeout(() => {
+    } else gameObjects.roomHandyObjs.fingerButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), updateHandyExpression(gameObjects.roomHandyObjs.fingerState + 1), gameObjects.guideArrowFat.alpha = 0, gameDelay(() => {
+        gameObjects.roomHandyObjs.doll.scaleY = .97, gameDelay(() => {
+            gameObjects.roomHandyObjs.doll.scaleY = 1.05, gameDelay(() => {
+                gameObjects.roomHandyObjs.doll.scaleY = 1.04, gameDelay(() => {
                     gameObjects.roomHandyObjs.doll.scaleY = 1;
                     createKey(0, gameVars.halfHeight - 10, gameObjects.roomHandyObjs.roomIndex, gameObjects.roomHandyObjs.roomContainer, !0)
                 }, 30)
@@ -285,7 +285,7 @@ function fingerPress() {
         case 2:
         case 3:
         case 4:
-            a = e + 1, gameObjects.roomHandyObjs.leftHand.destroy(), gameObjects.roomHandyObjs.leftHand = globalScene.add.image(-285, 360, "roomHandy", "lefthand" + a), gameObjects.roomHandyObjs.roomContainer.add(gameObjects.roomHandyObjs.leftHand), gameObjects.roomHandyObjs.leftHand.scaleX = 1.01, gameObjects.roomHandyObjs.leftHand.scaleY = 1.01, setTimeout(() => {
+            a = e + 1, gameObjects.roomHandyObjs.leftHand.destroy(), gameObjects.roomHandyObjs.leftHand = globalScene.add.image(-285, 360, "roomHandy", "lefthand" + a), gameObjects.roomHandyObjs.roomContainer.add(gameObjects.roomHandyObjs.leftHand), gameObjects.roomHandyObjs.leftHand.scaleX = 1.01, gameObjects.roomHandyObjs.leftHand.scaleY = 1.01, gameDelay(() => {
                 gameObjects.roomHandyObjs.leftHand.scaleX = 1, gameObjects.roomHandyObjs.leftHand.scaleY = 1
             }, 50);
             break;
@@ -293,7 +293,7 @@ function fingerPress() {
         case 6:
         case 7:
         case 8:
-            a = e - 3, gameObjects.roomHandyObjs.rightHand.destroy(), gameObjects.roomHandyObjs.rightHand = globalScene.add.image(290, 360, "roomHandy", "righthand" + a), gameObjects.roomHandyObjs.roomContainer.add(gameObjects.roomHandyObjs.rightHand), gameObjects.roomHandyObjs.rightHand.scaleX = 1.01, gameObjects.roomHandyObjs.rightHand.scaleY = 1.01, setTimeout(() => {
+            a = e - 3, gameObjects.roomHandyObjs.rightHand.destroy(), gameObjects.roomHandyObjs.rightHand = globalScene.add.image(290, 360, "roomHandy", "righthand" + a), gameObjects.roomHandyObjs.roomContainer.add(gameObjects.roomHandyObjs.rightHand), gameObjects.roomHandyObjs.rightHand.scaleX = 1.01, gameObjects.roomHandyObjs.rightHand.scaleY = 1.01, gameDelay(() => {
                 gameObjects.roomHandyObjs.rightHand.scaleX = 1, gameObjects.roomHandyObjs.rightHand.scaleY = 1
             }, 50);
             break;
@@ -301,7 +301,7 @@ function fingerPress() {
         case 10:
         case 11:
         case 12:
-            a = e - 3, gameObjects.roomHandyObjs.leftHand.destroy(), gameObjects.roomHandyObjs.leftHand = globalScene.add.image(-285, 360, "roomHandy", "lefthand" + a), gameObjects.roomHandyObjs.roomContainer.add(gameObjects.roomHandyObjs.leftHand), gameObjects.roomHandyObjs.leftHand.scaleX = 1.01, gameObjects.roomHandyObjs.leftHand.scaleY = 1.01, setTimeout(() => {
+            a = e - 3, gameObjects.roomHandyObjs.leftHand.destroy(), gameObjects.roomHandyObjs.leftHand = globalScene.add.image(-285, 360, "roomHandy", "lefthand" + a), gameObjects.roomHandyObjs.roomContainer.add(gameObjects.roomHandyObjs.leftHand), gameObjects.roomHandyObjs.leftHand.scaleX = 1.01, gameObjects.roomHandyObjs.leftHand.scaleY = 1.01, gameDelay(() => {
                 gameObjects.roomHandyObjs.leftHand.scaleX = 1, gameObjects.roomHandyObjs.leftHand.scaleY = 1
             }, 50);
             break;
@@ -312,19 +312,19 @@ function fingerPress() {
         case 17:
         case 18:
         case 19:
-            if (a = e - 7, gameObjects.roomHandyObjs.rightHand.destroy(), gameObjects.roomHandyObjs.rightHand = globalScene.add.image(290, 360, "roomHandy", "righthand" + a), gameObjects.roomHandyObjs.roomContainer.add(gameObjects.roomHandyObjs.rightHand), gameObjects.roomHandyObjs.rightHand.scaleX = 1.01, gameObjects.roomHandyObjs.rightHand.scaleY = 1.01, setTimeout(() => {
+            if (a = e - 7, gameObjects.roomHandyObjs.rightHand.destroy(), gameObjects.roomHandyObjs.rightHand = globalScene.add.image(290, 360, "roomHandy", "righthand" + a), gameObjects.roomHandyObjs.roomContainer.add(gameObjects.roomHandyObjs.rightHand), gameObjects.roomHandyObjs.rightHand.scaleX = 1.01, gameObjects.roomHandyObjs.rightHand.scaleY = 1.01, gameDelay(() => {
                     gameObjects.roomHandyObjs.rightHand.scaleX = 1, gameObjects.roomHandyObjs.rightHand.scaleY = 1
                 }, 50), 19 === e) {
                 showFlashRand(2), showStaticRand(4, void 0, void 0, .6);
                 let e = globalScene.add.image(gameObjects.roomHandyObjs.leftHand.x, gameObjects.roomHandyObjs.leftHand.y, "roomHandy", "lefthandY");
-                gameObjects.roomHandyObjs.roomContainer.add(e), e.scaleX = 1.02, e.scaleY = 1.02, setTimeout(() => {
-                    e.scaleX = 1, e.scaleY = 1, setTimeout(() => {
+                gameObjects.roomHandyObjs.roomContainer.add(e), e.scaleX = 1.02, e.scaleY = 1.02, gameDelay(() => {
+                    e.scaleX = 1, e.scaleY = 1, gameDelay(() => {
                         showStaticRand(3, void 0, void 0, .2), showFlashRand(1), e.destroy()
                     }, 100)
                 }, 70);
                 let a = globalScene.add.image(290, 360, "roomHandy", "righthandY");
-                gameObjects.roomHandyObjs.roomContainer.add(a), a.scaleX = 1.03, a.scaleY = 1.03, setTimeout(() => {
-                    a.scaleX = 1.005, a.scaleY = 1.005, setTimeout(() => {
+                gameObjects.roomHandyObjs.roomContainer.add(a), a.scaleX = 1.03, a.scaleY = 1.03, gameDelay(() => {
+                    a.scaleX = 1.005, a.scaleY = 1.005, gameDelay(() => {
                         a.destroy()
                     }, 100)
                 }, 70)
@@ -335,7 +335,7 @@ function fingerPress() {
 function fingerUnPress() {
     if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
     let e = gameObjects.roomHandyObjs.fingerState - 1;
-    e >= 0 ? (gameObjects.roomHandyObjs.fingerState = e, gameObjects.roomHandyObjs.cleanupButton.setPos(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 20), updateGuideArrowFat(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 200, .5 * Math.PI)) : (gameObjects.roomHandyObjs.cleanupButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), gameObjects.exhibit.needCleanup = !1, updateHandyExpression(1), setTimeout(() => {
+    e >= 0 ? (gameObjects.roomHandyObjs.fingerState = e, gameObjects.roomHandyObjs.cleanupButton.setPos(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 20), updateGuideArrowFat(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 200, .5 * Math.PI)) : (gameObjects.roomHandyObjs.cleanupButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), gameObjects.exhibit.needCleanup = !1, updateHandyExpression(1), gameDelay(() => {
         playSound("deepbell3"), updateInfoTextSoft("Room cleaned up.", 2250), window.GameSDK && typeof window.GameSDK.gameplayStop === 'function' && window.GameSDK.gameplayStop();
     }, 100)), handleFingerSound(e + 2);
     let a = 0;
@@ -369,8 +369,8 @@ function setHandyDollImage(e) {
 }
 
 function bounceHandyDoll() {
-    gameObjects.roomHandyObjs.doll.scaleY = 1.013, gameObjects.roomHandyObjs.dollBody.scaleY = 1.013, setTimeout(() => {
-        gameObjects.roomHandyObjs.doll.scaleY = 1.004, gameObjects.roomHandyObjs.dollBody.scaleY = 1.004, setTimeout(() => {
+    gameObjects.roomHandyObjs.doll.scaleY = 1.013, gameObjects.roomHandyObjs.dollBody.scaleY = 1.013, gameDelay(() => {
+        gameObjects.roomHandyObjs.doll.scaleY = 1.004, gameObjects.roomHandyObjs.dollBody.scaleY = 1.004, gameDelay(() => {
             gameObjects.roomHandyObjs.doll.scaleY = 1, gameObjects.roomHandyObjs.dollBody.scaleY = 1
         }, 40)
     }, 50)
@@ -386,7 +386,7 @@ function updateHandyExpression(e) {
             setHandyDollImage("dollExpectant");
             break;
         case 4:
-            setHandyDollImage("dollHappy"), setTimeout(() => {
+            setHandyDollImage("dollHappy"), gameDelay(() => {
                 setHandyDollImage("dollNeutral")
             }, 500);
             break;
@@ -401,59 +401,59 @@ function updateHandyExpression(e) {
             setHandyDollImage("dollHappy");
             break;
         case 9:
-            showStaticLite(1, 2, 1.25, .08), setHandyDollImage("dollAnguished"), setTimeout(() => {
+            showStaticLite(1, 2, 1.25, .08), setHandyDollImage("dollAnguished"), gameDelay(() => {
                 setHandyDollImage("dollHappy")
             }, 150);
             break;
         case 10:
-            showStaticLite(2, 3, 1.25, .12), setHandyDollImage("dollAnguished"), setTimeout(() => {
+            showStaticLite(2, 3, 1.25, .12), setHandyDollImage("dollAnguished"), gameDelay(() => {
                 setHandyDollImage("dollNeutral")
             }, 300);
             break;
         case 11:
-            showStaticLite(2, 4, 2, .15), setHandyDollImage("dollWorried"), setTimeout(() => {
+            showStaticLite(2, 4, 2, .15), setHandyDollImage("dollWorried"), gameDelay(() => {
                 showStaticLite(1, 2, 1, .05), setHandyDollImage("dollAnguished")
             }, 300);
             break;
         case 12:
-            showStaticLite(1, 10, 2.5, .15), setHandyDollImage("dollFearful"), setTimeout(() => {
+            showStaticLite(1, 10, 2.5, .15), setHandyDollImage("dollFearful"), gameDelay(() => {
                 showStaticLite(1, 2, 1, .1), setHandyDollImage("dollAnguished")
             }, 250);
             break;
         case 13:
-            showStaticLite(1, 2, 1.5, .1), setHandyDollImage("dollFearful"), setTimeout(() => {
+            showStaticLite(1, 2, 1.5, .1), setHandyDollImage("dollFearful"), gameDelay(() => {
                 setHandyDollImage("dollWorried"), gameObjects.roomHandyObjs.shake = 1, gameObjects.roomHandyObjs.vertShakeTemp = 0, gameObjects.roomHandyObjs.shakeTemp = 1, addToUpdateFuncList(shakeHandyDoll)
             }, 200);
             break;
         case 14:
-            showStaticLite(2, 3, 1.5, .15), setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shakeTemp = 1.5, setTimeout(() => {
+            showStaticLite(2, 3, 1.5, .15), setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shakeTemp = 1.5, gameDelay(() => {
                 setHandyDollImage("dollWorried"), gameObjects.roomHandyObjs.shake = 1.25
             }, 250);
             break;
         case 15:
-            showStaticLite(1, 3, 2, .6), setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shake = 3, gameObjects.roomHandyObjs.vertShakeTemp = .1, setTimeout(() => {
+            showStaticLite(1, 3, 2, .6), setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shake = 3, gameObjects.roomHandyObjs.vertShakeTemp = .1, gameDelay(() => {
                 showStaticLite(2, 3, 1.5, .15), setHandyDollImage("dollWorried"), gameObjects.roomHandyObjs.shake = 1.75
             }, 180);
             break;
         case 16:
-            showStaticLite(1, 2, 1.5, .1), setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shakeTemp = 1.5, gameObjects.roomHandyObjs.vertShakeTemp = .02, setTimeout(() => {
+            showStaticLite(1, 2, 1.5, .1), setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shakeTemp = 1.5, gameObjects.roomHandyObjs.vertShakeTemp = .02, gameDelay(() => {
                 setHandyDollImage("dollWorried"), gameObjects.roomHandyObjs.shake = 2
             }, 300);
             break;
         case 17:
-            showStaticLite(1, 2, 1.5, .1), setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shakeTemp = 1.5, gameObjects.roomHandyObjs.vertShakeTemp = .04, setTimeout(() => {
+            showStaticLite(1, 2, 1.5, .1), setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shakeTemp = 1.5, gameObjects.roomHandyObjs.vertShakeTemp = .04, gameDelay(() => {
                 setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shake = 2
             }, 300);
             break;
         case 18:
-            showStaticLite(4, 7, 2, .4), setHandyDollImage("dollScreaming"), gameObjects.roomHandyObjs.shakeTemp = .5, gameObjects.roomHandyObjs.vertShakeTemp = .05, setTimeout(() => {
+            showStaticLite(4, 7, 2, .4), setHandyDollImage("dollScreaming"), gameObjects.roomHandyObjs.shakeTemp = .5, gameObjects.roomHandyObjs.vertShakeTemp = .05, gameDelay(() => {
                 setHandyDollImage("dollFearful"), gameObjects.roomHandyObjs.shake = 2.4
             }, 150);
             break;
         case 19:
         	gameObjects.roomHandyObjs.dollBody.setVisible(false);
-            showStaticLite(5, 10, 2.5, 1), setHandyDollImage("dollScreaming"), gameObjects.roomHandyObjs.shakeTemp = 3, gameObjects.roomHandyObjs.vertShakeTemp = .12, setTimeout(() => {
-                setHandyDollImage("dollDefeated"), removeFromUpdateFuncList(shakeHandyDoll), setTimeout(() => {
+            showStaticLite(5, 10, 2.5, 1), setHandyDollImage("dollScreaming"), gameObjects.roomHandyObjs.shakeTemp = 3, gameObjects.roomHandyObjs.vertShakeTemp = .12, gameDelay(() => {
+                setHandyDollImage("dollDefeated"), removeFromUpdateFuncList(shakeHandyDoll), gameDelay(() => {
                     showStaticRand(2)
                 }, 500)
             }, 600)

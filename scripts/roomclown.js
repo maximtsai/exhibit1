@@ -22,7 +22,7 @@ function setupRoomClown1(e, o, a) {
     }), gameObjects.roomClown1.nose.setScale(145, 30), l = messageBus.subscribe("exhibitMove", e => {
         if (e === o) {
             if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
-            setTimeout(() => {
+            gameDelay(() => {
                 if (gameVars.firstNosePressed) {
                     return;
                 }
@@ -157,14 +157,14 @@ function shakeClownEyes() {
 
 function nosePress1(e, o) {
     let a, l = gameObjects.roomClown1.clown.y;
-    gameObjects.roomClown1.clown.destroy(), gameObjects.roomClown1.clown = globalScene.add.image(0, l, "roomClown", "clownsmall2"), o.add(gameObjects.roomClown1.clown), gameObjects.roomClown1.nose.destroy(), setTimeout(() => {
+    gameObjects.roomClown1.clown.destroy(), gameObjects.roomClown1.clown = globalScene.add.image(0, l, "roomClown", "clownsmall2"), o.add(gameObjects.roomClown1.clown), gameObjects.roomClown1.nose.destroy(), gameDelay(() => {
         createKey(5, gameVars.halfHeight + 130, gameObjects.roomClown1.roomIndex, gameObjects.roomClown1.roomContainer, !0)
     }, 100), a = messageBus.subscribe("exhibitMoveRight", () => {
-        a.unsubscribe(), setTimeout(() => {
+        a.unsubscribe(), gameDelay(() => {
             let e = globalScene.add.image(0, l, "roomClown", "clownsmall3");
-            o.add(e), playSound("clownlaugh1"), setTimeout(() => {
+            o.add(e), playSound("clownlaugh1"), gameDelay(() => {
                 e.destroy()
-            }, 1e3), showStaticRand(1, null, void 0, .08), gameObjects.generalDarkness.alpha = .05, setTimeout(() => {
+            }, 1e3), showStaticRand(1, null, void 0, .08), gameObjects.generalDarkness.alpha = .05, gameDelay(() => {
                 gameObjects.generalDarkness.alpha = 0
             }, 50)
         }, 350)
@@ -175,24 +175,24 @@ function nosePress1(e, o) {
 function nosePress2(e, o) {
     gameObjects.roomClown2.nose.destroy();
     let a = gameObjects.roomClown2.clown.y;
-    gameObjects.roomClown2.clown.destroy(), gameObjects.roomClown2.clown = globalScene.add.image(0, a, "roomClown", "clownlarge1"), o.add(gameObjects.roomClown2.clown), gameObjects.roomClown2.clown.scaleX = .76, gameObjects.roomClown2.clown.scaleY = .76, setTimeout(() => {
-        gameObjects.generalDarkness.alpha = .03, setTimeout(() => {
-            gameObjects.generalDarkness.alpha = .1, setTimeout(() => {
-                gameObjects.generalDarkness.alpha = 0, setTimeout(() => {
-                    gameObjects.generalDarkness.alpha = .05, setTimeout(() => {
+    gameObjects.roomClown2.clown.destroy(), gameObjects.roomClown2.clown = globalScene.add.image(0, a, "roomClown", "clownlarge1"), o.add(gameObjects.roomClown2.clown), gameObjects.roomClown2.clown.scaleX = .76, gameObjects.roomClown2.clown.scaleY = .76, gameDelay(() => {
+        gameObjects.generalDarkness.alpha = .03, gameDelay(() => {
+            gameObjects.generalDarkness.alpha = .1, gameDelay(() => {
+                gameObjects.generalDarkness.alpha = 0, gameDelay(() => {
+                    gameObjects.generalDarkness.alpha = .05, gameDelay(() => {
                         gameObjects.generalDarkness.alpha = 0
                     }, 10)
                 }, 500)
             }, 10)
         }, 50)
-    }, 23), setTimeout(() => {
+    }, 23), gameDelay(() => {
         createKey(12, gameVars.halfHeight + 150, gameObjects.roomClown2.roomIndex, gameObjects.roomClown2.roomContainer, !0)
     }, 500)
 }
 
 function nosePress3(e, o) {
     if (gameObjects.roomClown3.nose.setPos(19, -9999), gameObjects.roomClown3.clickedOnce) {
-        gameObjects.roomClown3.nose.destroy(), playSound("keyfound"), setTimeout(() => {
+        gameObjects.roomClown3.nose.destroy(), playSound("keyfound"), gameDelay(() => {
             playSound("click3")
             showStaticRand(5);
         }, 500);
@@ -212,20 +212,20 @@ function nosePress3(e, o) {
             onHover: () => {
                 l.destroy(), gameObjects.roomClown3.clown.visible = !1, gameObjects.roomClown3.clown.destroy();
                 let a = globalScene.add.image(0, gameVars.halfHeight - 50, "roomClown", "clownlarge2");
-                o.add(a), showStaticRand(5), playSound("clownlaugh2"), tempFreeze(800), setTimeout(() => {
-                    a.x = -3, setTimeout(() => {
-                        a.scaleX = 1.03, a.x = 4, setTimeout(() => {
-                            a.x = -7, a.scaleX = 1.08, a.scaleY = 1.02, setTimeout(() => {
-                                a.x = 9, a.scaleX = 1.18, a.scaleY = 1.05, setTimeout(() => {
+                o.add(a), showStaticRand(5), playSound("clownlaugh2"), tempFreeze(800), gameDelay(() => {
+                    a.x = -3, gameDelay(() => {
+                        a.scaleX = 1.03, a.x = 4, gameDelay(() => {
+                            a.x = -7, a.scaleX = 1.08, a.scaleY = 1.02, gameDelay(() => {
+                                a.x = 9, a.scaleX = 1.18, a.scaleY = 1.05, gameDelay(() => {
                                     a.visible = !1;
                                     let l = globalScene.add.image(-150, gameVars.halfHeight - 94, "roomClown", "clownunleashed");
-                                    o.add(l), setTimeout(() => {
+                                    o.add(l), gameDelay(() => {
                                         l.visible = !1;
                                         let t = globalScene.add.image(0, gameVars.halfHeight + 70, "roomClown", "clownunleashed2");
-                                        t.scaleX = 1.02, t.scaleY = 1, o.add(t), setTimeout(() => {
-                                            t.scaleX = 1.3, t.scaleY = 1.3, setTimeout(() => {
+                                        t.scaleX = 1.02, t.scaleY = 1, o.add(t), gameDelay(() => {
+                                            t.scaleX = 1.3, t.scaleY = 1.3, gameDelay(() => {
                                                 t.scaleX = 1.25, t.scaleY = 1.25, showFlashArr([0, 1, 12, 2, 3, 12, 6, 13, 7, 14, 8], () => {
-                                                    l.destroy(), a.destroy(), t.destroy(), gameObjects.roomClown3.portrait.destroy(), gameObjects.roomClown3.portrait = globalScene.add.image(0, gameVars.halfHeight - 50, "roomClown", "portraitbroken"), o.add(gameObjects.roomClown3.portrait), initDarkSequence(e), enableMoveButtons(), setTimeout(() => {
+                                                    l.destroy(), a.destroy(), t.destroy(), gameObjects.roomClown3.portrait.destroy(), gameObjects.roomClown3.portrait = globalScene.add.image(0, gameVars.halfHeight - 50, "roomClown", "portraitbroken"), o.add(gameObjects.roomClown3.portrait), initDarkSequence(e), enableMoveButtons(), gameDelay(() => {
                                                         gameObjects.sounds.gladiator1.volume = .25 * gameVars.soundMult, gameObjects.sounds.gladiator2.volume = 0, tweenVolume("gladiator1", 1), gameObjects.musicBoxNote.alpha = 1, gameObjects.musicBoxNote2.alpha = 1, gameObjects.musicBoxNote.origX = gameObjects.musicBox.x, gameObjects.musicBoxNote.origY = gameObjects.musicBox.y - 50, gameObjects.sounds.gladiator0.stop(), gameObjects.sounds.gladiator1.play({
                                                             loop: !0
                                                         }), gameObjects.sounds.gladiator2.play({
@@ -254,15 +254,15 @@ function nosePress3(e, o) {
                 }, 10)
             }
         })
-    } else setTimeout(() => {
+    } else gameDelay(() => {
         playSound("keyfound");
         let e = globalScene.add.image(gameVars.halfWidth + 20, 600, "buttons", "key_yellow");
         showStaticLite(2, 2)
 
-        setTimeout(() => {
-            gameObjects.roomClown3.clownTemp = globalScene.add.image(-100, gameVars.halfHeight - 46, "roomClown", "clownlarge2"), gameObjects.roomClown3.clownTemp.scaleX = 1.5, gameObjects.roomClown3.clownTemp.alpha = 0.5, o.add(gameObjects.roomClown3.clownTemp), setTimeout(() => {
+        gameDelay(() => {
+            gameObjects.roomClown3.clownTemp = globalScene.add.image(-100, gameVars.halfHeight - 46, "roomClown", "clownlarge2"), gameObjects.roomClown3.clownTemp.scaleX = 1.5, gameObjects.roomClown3.clownTemp.alpha = 0.5, o.add(gameObjects.roomClown3.clownTemp), gameDelay(() => {
                 gameObjects.roomClown3.clownTemp.x = 20
-            }, 0), setTimeout(() => {
+            }, 0), gameDelay(() => {
                 showStaticRand(8);
                 showStaticLite(3, 3)
 
@@ -324,12 +324,12 @@ function nosePress3(e, o) {
 		            }
 		        });
 
-                gameObjects.roomClown3.clown.destroy(), gameObjects.roomClown3.clownTemp.destroy(), gameObjects.roomClown3.clown = globalScene.add.image(0, gameVars.halfHeight - 47, "roomClown", "clownlarge3"), gameObjects.roomClown3.clown.scaleX = .93, gameObjects.roomClown3.clown.scaleY = .96, o.add(gameObjects.roomClown3.clown), gameObjects.roomClown3.mouthlarge = globalScene.add.image(0, gameVars.halfHeight - 50, "roomClown", "mouthlarge"), gameObjects.roomClown3.mouthlarge.scaleX = .93, gameObjects.roomClown3.mouthlarge.scaleY = .96, gameObjects.roomClown3.mouthlarge.origScaleY = gameObjects.roomClown3.mouthlarge.scaleY, o.add(gameObjects.roomClown3.mouthlarge), addToUpdateFuncList(shakeClownMouth), playSound("click1"), setTimeout(() => {
+                gameObjects.roomClown3.clown.destroy(), gameObjects.roomClown3.clownTemp.destroy(), gameObjects.roomClown3.clown = globalScene.add.image(0, gameVars.halfHeight - 47, "roomClown", "clownlarge3"), gameObjects.roomClown3.clown.scaleX = .93, gameObjects.roomClown3.clown.scaleY = .96, o.add(gameObjects.roomClown3.clown), gameObjects.roomClown3.mouthlarge = globalScene.add.image(0, gameVars.halfHeight - 50, "roomClown", "mouthlarge"), gameObjects.roomClown3.mouthlarge.scaleX = .93, gameObjects.roomClown3.mouthlarge.scaleY = .96, gameObjects.roomClown3.mouthlarge.origScaleY = gameObjects.roomClown3.mouthlarge.scaleY, o.add(gameObjects.roomClown3.mouthlarge), addToUpdateFuncList(shakeClownMouth), playSound("click1"), gameDelay(() => {
                     e.destroy(), playSound("click", 4), showStaticRand(3, null, () => {
                         showFlashRand(1)
-                    }, .3), setTimeout(() => {
+                    }, .3), gameDelay(() => {
                         showStaticLite(3, 3)
-                    }, 300), setTimeout(() => {
+                    }, 300), gameDelay(() => {
                         gameObjects.roomClown3.nose.setPos(35, gameVars.halfHeight - 155), playSound("click1")
                     }, 400), gameObjects.roomClown3.clickedOnce = !0
                 }, 40)
@@ -339,7 +339,7 @@ function nosePress3(e, o) {
 }
 
 function nosePressFinal(e, o) {
-    gameObjects.roomClown3.nose2.destroy(), gameObjects.roomClown3.clown.destroy(), gameObjects.roomClown3.mouthlarge.destroy(), removeFromUpdateFuncList(shakeClownMouth), gameObjects.roomClown3.clown = globalScene.add.image(0, gameVars.halfHeight + 60, "roomClown", "clownnormal"), gameObjects.roomClown3.clown.scaleX = .75, gameObjects.roomClown3.clown.scaleY = .75, o.add(gameObjects.roomClown3.clown), setTimeout(() => {
+    gameObjects.roomClown3.nose2.destroy(), gameObjects.roomClown3.clown.destroy(), gameObjects.roomClown3.mouthlarge.destroy(), removeFromUpdateFuncList(shakeClownMouth), gameObjects.roomClown3.clown = globalScene.add.image(0, gameVars.halfHeight + 60, "roomClown", "clownnormal"), gameObjects.roomClown3.clown.scaleX = .75, gameObjects.roomClown3.clown.scaleY = .75, o.add(gameObjects.roomClown3.clown), gameDelay(() => {
         createKey(25, gameVars.halfHeight + 180, gameObjects.roomClown3.roomIndex, gameObjects.roomClown3.roomContainer, !0, disableMoveLeftButton)
     }, 100)
 }

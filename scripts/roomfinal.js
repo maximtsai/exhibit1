@@ -30,7 +30,7 @@ function setupRoomFinal(scene, roomIndex, roomContainer) {
 
 function onFinalExitClick(scene) {
 	gameObjects.exitDoorFinal.setState('disable');
-	setTimeout(() => {
+	gameDelay(() => {
 		playSound('dooropen2');
 	}, 50);
     scene.tweens.add({
@@ -169,7 +169,7 @@ function runEpilogue(background) {
 									zoomTemp(1.04);
 									showStaticLite(6, 25, 4, 1);
     								globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, 'theEnd');
-    								setTimeout(() => {
+    								gameDelay(() => {
 
 						                let background = document.getElementById('background');
 						                background.style.opacity = '0';
@@ -227,7 +227,7 @@ function runEpilogue(background) {
 																			duration: 2500,
 																			delay: 2500
 																		});
-																		setTimeout(() => {
+																		gameDelay(() => {
 
 																			gameObjectsTemp.replayText = globalScene.add.text(100, 700, 'REPLAY', {fontFamily: 'Times New Roman', fontSize: 28, color: '#ffffff', align: 'right'});
 																			gameObjectsTemp.replayText.setOrigin(0, 0.5);

@@ -73,7 +73,7 @@ class Exhibit {
                 }
             } else {
                 updateInfoTextSoft('Clean up the room first.', 2250);
-                setTimeout(() => {
+                gameDelay(() => {
                     gameVarsTemp.needSecondClue = true;
                 }, 1000)
             }

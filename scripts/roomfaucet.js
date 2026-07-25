@@ -73,10 +73,10 @@ function roomFaucetUpdate(e) {
         let c = m - gameObjects.roomFaucetObjs.lever.rotation;
         c > Math.PI ? c -= 2 * Math.PI : c < -Math.PI && (c += 2 * Math.PI);
         let b = 0;
-        if (c > .01 ? b = Math.min(.0024, .006 * c) : c < -.01 && (b = Math.max(-.0024, .006 * c)), gameVars.horrorPoint && b < 0 && gameObjects.roomFaucetObjs.lever.rotation > .8 && (b = 0), gameObjects.roomFaucetObjs.lever.rotVel += b, gameObjects.roomFaucetObjs.lever.rotVel *= .88, a = !0, Math.abs(gameObjects.roomFaucetObjs.lever.rotation + .2) < .03 && gameObjects.roomFaucetObjs.soundCooldown <= 0 && (gameObjects.roomFaucetObjs.lever.rotVel > .005 ? (playSound("metalsqueak1"), gameObjects.roomFaucetObjs.soundCooldown = 50) : gameObjects.roomFaucetObjs.lever.rotVel < -.005 && (playSound("metalsqueak2"), gameObjects.roomFaucetObjs.soundCooldown = 50), gameObjects.roomFaucetObjs.lever.rotVel *= .5), gameObjects.roomFaucetObjs.lever.rotation < -.75) gameVars.darkPoint && gameObjects.exhibit.needCleanup && (gameObjects.exhibit.needCleanup = !1, gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.handle.disappear(), setWashyDollImage("washyRelaxed"), setTimeout(() => {
+        if (c > .01 ? b = Math.min(.0024, .006 * c) : c < -.01 && (b = Math.max(-.0024, .006 * c)), gameVars.horrorPoint && b < 0 && gameObjects.roomFaucetObjs.lever.rotation > .8 && (b = 0), gameObjects.roomFaucetObjs.lever.rotVel += b, gameObjects.roomFaucetObjs.lever.rotVel *= .88, a = !0, Math.abs(gameObjects.roomFaucetObjs.lever.rotation + .2) < .03 && gameObjects.roomFaucetObjs.soundCooldown <= 0 && (gameObjects.roomFaucetObjs.lever.rotVel > .005 ? (playSound("metalsqueak1"), gameObjects.roomFaucetObjs.soundCooldown = 50) : gameObjects.roomFaucetObjs.lever.rotVel < -.005 && (playSound("metalsqueak2"), gameObjects.roomFaucetObjs.soundCooldown = 50), gameObjects.roomFaucetObjs.lever.rotVel *= .5), gameObjects.roomFaucetObjs.lever.rotation < -.75) gameVars.darkPoint && gameObjects.exhibit.needCleanup && (gameObjects.exhibit.needCleanup = !1, gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.handle.disappear(), setWashyDollImage("washyRelaxed"), gameDelay(() => {
             playSound("deepbell4"), updateInfoTextSoft("Room cleaned up.", 2e3), window.GameSDK && typeof window.GameSDK.gameplayStop === 'function' && window.GameSDK.gameplayStop();
         }, 300)), gameObjects.roomFaucetObjs.lever.rotation = -.74, gameObjects.roomFaucetObjs.lever.rotVel *= -.35;
-        else if (gameObjects.roomFaucetObjs.lever.rotVel > .001 && gameObjects.roomFaucetObjs.lever.rotation > .78 && !gameObjects.roomFaucetObjs.firstComplete && !gameVars.horrorPoint && !gameVars.darkPoint) gameObjects.roomFaucetObjs.handle.disappear(), gameObjects.roomFaucetObjs.firstComplete = !0, gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.lever.rotation = .799, setTimeout(() => {
+        else if (gameObjects.roomFaucetObjs.lever.rotVel > .001 && gameObjects.roomFaucetObjs.lever.rotation > .78 && !gameObjects.roomFaucetObjs.firstComplete && !gameVars.horrorPoint && !gameVars.darkPoint) gameObjects.roomFaucetObjs.handle.disappear(), gameObjects.roomFaucetObjs.firstComplete = !0, gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.lever.rotation = .799, gameDelay(() => {
             createKey(-365, gameVars.halfHeight + 85, gameObjects.roomFaucetObjs.roomIndex, gameObjects.roomFaucetObjs.roomContainer, !0)
         }, 100);
         else if (gameObjects.roomFaucetObjs.lever.rotation > .8) {
@@ -110,14 +110,14 @@ function roomFaucetUpdate(e) {
                 let s = gameObjects.roomFaucetObjs.lever.x,
                     r = gameObjects.roomFaucetObjs.lever.y;
                 gameObjects.roomFaucetObjs.leverBent.destroy(), gameObjects.roomFaucetObjs.leverBent = globalScene.add.image(s, r, "roomFaucet", "leverbroken"), gameObjects.roomFaucetObjs.roomContainer.add(gameObjects.roomFaucetObjs.leverBent), showFlashArr([0, 5, 15, 6, 15, 16, 2, 16, 16, 7, 0], () => {
-                    showStaticRand(5), setTimeout(() => {
-                        showStaticRand(2), setTimeout(() => {
+                    showStaticRand(5), gameDelay(() => {
+                        showStaticRand(2), gameDelay(() => {
                             showStaticRand(1, void 0, void 0, .05)
                         }, 750)
                     }, 750)
-                }), gameVars.walkSlow = !0, gameObjects.roomFaucetObjs.roomCompleted = !0, updateWashyExpression(999), setTimeout(() => {
+                }), gameVars.walkSlow = !0, gameObjects.roomFaucetObjs.roomCompleted = !0, updateWashyExpression(999), gameDelay(() => {
                     gameObjects.roomFaucetObjs.startOverflow = !0
-                }, 600), setTimeout(() => {
+                }, 600), gameDelay(() => {
                     createKey(-155, gameVars.halfHeight + 160, gameObjects.roomFaucetObjs.roomIndex, gameObjects.roomFaucetObjs.roomContainer, !1)
                 }, 1500)
             }
@@ -148,8 +148,8 @@ function updateInk() {
 
 function createWaterDrop() {
     let e = gameObjects.roomFaucetObjs.freeDropletPool.pop();
-    e || ((e = globalScene.add.image(0, 0, "roomFaucet", "waterdrop")).setDepth(5), gameObjects.roomFaucetObjs.container.add(e)), e.scaleX = .85, setTimeout(() => {
-        e.scaleX = .95, setTimeout(() => {
+    e || ((e = globalScene.add.image(0, 0, "roomFaucet", "waterdrop")).setDepth(5), gameObjects.roomFaucetObjs.container.add(e)), e.scaleX = .85, gameDelay(() => {
+        e.scaleX = .95, gameDelay(() => {
             e.scaleX = 1
         }, 30)
     }, 30), e.velY = .4, e.x = gameObjects.roomFaucetObjs.hose.x - 360 + 90 * Math.random(), e.y = gameObjects.roomFaucetObjs.hose.y + 624, gameObjects.roomFaucetObjs.activeDroplets.push(e)
@@ -189,7 +189,7 @@ function resetGuideArrowFaucet() {
 function createExtraDrops(e) {
     if (e <= 0) return;
     for (let a = 0; a < e; a++) createWaterDrop();
-    setTimeout(() => {
+    gameDelay(() => {
         createExtraDrops(e - 1)
     }, 25)
 }
@@ -207,8 +207,8 @@ function setWashyDollImage(e) {
 }
 
 function bounceWashyDoll() {
-    gameObjects.roomFaucetObjs.doll.scaleY = 1.008, setTimeout(() => {
-        gameObjects.roomFaucetObjs.doll.scaleY = 1.004, setTimeout(() => {
+    gameObjects.roomFaucetObjs.doll.scaleY = 1.008, gameDelay(() => {
+        gameObjects.roomFaucetObjs.doll.scaleY = 1.004, gameDelay(() => {
             gameObjects.roomFaucetObjs.doll.scaleY = 1
         }, 40)
     }, 50)

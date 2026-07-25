@@ -29,8 +29,8 @@ class Hand {
         return this.entity
     }
     setPointing(i) {
-        i ? this.visual.visible && (this.visual.visible = !1, this.visualPoint.visible = !0, this.visualPoint.scaleX = 1.05, this.visualPoint.scaleY = 1.05, setTimeout(() => {
-            this.visualPoint.scaleX = 1.02, this.visualPoint.scaleY = 1.02, setTimeout(() => {
+        i ? this.visual.visible && (this.visual.visible = !1, this.visualPoint.visible = !0, this.visualPoint.scaleX = 1.05, this.visualPoint.scaleY = 1.05, gameDelay(() => {
+            this.visualPoint.scaleX = 1.02, this.visualPoint.scaleY = 1.02, gameDelay(() => {
                 this.visualPoint.scaleX = 1, this.visualPoint.scaleY = 1
             }, 100)
         }, 50)) : this.visual.visible || (this.visual.visible = !0, this.visualPoint.visible = !1)
