@@ -1,17 +1,15 @@
 class Exhibit {
-    constructor(scene, bgContainer, shadowContainer, foregroundContainer, btnContainer, darkContainer) {
+    constructor(scene, bgContainer, shadowContainer, foregroundContainer, btnContainer) {
         this.scene = scene;
         this.listOfBGs = [];
         this.listOfShadows = [];
         this.listOfForegrounds = [];
         this.listOfBtnCtnrs = [];
-        this.listOfDarks = [];
         this.listOfLists = [
             this.listOfBGs,
             this.listOfShadows,
             this.listOfForegrounds,
-            this.listOfBtnCtnrs,
-            this.listOfDarks
+            this.listOfBtnCtnrs
         ]
         this.listOfCantMove = [
             false, false
@@ -353,31 +351,11 @@ class Exhibit {
         this.listOfBtnCtnrs[x] = [];
     }
 
-    setDarkAtIndex(x, ref){
-        // let newImage = this.scene.add.sprite(-9999, gameVars.halfHeight, ref);
-        // newImage.mask = this.mask;
-        // this.darkContainer.add(newImage);
-        // if (this.listOfDarks[x]) {
-        //     this.listOfDarks[x].destroy();
-        // }
-        // this.listOfDarks[x] = newImage;
-        // if (x === this.currentScene) {
-        //     this.listOfDarks[x].x = this.centerSpot;
-        // }
-    }
-
-    removeDarkAtIndex(x) {
-        if (this.listOfDarks[x]) {
-            this.listOfDarks[x].destroy();
-        }
-    }
-
     removeIndex(x) {
         this.listOfBGs[x] = null;
         this.listOfShadows[x] = null;
         this.listOfForegrounds[x] = null;
         this.listOfBtnCtnrs[x] = null;
-        this.listOfDarks[x] = null;
     }
 
     // initially just false, false
