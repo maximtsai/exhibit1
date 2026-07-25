@@ -19,7 +19,7 @@ function setupRoomClown1(e, o, a) {
         alpha: 1,
         scaleX: .158,
         scaleY: .158
-    }), gameObjects.roomClown1.nose.setScale(145, 30), l = messageBus.subscribe("exhibitMove", e => {
+    }), l = messageBus.subscribe("exhibitMove", e => {
         if (e === o) {
             if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
             gameDelay(() => {

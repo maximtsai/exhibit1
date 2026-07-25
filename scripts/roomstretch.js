@@ -161,7 +161,7 @@ function roomStretchUpdate(e) {
         n = gameObjects.roomStretchObjs.armseg1.y + Math.sin(gameObjects.roomStretchObjs.armseg1.rotation) * S * gameObjects.roomStretchObjs.armseg1.scaleX;
     if (gameObjects.roomStretchObjs.armseg2.x = d, gameObjects.roomStretchObjs.armseg2.y = n, gameObjects.roomStretchObjs.armseg2.rotation = Math.atan2(O, b), gameObjects.roomStretchObjs.armseg2.scaleX = .0113 * j - .035, r) {
         let t, s = 0;
-        o > 225 && gameObjects.roomStretchObjs.doHorrorSection ? (o > 290 && gameObjects.roomStretchObjs.loosenAmt < .15 && (gameObjects.roomStretchObjs.loosenAmt += 33e-6 * e), s = 26e-6 * o + .83 - gameObjects.roomStretchObjs.loosenAmt - .007 * (e - 1), o > 339.5 && (console.log("She can't stretch any further"), t *= .999)) : gameObjects.roomStretchObjs.doHorrorSection ? s = .0035 * o + .088 : (s = .0048 * o + .032, o > 218 && (s *= 2)), t = o - s * e;
+        o > 225 && gameObjects.roomStretchObjs.doHorrorSection ? (o > 290 && gameObjects.roomStretchObjs.loosenAmt < .15 && (gameObjects.roomStretchObjs.loosenAmt += 33e-6 * e), s = 26e-6 * o + .83 - gameObjects.roomStretchObjs.loosenAmt - .007 * (e - 1), o > 339.5 && (t *= .999)) : gameObjects.roomStretchObjs.doHorrorSection ? s = .0035 * o + .088 : (s = .0048 * o + .032, o > 218 && (s *= 2)), t = o - s * e;
         let r = gameObjects.roomStretchObjs.armMinDist;
         if (gameObjects.roomStretchObjs.armMinDist = Math.max(gameObjects.roomStretchObjs.overstretched ? 230 : 80, t), o > 120) {
             gameObjects.roomStretchObjs.armMinDist > r + .02 && updateStretchSounds(o);
@@ -223,7 +223,10 @@ function roomStretchUpdate(e) {
                                 })
                             }, 550)
                         }, 800)
-                    } else createKey(gameObjects.roomStretchObjs.dollPosX - 100, gameObjects.roomStretchObjs.dollPosY - 30, gameObjects.roomStretchObjs.roomIndex, gameObjects.roomStretchObjs.roomContainer, !gameVars.horrorPoint), gameVars.horrorPoint && gameDelay(() => {
+                    } else {
+                        createKey(gameObjects.roomStretchObjs.dollPosX - 100, gameObjects.roomStretchObjs.dollPosY - 30, gameObjects.roomStretchObjs.roomIndex, gameObjects.roomStretchObjs.roomContainer, !gameVars.horrorPoint);
+                    }
+                    gameVars.horrorPoint && gameDelay(() => {
                         gameObjects.generalDarkness.alpha = .1, gameDelay(() => {
                             gameObjects.generalDarkness.alpha = .04, gameDelay(() => {
                                 gameObjects.generalDarkness.alpha = .15, gameDelay(() => {
