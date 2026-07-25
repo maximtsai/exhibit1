@@ -553,6 +553,90 @@
 						"h": 776
 					},
 					"rotated": false
+				},
+				{
+					"filename": "sfx_muted_hover",
+					"frame": {
+						"x": 3029,
+						"y": 2833,
+						"w": 79,
+						"h": 79
+					},
+					"sourceSize": {
+						"w": 79,
+						"h": 79
+					},
+					"rotated": false
+				},
+				{
+					"filename": "sfx_muted_normal",
+					"frame": {
+						"x": 3108,
+						"y": 2833,
+						"w": 79,
+						"h": 79
+					},
+					"sourceSize": {
+						"w": 79,
+						"h": 79
+					},
+					"rotated": false
+				},
+				{
+					"filename": "hint_hover",
+					"frame": {
+						"x": 2871,
+						"y": 2912,
+						"w": 79,
+						"h": 79
+					},
+					"sourceSize": {
+						"w": 79,
+						"h": 79
+					},
+					"rotated": false
+				},
+				{
+					"filename": "hint_normal",
+					"frame": {
+						"x": 2950,
+						"y": 2912,
+						"w": 79,
+						"h": 79
+					},
+					"sourceSize": {
+						"w": 79,
+						"h": 79
+					},
+					"rotated": false
+				},
+				{
+					"filename": "sfx_hover",
+					"frame": {
+						"x": 3029,
+						"y": 2912,
+						"w": 79,
+						"h": 79
+					},
+					"sourceSize": {
+						"w": 79,
+						"h": 79
+					},
+					"rotated": false
+				},
+				{
+					"filename": "sfx_normal",
+					"frame": {
+						"x": 3108,
+						"y": 2912,
+						"w": 79,
+						"h": 79
+					},
+					"sourceSize": {
+						"w": 79,
+						"h": 79
+					},
+					"rotated": false
 				}
 			]
 		}

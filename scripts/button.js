@@ -36,7 +36,10 @@ class Button {
             if (!e) {
                 e = s.atlas ? this.scene.add.sprite(0, 0, s.atlas, s.ref) : this.scene.add.sprite(0, 0, s.ref);
                 let t = this.imageRefs[this.oldImageRef];
-                t && e.setOrigin(t.originX, t.originY), this.noContainer || this.container.add(e), this.imageRefs[s.ref] = e
+                t && e.setOrigin(t.originX, t.originY);
+                void 0 !== this.scrollFactorX && e.setScrollFactor(this.scrollFactorX, this.scrollFactorY);
+                void 0 !== this.depth && e.setDepth(this.depth);
+                this.noContainer || this.container.add(e), this.imageRefs[s.ref] = e
             }
             e.visible = !0
         }
@@ -48,6 +51,12 @@ class Button {
     }
     checkCoordOver(e, s) {
         if (this.state === DISABLE) return !1;
+        if (this.isUI || this.scrollFactorX === 0) {
+            if (typeof gameVars !== "undefined" && void 0 !== gameVars.mouseposx) {
+                e = gameVars.mouseposx;
+                s = gameVars.mouseposy;
+            }
+        }
         let t = e - (this.noContainer ? 0 : this.container.x),
             i = s - (this.noContainer ? 0 : this.container.y),
             a = this.imageRefs[this.currImageRef],
@@ -165,6 +174,19 @@ class Button {
     }
     setOrigin(e, s) {
         for (let t in this.imageRefs) this.imageRefs[t].setOrigin(e, s)
+    }
+    setScrollFactor(e, s) {
+        void 0 === s && (s = e);
+        this.scrollFactorX = e;
+        this.scrollFactorY = s;
+        if (e === 0 && s === 0) {
+            this.isUI = true;
+        }
+        for (let t in this.imageRefs) this.imageRefs[t].setScrollFactor(e, s);
+    }
+    setDepth(e) {
+        this.depth = e;
+        for (let s in this.imageRefs) this.imageRefs[s].setDepth(e);
     }
     tweenToPos(e, s, t, i) {
         let a = {

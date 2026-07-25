@@ -175,7 +175,10 @@ let deferredAudio = [
 ];
 let deferredAtlases = [
     ["roomClown2", "sprites/clown/clown2.json"],
-    ["flashScreens", "sprites/flashscreens/flashscreens.json"]
+    ["flashScreens", "sprites/flashscreens/flashscreens.json"],
+    ["staticScreens", "sprites/staticscreens/staticscreens.json"],
+    ["staticLite", "sprites/staticscreens/staticlite.json"],
+    ["misc", "sprites/misc/misc.json"]
 ];
 let deferredImages = [
     ["theEnd", "sprites/altreality/the_end.webp"],
@@ -193,7 +196,9 @@ let deferredImages = [
     ["balloon2", "sprites/altreality/balloon2.jpg"],
     ["balloon3", "sprites/altreality/balloon3.jpg"],
     ["balloon4", "sprites/altreality/balloon4.jpg"],
-    ["balloon5", "sprites/altreality/balloon5.jpg"]
+    ["balloon5", "sprites/altreality/balloon5.jpg"],
+    ["candleDark", "sprites/candleDark.png"],
+    ["redlight", "sprites/redlight.png"]
 ];
 let deferredAudioLoaded = !1;
 
@@ -468,8 +473,8 @@ function onPreloadComplete(a) {
             onLoaderBatchComplete(a)
         }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"),
         a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
-        a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
-        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.start()
+        a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
+        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.start()
 }
 
 let gameLoadedOnce = false;
@@ -592,8 +597,23 @@ function loadDeferredAudio(a) {
         if (a.textures.exists("flashScreens")) {
             initFlashScreens();
         }
+        if (a.textures.exists("staticScreens")) {
+            initStaticScreens();
+        }
         if (a.textures.exists("roomClown2")) {
             refreshCrawlClown();
+        }
+        if (a.textures.exists("candleDark") && gameObjects.candleDark) {
+            gameObjects.candleDark.setTexture("candleDark");
+        }
+        if (a.textures.exists("redlight") && gameObjects.generalRedness) {
+            gameObjects.generalRedness.setTexture("redlight");
+        }
+        if (a.textures.exists("misc")) {
+            if (gameObjects.guideArrow) gameObjects.guideArrow.setTexture("misc", "arrow");
+            if (gameObjects.guideArrowFat) gameObjects.guideArrowFat.setTexture("misc", "arrowFat");
+            if (gameObjects.musicBoxNote) gameObjects.musicBoxNote.setTexture("misc", "note");
+            if (gameObjects.musicBoxNote2) gameObjects.musicBoxNote2.setTexture("misc", "note");
         }
     };
     a.load.once("complete", onDeferredComplete);
@@ -800,13 +820,44 @@ function beginGameplay(a) {
     let rightborder = document.getElementById('rightborder');
     rightborder.style.opacity = '1';
 
-    gameObjects.muteButton = new Button(a, undefined, () => {
+    gameObjects.topBtnCntr.setScrollFactor(0);
+    gameObjects.topBtnCntr.setDepth(1000);
+
+    // Hints Button (Left of Mute Button, Top Right)
+    gameObjects.hintButton = new Button(a, gameObjects.topBtnCntr, () => {
+        if (typeof showHint === "function") {
+            showHint();
+        } else if (window.messageBus) {
+            messageBus.publish("hintClick");
+        }
+    }, {
+        atlas: "buttons",
+        ref: "hint_normal",
+        x: gameVars.width - 140,
+        y: 51,
+        alpha: 0.7
+    }, {
+        atlas: "buttons",
+        ref: "hint_hover",
+        alpha: 1
+    }, {
+        atlas: "buttons",
+        ref: "hint_hover",
+        alpha: 0.65
+    });
+    gameObjects.hintButton.setScrollFactor(0);
+    gameObjects.hintButton.setDepth(1000);
+
+    // Sound Mute Button (Top Right)
+    gameObjects.muteButton = new Button(a, gameObjects.topBtnCntr, () => {
         if (gameVars.manualMuted) {
             gameVars.manualMuted = false;
             gameVars.soundMult = 1;
-            gameObjects.muteButton.setNormalRef("muteButtonNormal");
-            gameObjects.muteButton.setHoverRef("muteButtonPress");
-            gameObjects.muteButton.setPressRef("muteButtonNormal");
+            if (a && a.sound) a.sound.mute = false;
+            if (globalScene && globalScene.sound) globalScene.sound.mute = false;
+            gameObjects.muteButton.setNormalRef("sfx_normal");
+            gameObjects.muteButton.setHoverRef("sfx_hover");
+            gameObjects.muteButton.setPressRef("sfx_hover");
             if (gameObjects.sounds.gladiator0) {
                 gameObjects.sounds.gladiator0.volume = 0.7;
             }
@@ -819,38 +870,40 @@ function beginGameplay(a) {
             if (gameObjects.sounds.gladiatorx) {
                 gameObjects.sounds.gladiatorx.volume = 0.7;
             }
-
         } else {
             gameVars.manualMuted = true;
             gameVars.soundMult = 0;
-            gameObjects.muteButton.setNormalRef("muteButtonMutedNormal");
-            gameObjects.muteButton.setHoverRef("muteButtonMutedPress");
-            gameObjects.muteButton.setPressRef("muteButtonMutedNormal");
-            if (gameObjects.sounds.gladiator0) {
-                gameObjects.sounds.gladiator0.volume = 0;
-            }
-            if (gameObjects.sounds.gladiator1) {
-                gameObjects.sounds.gladiator1.volume = 0;
-            }
-            if (gameObjects.sounds.gladiator2) {
-                gameObjects.sounds.gladiator2.volume = 0;
-            }
-            if (gameObjects.sounds.gladiatorx) {
-                gameObjects.sounds.gladiatorx.volume = 0;
+            if (a && a.sound) a.sound.mute = true;
+            if (globalScene && globalScene.sound) globalScene.sound.mute = true;
+            gameObjects.muteButton.setNormalRef("sfx_muted_normal");
+            gameObjects.muteButton.setHoverRef("sfx_muted_hover");
+            gameObjects.muteButton.setPressRef("sfx_muted_hover");
+            for (let key in gameObjects.sounds) {
+                if (gameObjects.sounds[key]) {
+                    if (globalScene && globalScene.tweens) {
+                        globalScene.tweens.killTweensOf(gameObjects.sounds[key]);
+                    }
+                    gameObjects.sounds[key].volume = 0;
+                }
             }
         }
     }, {
         atlas: "buttons",
-        ref: "muteButtonNormal",
-        x: 1190,
-        y: 37
+        ref: gameVars.manualMuted ? "sfx_muted_normal" : "sfx_normal",
+        x: gameVars.width - 58,
+        y: 51,
+        alpha: 0.7
     }, {
         atlas: "buttons",
-        ref: "muteButtonPress",
+        ref: gameVars.manualMuted ? "sfx_muted_hover" : "sfx_hover",
+        alpha: 1
     }, {
         atlas: "buttons",
-        ref: "muteButtonNormal",
-    })
+        ref: gameVars.manualMuted ? "sfx_muted_hover" : "sfx_hover",
+        alpha: 0.65
+    });
+    gameObjects.muteButton.setScrollFactor(0);
+    gameObjects.muteButton.setDepth(1000);
 
     for (let b in removeFromUpdateFuncList(updateWelcomeFollower), gameObjects.loadingMusic.stop(), gameVars.gameConstructed = !0, gameObjects.loadingWelcomes) gameObjects.loadingWelcomes[b].destroy();
     for (let a = 0; a < gameObjectsTemp.circleLoading.length; a++) gameObjectsTemp.circleLoading[a].destroy();
@@ -1025,7 +1078,7 @@ function playSound(d, a, e = 1) {
         return null;
     }
     gameObjects.sounds[c].play();
-    gameObjects.sounds[c].volume = e * gameVars.masterAudio * gameVars.soundMult;
+    gameObjects.sounds[c].volume = gameVars.manualMuted ? 0 : (e * gameVars.masterAudio * gameVars.soundMult);
     return gameObjects.sounds[c];
 }
 
@@ -1034,13 +1087,21 @@ function tweenVolume(a, b, c = 1500) {
         console.warn("tweenVolume: sound not registered: " + a);
         return null;
     }
-    globalScene.tweens.chain({
-        targets: [gameObjects.sounds[a]],
-        tweens: [{
-            volume: b * gameVars.masterAudio * gameVars.soundMult,
-            duration: c
-        }]
-    });
+    if (globalScene && globalScene.tweens) {
+        globalScene.tweens.killTweensOf(gameObjects.sounds[a]);
+    }
+    let targetVol = gameVars.manualMuted ? 0 : (b * gameVars.masterAudio * gameVars.soundMult);
+    if (c <= 0) {
+        gameObjects.sounds[a].volume = targetVol;
+    } else {
+        globalScene.tweens.chain({
+            targets: [gameObjects.sounds[a]],
+            tweens: [{
+                volume: targetVol,
+                duration: c
+            }]
+        });
+    }
     return gameObjects.sounds[a];
 }
 
@@ -1050,10 +1111,11 @@ function playSoundOnce(a, b, c = 1) {
         console.warn("playSoundOnce: sound not registered: " + a);
         return null;
     }
+    let targetVol = gameVars.manualMuted ? 0 : (c * gameVars.masterAudio * gameVars.soundMult);
     oneTimeScares[a] || (oneTimeScares[a] = !0, b ? gameDelay(() => {
         if (!hostAudioEnabled) return;
-        gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()
-    }, b) : (gameObjects.sounds[a].volume = c * gameVars.masterAudio * gameVars.soundMult, gameObjects.sounds[a].play()))
+        gameObjects.sounds[a].volume = targetVol, gameObjects.sounds[a].play()
+    }, b) : (gameObjects.sounds[a].volume = targetVol, gameObjects.sounds[a].play()))
 }
 
 function setupHand(a) {
@@ -1282,6 +1344,9 @@ function setupMoveButtons(a) {
         atlas: "buttons",
         ref: "move_btn_disable"
     }), gameObjects.moveRightBtnHighlight = globalScene.add.image(gameObjects.moveRightBtn.getPosX(), gameObjects.moveRightBtn.getPosY(), "buttons", "move_btn_glow"), gameObjects.moveRightBtnHighlight.alpha = 0, gameObjects.moveRightBtnHighlight.state = "brightening";
+
+    gameObjects.moveLeftBtn.setScrollFactor(0);
+    gameObjects.moveRightBtn.setScrollFactor(0);
 
     gameObjects.moveRightFlash = globalScene.add.image(gameObjects.moveRightBtn.getPosX(), gameObjects.moveRightBtn.getPosY() + 55, "buttons", "move_btn_normal");
     gameObjects.moveRightFlash.setOrigin(0.38, 0.59);
