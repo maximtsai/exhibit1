@@ -664,7 +664,8 @@ function startGame(a) {
             }
         }]
     }), gameObjects.clickBlocker = new Button(a, gameObjects.loadingCntr, () => {
-        beginGameplay(a);
+        // Do nothing, block clicks until the starting intro anim is done.
+        console.log("Blocked");
     }, {
         ref: "transparent_pixel",
         atlas: "loadingSS",
@@ -799,6 +800,7 @@ function startGame(a) {
             },
             onComplete() {
                 beginGameplay(a);
+                gameObjects.clickBlocker.destroy();
             }
         }]
     })
@@ -1177,16 +1179,17 @@ function update(w, s) {
     for (let f = 0; f < updateFuncList.length; f++) updateFuncList[f](a);
     gameVars.mouseaccx = gameVars.mouseposx - gameVars.prevMouseposx, gameVars.mouseaccy = gameVars.mouseposy - gameVars.prevMouseposy, gameVars.prevMouseposx = gameVars.mouseposx, gameVars.prevMouseposy = gameVars.mouseposy, gameObjects.hand.update(a);
     let j = gameObjects.hand.getPosX() - gameObjects.exhibCntr.goalOffsetX,
-        k = gameObjects.hand.getPosY() - gameObjects.exhibCntr.goalOffsetY,
-        b = null;
-    for (let g = gameObjects.buttonList.length - 1; g >= 0; g--) {
-        let e = gameObjects.buttonList[g];
-        if (e && e.checkCoordOver(j, k)) {
-            e.onHover(), b = e;
-            break
-        }
-    }
-    if (this.lastHovered && this.lastHovered !== b && "disable" !== this.lastHovered.getState() && this.lastHovered.onHoverOut(), this.lastHovered && !b ? gameObjects.hand.setPointing(!1) : !this.lastHovered && b && gameObjects.hand.setPointing(!0), this.lastHovered = b, !gameVars.gameConstructed) {
+        k = gameObjects.hand.getPosY() - gameObjects.exhibCntr.goalOffsetY;
+    // Re-checked every frame (not just on pointer move) because the exhibit sways
+    // continuously, so a button can drift into or out from under a stationary
+    // cursor. buttonManager is the single authority on hover state - it used to
+    // be duplicated here with its own onHover()/onHoverOut() bookkeeping, which
+    // fired every frame a button was hovered and, combined with Button.setState()
+    // re-applying static config over live tween values, permanently froze any
+    // button whose scale/alpha was mid-tween while the cursor sat on it.
+    buttonManager.updateHover(j, k);
+    gameObjects.hand.setPointing(!!buttonManager.lastHovered);
+    if (!gameVars.gameConstructed) {
         handleViewShift(), handleViewShiftLoading();
         let t = 0,
             l = (t = gameVarsTemp.loadAmt < .8 ? .6 * gameVarsTemp.loadAmt : gameVarsTemp.loadAmt < .999 ? .6 * gameVarsTemp.loadAmt + (gameVarsTemp.loadAmt - .8) * 1.98 : gameVarsTemp.loadAmt) * gameObjectsTemp.loadingBarBacking.scaleX - gameObjectsTemp.loadingBar.scaleX;

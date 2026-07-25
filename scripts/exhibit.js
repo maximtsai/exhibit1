@@ -23,7 +23,6 @@ class Exhibit {
         this.shadowContainer = shadowContainer;
         this.foregroundContainer = foregroundContainer;
         this.btnContainer = btnContainer;
-        this.darkContainer = darkContainer;
         this.isMoving = false;
 
         this.peekAmt = 80;

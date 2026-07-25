@@ -277,13 +277,20 @@ class Button {
             }
         }
 
+        // Unlike the old per-state-sprite implementation, there is only ONE
+        // bgSprite shared by every state, so it already holds whatever value was
+        // last legitimately set on it (construction, setPos/setScale, or a live
+        // tween) - the same guarantee `rotation` and `origin` below already rely
+        // on. A state that doesn't define a property is left alone rather than
+        // reset to `this.normal`'s stored value: that value is a static snapshot
+        // that tweenScale()/tweenToPos() never update, so falling back to it used
+        // to permanently overwrite any in-progress or completed tween the moment
+        // the button was hovered, pressed, or disabled.
         if (stateData.x !== undefined) {
             this.bgSprite.x = stateData.x;
             if (this.text) {
                 this.updateTextPosition();
             }
-        } else if (this.normal && this.normal.x !== undefined && this.bgSprite.x === 0) {
-            this.bgSprite.x = this.normal.x;
         }
 
         if (stateData.y !== undefined) {
@@ -291,27 +298,19 @@ class Button {
             if (this.text) {
                 this.updateTextPosition();
             }
-        } else if (this.normal && this.normal.y !== undefined && this.bgSprite.y === 0) {
-            this.bgSprite.y = this.normal.y;
         }
 
         if (stateData.alpha !== undefined) {
             this.bgSprite.alpha = stateData.alpha;
             if (this.text) this.text.alpha = stateData.alpha;
-        } else if (this.normal && this.normal.alpha !== undefined) {
-            this.bgSprite.alpha = this.normal.alpha;
         }
 
         if (stateData.scaleX !== undefined) {
             this.bgSprite.scaleX = stateData.scaleX;
-        } else if (this.normal && this.normal.scaleX !== undefined) {
-            this.bgSprite.scaleX = this.normal.scaleX;
         }
 
         if (stateData.scaleY !== undefined) {
             this.bgSprite.scaleY = stateData.scaleY;
-        } else if (this.normal && this.normal.scaleY !== undefined) {
-            this.bgSprite.scaleY = this.normal.scaleY;
         }
 
         if (stateData.origin !== undefined) {
