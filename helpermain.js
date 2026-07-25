@@ -574,16 +574,24 @@ function initFlashScreens() {
 
 function initStaticScreens() {
 	gameObjects.staticScreens = [];
+	let hasStaticScreens = globalScene && globalScene.textures && globalScene.textures.exists("staticScreens");
+	if (!hasStaticScreens) {
+		console.warn("initStaticScreens: atlas 'staticScreens' is missing from texture manager");
+	}
 	for (let e = 0; e < 4; e++) {
 		let t = "static" + e,
-			a = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, "staticScreens", t);
+			a = hasStaticScreens ? globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, "staticScreens", t) : globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel");
 		a.scaleX = 1.5, a.scaleY = 1.5, a.setDepth(9999), a.alpha = 0, gameObjects.staticScreens[e] = a
 	}
 	gameObjects.staticLite = [];
+	let hasStaticLite = globalScene && globalScene.textures && globalScene.textures.exists("staticLite");
+	if (!hasStaticLite) {
+		console.warn("initStaticScreens: atlas 'staticLite' is missing from texture manager");
+	}
 	for (let e = 0; e < 12; e++) {
 		gameObjects.staticLite[e] = [];
 		let t = "staticlite" + e,
-			a = globalScene.add.image(0, 0, "staticLite", t);
+			a = hasStaticLite ? globalScene.add.image(0, 0, "staticLite", t) : globalScene.add.image(0, 0, "blackPixel");
 		a.isFree = !0, a.setDepth(9999), a.alpha = 0, gameObjects.staticLite[e].push(a)
 	}
 }

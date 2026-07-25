@@ -177,8 +177,7 @@ let deferredAtlases = [
     ["roomClown2", "sprites/clown/clown2.json"],
     ["flashScreens", "sprites/flashscreens/flashscreens.json"],
     ["staticScreens", "sprites/staticscreens/staticscreens.json"],
-    ["staticLite", "sprites/staticscreens/staticlite.json"],
-    ["misc", "sprites/misc/misc.json"]
+    ["staticLite", "sprites/staticscreens/staticlite.json"]
 ];
 let deferredImages = [
     ["theEnd", "sprites/altreality/the_end.webp"],
@@ -473,7 +472,7 @@ function onPreloadComplete(a) {
             onLoaderBatchComplete(a)
         }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"),
         a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
-        a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
+        a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
         a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.start()
 }
 
@@ -592,28 +591,26 @@ function loadDeferredAudio(a) {
             }
         }
         // These were built during setupGame, before the atlases above existed, so
-        // they picked up the __MISSING texture. Rebind them now that the real
-        // frames are in the texture manager.
         if (a.textures.exists("flashScreens")) {
             initFlashScreens();
+        } else {
+            console.warn("loadDeferredAudio: atlas missing: flashScreens");
         }
-        if (a.textures.exists("staticScreens")) {
+        if (a.textures.exists("staticScreens") || a.textures.exists("staticLite")) {
             initStaticScreens();
+        } else {
+            console.warn("loadDeferredAudio: atlases missing: staticScreens / staticLite");
         }
         if (a.textures.exists("roomClown2")) {
             refreshCrawlClown();
+        } else {
+            console.warn("loadDeferredAudio: atlas missing: roomClown2");
         }
         if (a.textures.exists("candleDark") && gameObjects.candleDark) {
             gameObjects.candleDark.setTexture("candleDark");
         }
         if (a.textures.exists("redlight") && gameObjects.generalRedness) {
             gameObjects.generalRedness.setTexture("redlight");
-        }
-        if (a.textures.exists("misc")) {
-            if (gameObjects.guideArrow) gameObjects.guideArrow.setTexture("misc", "arrow");
-            if (gameObjects.guideArrowFat) gameObjects.guideArrowFat.setTexture("misc", "arrowFat");
-            if (gameObjects.musicBoxNote) gameObjects.musicBoxNote.setTexture("misc", "note");
-            if (gameObjects.musicBoxNote2) gameObjects.musicBoxNote2.setTexture("misc", "note");
         }
     };
     a.load.once("complete", onDeferredComplete);
@@ -667,7 +664,7 @@ function startGame(a) {
             }
         }]
     }), gameObjects.clickBlocker = new Button(a, gameObjects.loadingCntr, () => {
-        console.log("beginning game")
+        beginGameplay(a);
     }, {
         ref: "transparent_pixel",
         atlas: "loadingSS",
@@ -1155,7 +1152,7 @@ function setupGame(a) {
         y: gameVars.halfHeight,
         key: "candleDark",
         add: !0
-    }), gameObjects.candleDark.alpha = 0, gameObjects.candleDark.accX = 0, gameObjects.candleDark.accY = 0, gameObjects.candleDark.swayX = 0, gameObjects.candleDark.swayY = 0, gameObjects.candleDark.swayAccX = 0, gameObjects.candleDark.swayAccY = 0, gameObjects.candleDark.scaleSpdX = 0, gameObjects.candleDark.scaleSpdY = 0, gameObjects.candleDark.setBlendMode(Phaser.BlendModes.MULTIPLY), gameObjects.mainDarkCntr.add(gameObjects.candleDark), gameObjects.generalRedness = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "redlight"), gameObjects.generalRedness.alpha = 0, gameObjects.hueCntr.add(gameObjects.generalRedness), this.setupMoveButtons(a), this.setupGameplayButtons(a), initGuideIndicators(a), this.initExhibit(a), this.setupInstructionsStand(a), initFlashScreens(), initStaticScreens(), initOneTimeListeners(), gameObjects.infoText = a.make.text({
+    }), gameObjects.candleDark.alpha = 0, gameObjects.candleDark.accX = 0, gameObjects.candleDark.accY = 0, gameObjects.candleDark.swayX = 0, gameObjects.candleDark.swayY = 0, gameObjects.candleDark.swayAccX = 0, gameObjects.candleDark.swayAccY = 0, gameObjects.candleDark.scaleSpdX = 0, gameObjects.candleDark.scaleSpdY = 0, gameObjects.candleDark.setBlendMode(Phaser.BlendModes.MULTIPLY), gameObjects.mainDarkCntr.add(gameObjects.candleDark), gameObjects.generalRedness = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "redlight"), gameObjects.generalRedness.alpha = 0, gameObjects.hueCntr.add(gameObjects.generalRedness), this.setupMoveButtons(a), this.setupGameplayButtons(a), initGuideIndicators(a), this.initExhibit(a), this.setupInstructionsStand(a), initFlashScreens(), initOneTimeListeners(), gameObjects.infoText = a.make.text({
         x: gameVars.halfWidth,
         y: gameVars.halfHeight + 220,
         text: " ",
