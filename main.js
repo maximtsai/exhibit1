@@ -377,16 +377,14 @@ function preload() {
     if (gameDiv) gameDiv.innerHTML = "";
     handleBorders();
     if (window.GameSDK && typeof window.GameSDK.loadingStart === 'function') window.GameSDK.loadingStart();
-    signalFirstFrameWhenRendered(this);
-    game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"), 
-    this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"), 
-    this.load.image("headphones", "sprites/headphones.png")
+    game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.darkCtnr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"),
+        this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"),
+        this.load.image("headphones", "sprites/headphones.png")
 }
 
-// YouTube uses firstFrameReady() to measure time-to-first-frame and to take its
-// own loading UI down, so it has to fire once something has actually been drawn.
-// Called from preload() it fired against a blank canvas - the frame had not been
-// rendered yet, and the reported timing was wrong in our favour.
+// YouTube requires firstFrameReady only once a real loading/splash screen has
+// been drawn — not on a blank preload frame. Wait for POST_RENDER after the
+// LOADING UI exists (see onPreloadComplete).
 let firstFrameSignalled = false;
 
 function signalFirstFrameWhenRendered(scene) {
@@ -426,31 +424,34 @@ function onPreloadComplete(a) {
         fontSize: 36,
         color: "#777777",
         align: "center"
-    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1), 
-    gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"), 
-    gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"), 
-    gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"), 
-    gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
-        fontFamily: "Times New Roman",
-        fontSize: 22,
-        color: "#ffffff",
-        align: "center"
-    }), gameObjectsTemp.headphoneText.setOrigin(.5, .5), gameObjectsTemp.headphoneText.setDepth(1),
-    
-    setupLoaderRetryHandlers(a, () => {
-        if (!gameVars.gameStarted) {
-            showLoadingFailureUI(a);
-        }
-    }),
-    
-    a.load.on("progress", function(a) {
-        gameVarsTemp.loadAmt = a
-    }), a.load.on("complete", () => {
-        onLoaderBatchComplete(a)
-    }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"), 
-    a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
-    a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
-    a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
+    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1),
+        gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"),
+        gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"),
+        gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"),
+        gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
+            fontFamily: "Times New Roman",
+            fontSize: 22,
+            color: "#ffffff",
+            align: "center"
+        }), gameObjectsTemp.headphoneText.setOrigin(.5, .5), gameObjectsTemp.headphoneText.setDepth(1),
+
+        // Loading UI is on screen now — signal first frame after it actually paints.
+        signalFirstFrameWhenRendered(a),
+
+        setupLoaderRetryHandlers(a, () => {
+            if (!gameVars.gameStarted) {
+                showLoadingFailureUI(a);
+            }
+        }),
+
+        a.load.on("progress", function (a) {
+            gameVarsTemp.loadAmt = a
+        }), a.load.on("complete", () => {
+            onLoaderBatchComplete(a)
+        }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"),
+        a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
+        a.load.multiatlas("staticScreens", "sprites/staticscreens/staticscreens.json"), a.load.multiatlas("staticLite", "sprites/staticscreens/staticlite.json"), a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
+        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("candleDark", "sprites/candleDark.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("redlight", "sprites/redlight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("theEnd", "sprites/altreality/the_end.jpg"), a.load.image("stretch1", "sprites/altreality/stretch1.jpg"), a.load.image("stretch2", "sprites/altreality/stretch2.jpg"), a.load.image("stretch3", "sprites/altreality/stretch3.jpg"), a.load.image("stretch4", "sprites/altreality/stretch4.jpg"), a.load.image("stretch5", "sprites/altreality/stretch5.jpg"), a.load.image("stretch6", "sprites/altreality/stretch6.jpg"), a.load.image("floaty1", "sprites/altreality/floaty1.jpg"), a.load.image("floaty2", "sprites/altreality/floaty2.jpg"), a.load.image("floaty3", "sprites/altreality/floaty3.jpg"), a.load.image("floaty4", "sprites/altreality/floaty4.jpg"), a.load.image("balloon1", "sprites/altreality/balloon1.jpg"), a.load.image("balloon2", "sprites/altreality/balloon2.jpg"), a.load.image("balloon3", "sprites/altreality/balloon3.jpg"), a.load.image("balloon4", "sprites/altreality/balloon4.jpg"), a.load.image("balloon5", "sprites/altreality/balloon5.jpg"), a.load.start()
 }
 
 let gameLoadedOnce = false;
@@ -460,11 +461,11 @@ function onLoadComplete(a) {
     }
     const currentHref = document.location.href;
     const isValidDomain = currentHref.includes('itch') ||
-                          currentHref.includes('localhost') ||
-                          currentHref.includes('127.0.0.1') ||
-                          currentHref.includes('youtube') ||
-                          currentHref.includes('google') ||
-                          (window.GameSDK && typeof window.GameSDK.getEnvironment === 'function' && window.GameSDK.getEnvironment() === 'youtube');
+        currentHref.includes('localhost') ||
+        currentHref.includes('127.0.0.1') ||
+        currentHref.includes('youtube') ||
+        currentHref.includes('google') ||
+        (window.GameSDK && typeof window.GameSDK.getEnvironment === 'function' && window.GameSDK.getEnvironment() === 'youtube');
     if (!isValidDomain) {
         // Stops execution of rest of game
         let gameDiv = document.getElementById('preload-notice');
@@ -485,10 +486,6 @@ function onLoadComplete(a) {
         }
     })
 
-    if (!gameLoadedOnce) {
-        if (window.GameSDK && typeof window.GameSDK.loadingStop === 'function') window.GameSDK.loadingStop();
-    }
-
     a.tweens.chain({
         targets: [gameObjectsTemp.loadingText, gameObjectsTemp.funlid, gameObjectsTemp.funbox],
         tweens: [{
@@ -497,7 +494,6 @@ function onLoadComplete(a) {
             duration: 150
         }],
         onComplete() {
-            gameLoadedOnce = true;
             gameObjectsTemp.loadingText.destroy();
             gameObjectsTemp.funlid.destroy();
             gameObjectsTemp.funbox.destroy();
@@ -517,11 +513,21 @@ function onLoadComplete(a) {
                     y: gameVars.halfHeight - 60,
                     scaleX: 240,
                     scaleY: 160
-                })
+                });
             }
         }, {
             alpha: 1,
-            duration: 400
+            duration: 400,
+            onComplete() {
+                // gameReady only once the start menu is visible and interactive —
+                // not while the asset-loading screen is still the only thing shown.
+                if (!gameLoadedOnce) {
+                    gameLoadedOnce = true;
+                    if (window.GameSDK && typeof window.GameSDK.loadingStop === 'function') {
+                        window.GameSDK.loadingStop();
+                    }
+                }
+            }
         }]
     })
 }
@@ -945,7 +951,7 @@ function applyHostAudioState(forced) {
         }
 
         if (audible && phaserGame.sound.context && phaserGame.sound.context.state === 'suspended') {
-            phaserGame.sound.context.resume().catch(() => {});
+            phaserGame.sound.context.resume().catch(() => { });
         }
     }
 }
@@ -979,12 +985,8 @@ function setupHostAudioReconciliation() {
             }
         });
     }
-    // Reconcile when the tab comes back. onAudioEnabledChange above is the real
-    // signal; this only covers a host that changed state while we were hidden and
-    // did not fire it. Replaces a 1s setInterval that re-queried the SDK forever.
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) applyHostAudioState();
-    });
+    // Do not use Page Visibility — YouTube Playables requires pause/resume and
+    // audio only via ytgame.system.onPause / onResume / onAudioEnabledChange.
     applyHostAudioState();
 }
 
@@ -1347,7 +1349,7 @@ window.addEventListener('keydown', ev => {
 window.addEventListener('wheel', ev => ev.preventDefault(), { passive: false });
 window.addEventListener('pointerdown', () => {
     if (globalScene && globalScene.sound && globalScene.sound.context && globalScene.sound.context.state === 'suspended') {
-        globalScene.sound.context.resume().catch(() => {});
+        globalScene.sound.context.resume().catch(() => { });
     }
 });
 
