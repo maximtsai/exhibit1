@@ -848,45 +848,47 @@ function beginGameplay(a) {
     gameObjects.hintButton.setScrollFactor(0);
     gameObjects.hintButton.setDepth(1000);
 
+    // Hint count badge (circle icon + "1" text at bottom right of hint button)
+    gameObjects.hintCountCircle = a.add.image(gameVars.width - 140 + 26, 51 + 26, "buttons", "circle");
+    gameObjects.hintCountCircle.setScrollFactor(0);
+    gameObjects.hintCountCircle.setDepth(1002);
+    gameObjects.topBtnCntr.add(gameObjects.hintCountCircle);
+
+    gameObjects.hintCountText = a.add.text(gameVars.width - 140 + 26, 51 + 26, "1", {
+        fontFamily: "Arial",
+        fontSize: "14px",
+        fontStyle: "bold",
+        color: "#ffffff",
+        align: "center"
+    });
+    gameObjects.hintCountText.setOrigin(0.5, 0.5);
+    gameObjects.hintCountText.setScrollFactor(0);
+    gameObjects.hintCountText.setDepth(1003);
+    gameObjects.topBtnCntr.add(gameObjects.hintCountText);
+
     // Sound Mute Button (Top Right)
     gameObjects.muteButton = new Button(a, gameObjects.topBtnCntr, () => {
+        gameVars.manualMuted = !gameVars.manualMuted;
+
         if (gameVars.manualMuted) {
-            gameVars.manualMuted = false;
-            gameVars.soundMult = 1;
-            if (a && a.sound) a.sound.mute = false;
-            if (globalScene && globalScene.sound) globalScene.sound.mute = false;
-            gameObjects.muteButton.setNormalRef("sfx_normal");
-            gameObjects.muteButton.setHoverRef("sfx_hover");
-            gameObjects.muteButton.setPressRef("sfx_hover");
-            if (gameObjects.sounds.gladiator0) {
-                gameObjects.sounds.gladiator0.volume = 0.7;
-            }
-            if (gameObjects.sounds.gladiator1) {
-                gameObjects.sounds.gladiator1.volume = 1;
-            }
-            if (gameObjects.sounds.gladiator2) {
-                gameObjects.sounds.gladiator2.volume = 1;
-            }
-            if (gameObjects.sounds.gladiatorx) {
-                gameObjects.sounds.gladiatorx.volume = 0.7;
-            }
-        } else {
-            gameVars.manualMuted = true;
-            gameVars.soundMult = 0;
-            if (a && a.sound) a.sound.mute = true;
-            if (globalScene && globalScene.sound) globalScene.sound.mute = true;
             gameObjects.muteButton.setNormalRef("sfx_muted_normal");
             gameObjects.muteButton.setHoverRef("sfx_muted_hover");
             gameObjects.muteButton.setPressRef("sfx_muted_hover");
-            for (let key in gameObjects.sounds) {
-                if (gameObjects.sounds[key]) {
-                    if (globalScene && globalScene.tweens) {
-                        globalScene.tweens.killTweensOf(gameObjects.sounds[key]);
-                    }
-                    gameObjects.sounds[key].volume = 0;
-                }
-            }
+        } else {
+            gameObjects.muteButton.setNormalRef("sfx_normal");
+            gameObjects.muteButton.setHoverRef("sfx_hover");
+            gameObjects.muteButton.setPressRef("sfx_hover");
         }
+
+        // Phaser's global mute silences everything in one place - including the
+        // ambient loops started with a direct .play(), which playSound() never
+        // sees. Nothing here touches individual sound volumes: zeroing them on
+        // mute meant only the four tracks someone remembered to hardcode came
+        // back on unmute, and it overwrote whatever mix the current room had
+        // faded to. Leaving them alone means the mix is simply still correct
+        // when the sound comes back, and in-flight fades keep running silently
+        // rather than being frozen part-way.
+        applyHostAudioState();
     }, {
         atlas: "buttons",
         ref: gameVars.manualMuted ? "sfx_muted_normal" : "sfx_normal",
@@ -1005,10 +1007,15 @@ function applyHostAudioState(forced) {
     const enabled = typeof forced === 'boolean' ? forced : isHostAudioEnabled();
     hostAudioEnabled = enabled;
 
-    // An ad on screen wins over the host's audio state: a YouTube interstitial
-    // overlays the game rather than replacing it, so the game has to fall silent
-    // even though the host still reports audio as enabled.
-    const audible = enabled && !adAudioSuspended;
+    // Three independent reasons to be silent, folded into one decision so they
+    // cannot overwrite each other:
+    //   - the host disabled audio (YouTube)
+    //   - an ad is on screen (a YouTube interstitial overlays the game rather
+    //     than replacing it, so the game must fall silent even though the host
+    //     still reports audio as enabled)
+    //   - the player pressed the in-game mute button
+    // This is the ONLY place that writes Phaser's global mute.
+    const audible = enabled && !adAudioSuspended && !gameVars.manualMuted;
 
     if (typeof phaserGame !== 'undefined' && phaserGame && phaserGame.sound) {
         // Keep Phaser's own flag in step (it emits GLOBAL_MUTE off this setter)...
@@ -1078,7 +1085,10 @@ function playSound(d, a, e = 1) {
         return null;
     }
     gameObjects.sounds[c].play();
-    gameObjects.sounds[c].volume = gameVars.manualMuted ? 0 : (e * gameVars.masterAudio * gameVars.soundMult);
+    // Always the true volume. Muting is handled once, globally, by
+    // applyHostAudioState - writing 0 here would strand this sound silent after
+    // the player unmutes, because nothing re-sets a looping sound's volume.
+    gameObjects.sounds[c].volume = e * gameVars.masterAudio * gameVars.soundMult;
     return gameObjects.sounds[c];
 }
 
@@ -1090,7 +1100,9 @@ function tweenVolume(a, b, c = 1500) {
     if (globalScene && globalScene.tweens) {
         globalScene.tweens.killTweensOf(gameObjects.sounds[a]);
     }
-    let targetVol = gameVars.manualMuted ? 0 : (b * gameVars.masterAudio * gameVars.soundMult);
+    // Fades always run to their true target; the global mute decides whether any
+    // of it is audible. Tweening to 0 while muted left the mix wrong on unmute.
+    let targetVol = b * gameVars.masterAudio * gameVars.soundMult;
     if (c <= 0) {
         gameObjects.sounds[a].volume = targetVol;
     } else {
@@ -1111,7 +1123,7 @@ function playSoundOnce(a, b, c = 1) {
         console.warn("playSoundOnce: sound not registered: " + a);
         return null;
     }
-    let targetVol = gameVars.manualMuted ? 0 : (c * gameVars.masterAudio * gameVars.soundMult);
+    let targetVol = c * gameVars.masterAudio * gameVars.soundMult;
     oneTimeScares[a] || (oneTimeScares[a] = !0, b ? gameDelay(() => {
         if (!hostAudioEnabled) return;
         gameObjects.sounds[a].volume = targetVol, gameObjects.sounds[a].play()

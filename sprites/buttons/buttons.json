@@ -637,6 +637,20 @@
 						"h": 79
 					},
 					"rotated": false
+				},
+				{
+					"filename": "circle",
+					"frame": {
+						"x": 3155,
+						"y": 2795,
+						"w": 27,
+						"h": 27
+					},
+					"sourceSize": {
+						"w": 27,
+						"h": 27
+					},
+					"rotated": false
 				}
 			]
 		}
