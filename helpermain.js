@@ -531,9 +531,15 @@ function removeFromUpdateFuncList(e) {
 
 function createKey(e, t, a, s, o = !0, c) {
 	let n;
+	if (typeof messageBus !== "undefined" && messageBus) {
+		messageBus.publish("keyAppeared", { x: e, y: t, roomIndex: a });
+	}
 
 	return playSound("keyfound"), (n = new Button(globalScene, s, () => {
 		if (window.GameSDK && typeof window.GameSDK.gameplayStop === 'function') window.GameSDK.gameplayStop();
+		if (typeof messageBus !== "undefined" && messageBus) {
+			messageBus.publish("keyClicked");
+		}
 		n.destroy(), o ? playSound("keyget") : playSound("keygetred"), tempFreeze(500), gameObjects.exhibit.setCantMoveIdx(a, !1), gameDelay(() => {
 			enableMoveButtons(true), c && c()
 		}, 100)
