@@ -4,8 +4,8 @@
 			"image": "sprites/roomhandy/roomhandy.png",
 			"format": "RGBA8888",
 			"size": {
-				"h": 2652,
-				"w": 2927
+				"w": 2960,
+				"h": 2980
 			},
 			"frames": [
 				{
@@ -565,6 +565,48 @@
 					"sourceSize": {
 						"w": 490,
 						"h": 430
+					},
+					"rotated": false
+				},
+				{
+					"filename": "hinthandopen",
+					"frame": {
+						"x": 0,
+						"y": 2801,
+						"w": 194,
+						"h": 179
+					},
+					"sourceSize": {
+						"w": 194,
+						"h": 179
+					},
+					"rotated": false
+				},
+				{
+					"filename": "hinthandclose",
+					"frame": {
+						"x": 194,
+						"y": 2801,
+						"w": 194,
+						"h": 179
+					},
+					"sourceSize": {
+						"w": 194,
+						"h": 179
+					},
+					"rotated": false
+				},
+				{
+					"filename": "hinthandpointer",
+					"frame": {
+						"x": 388,
+						"y": 2801,
+						"w": 194,
+						"h": 179
+					},
+					"sourceSize": {
+						"w": 194,
+						"h": 179
 					},
 					"rotated": false
 				}

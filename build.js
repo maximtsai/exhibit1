@@ -15,6 +15,7 @@ const jsFiles = [
     'sdk-bridge.js',
     'scripts/messageBus.js',
     'scripts/button.js',
+    'scripts/hint.js',
     'scripts/hand.js',
     'scripts/exhibit.js',
     'scripts/pointer.js',

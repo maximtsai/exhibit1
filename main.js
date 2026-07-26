@@ -30,6 +30,7 @@ let config = {
 },
     globalScene,
     gameVars = {
+        hintCount: 1,
         baseSway: .025,
         gameStarted: !1,
         gameConstructed: !1,
@@ -823,18 +824,12 @@ function beginGameplay(a) {
     gameObjects.topBtnCntr.setDepth(1000);
 
     // Hints Button (Left of Mute Button, Top Right)
-    gameObjects.hintButton = new Button(a, gameObjects.topBtnCntr, () => {
-        if (typeof showHint === "function") {
-            showHint();
-        } else if (window.messageBus) {
-            messageBus.publish("hintClick");
-        }
-    }, {
+    gameObjects.hintButton = new Button(a, gameObjects.topBtnCntr, onHintButtonPressed, {
         atlas: "buttons",
         ref: "hint_normal",
         x: gameVars.width - 140,
         y: 51,
-        alpha: 0.7
+        alpha: 0.85
     }, {
         atlas: "buttons",
         ref: "hint_hover",
@@ -847,15 +842,15 @@ function beginGameplay(a) {
     gameObjects.hintButton.setScrollFactor(0);
     gameObjects.hintButton.setDepth(1000);
 
-    // Hint count badge (circle icon + "1" text at bottom right of hint button)
+    // Hint count badge (circle icon + text at bottom right of hint button)
     gameObjects.hintCountCircle = a.add.image(gameVars.width - 140 + 26, 51 + 26, "buttons", "circle");
     gameObjects.hintCountCircle.setScrollFactor(0);
     gameObjects.hintCountCircle.setDepth(1002);
     gameObjects.topBtnCntr.add(gameObjects.hintCountCircle);
 
-    gameObjects.hintCountText = a.add.text(gameVars.width - 140 + 26, 51 + 26, "1", {
+    gameObjects.hintCountText = a.add.text(gameVars.width - 140 + 26, 51 + 26, String(gameVars.hintCount), {
         fontFamily: "Arial",
-        fontSize: "14px",
+        fontSize: "18px",
         fontStyle: "bold",
         color: "#ffffff",
         align: "center"
@@ -893,7 +888,7 @@ function beginGameplay(a) {
         ref: gameVars.manualMuted ? "sfx_muted_normal" : "sfx_normal",
         x: gameVars.width - 58,
         y: 51,
-        alpha: 0.7
+        alpha: 0.85
     }, {
         atlas: "buttons",
         ref: gameVars.manualMuted ? "sfx_muted_hover" : "sfx_hover",
@@ -905,6 +900,11 @@ function beginGameplay(a) {
     });
     gameObjects.muteButton.setScrollFactor(0);
     gameObjects.muteButton.setDepth(1000);
+
+    // New Mr. Handy hint hand sprites in main scene
+    gameObjects.hinthandopen = a.add.image(gameVars.halfWidth - 200, gameVars.halfHeight, "roomHandy", "hinthandopen");
+    gameObjects.hinthandclose = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "roomHandy", "hinthandclose");
+    gameObjects.hinthandpointer = a.add.image(gameVars.halfWidth + 200, gameVars.halfHeight, "roomHandy", "hinthandpointer");
 
     for (let b in removeFromUpdateFuncList(updateWelcomeFollower), gameObjects.loadingMusic.stop(), gameVars.gameConstructed = !0, gameObjects.loadingWelcomes) gameObjects.loadingWelcomes[b].destroy();
     for (let a = 0; a < gameObjectsTemp.circleLoading.length; a++) gameObjectsTemp.circleLoading[a].destroy();
