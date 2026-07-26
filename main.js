@@ -30,7 +30,7 @@ let config = {
 },
     globalScene,
     gameVars = {
-        hintCount: 1,
+        hintCount: 6,
         baseSway: .025,
         gameStarted: !1,
         gameConstructed: !1,
@@ -847,12 +847,12 @@ function beginGameplay(a) {
     gameObjects.hintButton.setDepth(1000);
 
     // Hint count badge (circle icon + text at bottom right of hint button)
-    gameObjects.hintCountCircle = a.add.image(gameVars.width - 140 + 26, 51 + 26, "buttons", "circle");
+    gameObjects.hintCountCircle = a.add.image(gameVars.width - 140 + 25, 51 + 25, "buttons", "circle");
     gameObjects.hintCountCircle.setScrollFactor(0);
     gameObjects.hintCountCircle.setDepth(1002);
     gameObjects.topBtnCntr.add(gameObjects.hintCountCircle);
 
-    gameObjects.hintCountText = a.add.text(gameVars.width - 140 + 26, 51 + 26, String(gameVars.hintCount), {
+    gameObjects.hintCountText = a.add.text(gameVars.width - 140 + 25, 51 + 25, String(gameVars.hintCount), {
         fontFamily: "Arial",
         fontSize: "18px",
         fontStyle: "bold",
@@ -905,11 +905,6 @@ function beginGameplay(a) {
     gameObjects.muteButton.setScrollFactor(0);
     gameObjects.muteButton.setDepth(1000);
 
-    // New Mr. Handy hint hand sprites in main scene
-    gameObjects.hinthandopen = a.add.image(gameVars.halfWidth - 300, gameVars.halfHeight, "roomHandy", "hinthandopen");
-    gameObjects.hinthandclose = a.add.image(gameVars.halfWidth - 100, gameVars.halfHeight, "roomHandy", "hinthandclose");
-    gameObjects.hinthandpointer = a.add.image(gameVars.halfWidth + 100, gameVars.halfHeight, "roomHandy", "hinthandpointer");
-    gameObjects.hinthandbroken = a.add.image(gameVars.halfWidth + 300, gameVars.halfHeight, "roomHandy", "hinthandbroken");
 
     for (let b in removeFromUpdateFuncList(updateWelcomeFollower), gameObjects.loadingMusic.stop(), gameVars.gameConstructed = !0, gameObjects.loadingWelcomes) gameObjects.loadingWelcomes[b].destroy();
     for (let a = 0; a < gameObjectsTemp.circleLoading.length; a++) gameObjectsTemp.circleLoading[a].destroy();

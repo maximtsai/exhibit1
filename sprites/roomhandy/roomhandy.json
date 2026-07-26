@@ -609,6 +609,20 @@
 						"h": 179
 					},
 					"rotated": false
+				},
+				{
+					"filename": "hinthandbroken",
+					"frame": {
+						"x": 600,
+						"y": 2803,
+						"w": 212,
+						"h": 177
+					},
+					"sourceSize": {
+						"w": 212,
+						"h": 177
+					},
+					"rotated": false
 				}
 			]
 		}
