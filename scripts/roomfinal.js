@@ -174,9 +174,13 @@ function runEpilogue(background) {
 						                let background = document.getElementById('background');
 						                background.style.opacity = '0';
 						                let leftborder = document.getElementById('leftborder');
-						                leftborder.style.opacity = '0';
+						                if (leftborder) leftborder.style.opacity = '0';
 						                let rightborder = document.getElementById('rightborder');
-						                rightborder.style.opacity = '0';
+						                if (rightborder) rightborder.style.opacity = '0';
+						                let topborder = document.getElementById('topborder');
+						                if (topborder) topborder.style.opacity = '0';
+						                let bottomborder = document.getElementById('bottomborder');
+						                if (bottomborder) bottomborder.style.opacity = '0';
 
     									let gameEndScreen = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, 'blackPixel');
     									gameEndScreen.scaleX = 999;

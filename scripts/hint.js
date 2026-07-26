@@ -7,7 +7,7 @@ if (typeof gameVars !== "undefined" && gameVars.hintCount === undefined) {
 }
 
 function showHint() {
-    console.log("show hint");
+    playSound("keyfound");
 }
 
 function updateHintCounter(count) {

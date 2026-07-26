@@ -819,6 +819,10 @@ function beginGameplay(a) {
     leftborder.style.opacity = '1';
     let rightborder = document.getElementById('rightborder');
     rightborder.style.opacity = '1';
+    let topborder = document.getElementById('topborder');
+    if (topborder) topborder.style.opacity = '1';
+    let bottomborder = document.getElementById('bottomborder');
+    if (bottomborder) bottomborder.style.opacity = '1';
 
     gameObjects.topBtnCntr.setScrollFactor(0);
     gameObjects.topBtnCntr.setDepth(1000);
@@ -902,9 +906,10 @@ function beginGameplay(a) {
     gameObjects.muteButton.setDepth(1000);
 
     // New Mr. Handy hint hand sprites in main scene
-    gameObjects.hinthandopen = a.add.image(gameVars.halfWidth - 200, gameVars.halfHeight, "roomHandy", "hinthandopen");
-    gameObjects.hinthandclose = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "roomHandy", "hinthandclose");
-    gameObjects.hinthandpointer = a.add.image(gameVars.halfWidth + 200, gameVars.halfHeight, "roomHandy", "hinthandpointer");
+    gameObjects.hinthandopen = a.add.image(gameVars.halfWidth - 300, gameVars.halfHeight, "roomHandy", "hinthandopen");
+    gameObjects.hinthandclose = a.add.image(gameVars.halfWidth - 100, gameVars.halfHeight, "roomHandy", "hinthandclose");
+    gameObjects.hinthandpointer = a.add.image(gameVars.halfWidth + 100, gameVars.halfHeight, "roomHandy", "hinthandpointer");
+    gameObjects.hinthandbroken = a.add.image(gameVars.halfWidth + 300, gameVars.halfHeight, "roomHandy", "hinthandbroken");
 
     for (let b in removeFromUpdateFuncList(updateWelcomeFollower), gameObjects.loadingMusic.stop(), gameVars.gameConstructed = !0, gameObjects.loadingWelcomes) gameObjects.loadingWelcomes[b].destroy();
     for (let a = 0; a < gameObjectsTemp.circleLoading.length; a++) gameObjectsTemp.circleLoading[a].destroy();
@@ -932,7 +937,9 @@ function updateWelcomeFollower() {
 function handleBorders() {
     let leftBorder = document.getElementById('leftborder');
     let rightBorder = document.getElementById('rightborder');
-    if (!leftBorder || !rightBorder) {
+    let topBorder = document.getElementById('topborder');
+    let bottomBorder = document.getElementById('bottomborder');
+    if (!leftBorder || !rightBorder || !topBorder || !bottomBorder) {
         return;
     }
     var windowWidth = window.innerWidth;
@@ -951,9 +958,13 @@ function handleBorders() {
     if (isNarrow) {
         rightBorder.style.display = 'none';
         leftBorder.style.display = 'none';
+        topBorder.style.display = 'block';
+        bottomBorder.style.display = 'block';
     } else {
         rightBorder.style.display = 'block';
         leftBorder.style.display = 'block';
+        topBorder.style.display = 'none';
+        bottomBorder.style.display = 'none';
     }
     //block
 
@@ -962,8 +973,15 @@ function handleBorders() {
     leftBorder.style.width = widthAmt + 'px';
     rightBorder.style.width = widthAmt + 'px';
     let shiftAmt = pixelWidth * gameScale * 0.5 + widthAmt - 2;
-    leftBorder.style.left = 'calc(50% - ' + shiftAmt + 'px)'
-    rightBorder.style.right = 'calc(50% - ' + shiftAmt + 'px)'
+    leftBorder.style.left = 'calc(50% - ' + shiftAmt + 'px)';
+    rightBorder.style.right = 'calc(50% - ' + shiftAmt + 'px)';
+
+    let heightAmt = 40 * gameScale;
+    topBorder.style.width = heightAmt + 'px';
+    bottomBorder.style.width = heightAmt + 'px';
+    let shiftCenterY = pixelHeight * gameScale * 0.5 + heightAmt * 0.5 - 2;
+    topBorder.style.top = 'calc(50% - ' + shiftCenterY + 'px)';
+    bottomBorder.style.top = 'calc(50% + ' + shiftCenterY + 'px)';
 }
 
 function initializeSounds(a) {
