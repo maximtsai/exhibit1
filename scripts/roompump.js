@@ -250,7 +250,6 @@ function updateFloatyPumpState(e) {
 }
 
 function pumpPressed() {
-    if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
     gameObjects.roomPumpObjs.pressCooldown > 0 || (gameObjects.roomPumpObjs.buttonPressed = !0, gameObjects.roomPumpObjs.pressCooldown = 20, playSound("airpump", void 0, .25), gameObjects.roomPumpObjs.buttonPressCarryOver = 999999)
 }
 
@@ -260,7 +259,7 @@ function pumpReleased() {
 
 function cleanupPump() {
     gameObjects.roomPumpObjs.cleanupBtn.destroy(), gameObjects.roomPumpObjs.pumpCheckpoint = 0, gameObjects.exhibit.needCleanup = !1, gameDelay(() => {
-        playSound("deepbell5"), updateInfoTextSoft("Room cleaned up.", 2250), window.GameSDK && typeof window.GameSDK.gameplayStop === 'function' && window.GameSDK.gameplayStop()
+        playSound("deepbell5"), updateInfoTextSoft("Room cleaned up.", 2250)
     }, 500)
 }
 

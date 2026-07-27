@@ -21,7 +21,6 @@ function setupRoomClown1(e, o, a) {
         scaleY: .158
     }), l = messageBus.subscribe("exhibitMove", e => {
         if (e === o) {
-            if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
             gameDelay(() => {
                 if (gameVars.firstNosePressed) {
                     return;
@@ -100,7 +99,7 @@ function setupRoomClown2(e, o, a) {
         scaleX: .25,
         scaleY: .25
     }), l = messageBus.subscribe("exhibitMove", e => {
-        e === o && (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function' && window.GameSDK.gameplayStart(), l.unsubscribe(), gameObjects.roomClown1 && gameObjects.exhibit.removeIndex(gameObjects.roomClown1.roomIndex))
+        e === o && (l.unsubscribe(), gameObjects.roomClown1 && gameObjects.exhibit.removeIndex(gameObjects.roomClown1.roomIndex))
     })
 }
 
@@ -131,7 +130,7 @@ function setupRoomClown3(e, o, a) {
             nosePress3(o, a)
         }
     }), l = messageBus.subscribe("exhibitMove", e => {
-        e === o && (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function' && window.GameSDK.gameplayStart(), l.unsubscribe(), gameObjects.roomClown2 && gameObjects.exhibit.removeIndex(gameObjects.roomClown2.roomIndex))
+        e === o && (l.unsubscribe(), gameObjects.roomClown2 && gameObjects.exhibit.removeIndex(gameObjects.roomClown2.roomIndex))
     }), messageBus.subscribe("prepareFinalClown", l => {
         disableMoveButtons(), gameObjects.roomClown3.portrait.destroy(), gameObjects.roomClown3.clown = globalScene.add.image(0, gameVars.halfHeight + 60, "roomClown", "clowncreepy"), gameObjects.roomClown3.clown.scaleX = .75, gameObjects.roomClown3.clown.scaleY = .75, gameObjects.roomClown3.clownLeftEye = globalScene.add.image(-66, gameVars.halfHeight - 100, "roomClown", "leftEye"), gameObjects.roomClown3.clownLeftEye.origX = gameObjects.roomClown3.clownLeftEye.x, gameObjects.roomClown3.clownLeftEye.origY = gameObjects.roomClown3.clownLeftEye.y, gameObjects.roomClown3.clownLeftEye.scaleX = .75, gameObjects.roomClown3.clownLeftEye.scaleY = .75, gameObjects.roomClown3.clownRightEye = globalScene.add.image(203, gameVars.halfHeight - 60, "roomClown", "leftEye"), gameObjects.roomClown3.clownRightEye.origX = gameObjects.roomClown3.clownRightEye.x, gameObjects.roomClown3.clownRightEye.origY = gameObjects.roomClown3.clownRightEye.y, gameObjects.roomClown3.clownRightEye.scaleX = .75, gameObjects.roomClown3.clownRightEye.scaleY = .75, a.add(gameObjects.roomClown3.clown), a.add(gameObjects.roomClown3.clownLeftEye), a.add(gameObjects.roomClown3.clownRightEye), addToUpdateFuncList(shakeClownEyes), disableMoveLeftButton(), gameObjects.roomClown3.nose2 = new Button(e, a, () => {
             nosePressFinal(o, a)
@@ -210,6 +209,9 @@ function nosePress3(e, o) {
                 alpha: .001
             },
             onHover: () => {
+                keyPosX = null;
+                keyPosY = null;
+                keyRoomIdx = null;
                 l.destroy(), gameObjects.roomClown3.clown.visible = !1, gameObjects.roomClown3.clown.destroy();
                 let a = globalScene.add.image(0, gameVars.halfHeight - 50, "roomClown", "clownlarge2");
                 o.add(a), showStaticRand(5), playSound("clownlaugh2"), tempFreeze(800), gameDelay(() => {

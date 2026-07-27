@@ -30,7 +30,8 @@ let config = {
 },
     globalScene,
     gameVars = {
-        hintCount: 6,
+        bloodHandActive: false,
+        hintCount: 2,
         baseSway: .025,
         gameStarted: !1,
         gameConstructed: !1,

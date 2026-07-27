@@ -63,7 +63,8 @@ class Exhibit {
             for (let idx = 0; idx < list.length; idx++) {
                 let obj = list[idx];
                 if (!obj || !obj.setVisible) continue;
-                obj.setVisible(idx === this.currentScene || idx === outgoingIdx);
+                let shouldBeVisible = idx === this.currentScene || idx === outgoingIdx || (idx === 13 && typeof gameVarsTemp !== "undefined" && gameVarsTemp.keepJackVisible);
+                obj.setVisible(shouldBeVisible);
             }
         }
     }

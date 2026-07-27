@@ -52,6 +52,9 @@ function updateInfoText(e, t = 3200, a) {
 }
 
 function updateInfoTextSoft(e, t = 3e3) {
+	if (typeof e === "string" && e.includes("Room cleaned up") && typeof messageBus !== "undefined" && messageBus) {
+		messageBus.publish("roomCleanedUp");
+	}
 	gameObjects.infoText.setText("\n " + e + " \n"), gameVarsTemp.updateTextAnim && gameVarsTemp.updateTextAnim.isPlaying() && gameVarsTemp.updateTextAnim.stop(), gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.chain({
 		targets: gameObjects.infoText,
 		tweens: [{
@@ -253,6 +256,9 @@ function getDownBtnFromIndex(e) {
 }
 
 function onExitClick(e) {
+	if (typeof messageBus !== "undefined" && messageBus) {
+		messageBus.publish("doorOpened");
+	}
 	if (!gameVarsTemp.doorNotClickable) return gameVars.finishedDarkPoint ? (gameObjects.exitDoor.disappear(), gameObjects.exitDoorWhite = e.add.image(-215, 507, "buttons", "exitDoorWhite"), gameObjects.exitDoorWhite.setOrigin(0, .5), gameObjects.gameCtnr0.add(gameObjects.exitDoorWhite), gameObjects.exitDoorOpen = e.add.image(-215, 507, "buttons", "exitDoorOpen"), gameObjects.exitDoorOpen.setOrigin(0, .5), gameObjects.gameCtnr0.add(gameObjects.exitDoorOpen), gameObjects.clownDoor = e.add.image(-42, 385, "roomClown", "clowndoor"), gameObjects.clownDoor.setScale(.6), gameObjects.gameCtnr0.add(gameObjects.clownDoor), gameObjects.exitDoorAnimated = e.add.image(-193, 507, "buttons", "exitDoorNormal"), gameObjects.exitDoorAnimated.setOrigin(.05, .5), gameObjects.gameCtnr0.add(gameObjects.exitDoorAnimated), disableMoveButtons(), gameVarsTemp.doorNotClickable = !0, gameDelay(() => {
 		showStaticRand(3, void 0, () => {
 			showFlashRand(1)
@@ -513,6 +519,9 @@ function setupInstructionsStand(e) {
 }
 
 function onTurnOnPower() {
+	if (typeof messageBus !== "undefined" && messageBus) {
+		messageBus.publish("powerTurnedOn");
+	}
 	gameVars.finishedDarkPoint || (gameVars.darkPoint ? (gameVars.finishedDarkPoint = !0, playSoundOnce("flickeron"), gameObjects.powerSwitch.setState("disable"), gameObjects.candleDark.alpha = .25, gameObjects.candleBright.alpha = 0, gameDelay(() => {
 		gameObjects.candleDark.alpha = 1, gameDelay(() => {
 			gameObjects.candleDark.alpha = .25, gameDelay(() => {
@@ -551,14 +560,24 @@ function removeFromUpdateFuncList(e) {
 	t > -1 && updateFuncList.splice(t, 1)
 }
 
+var keyPosX = null;
+var keyPosY = null;
+var keyRoomIdx = null;
+
 function createKey(e, t, a, s, o = !0, c) {
 	let n;
+	let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+	keyPosX = halfW + e;
+	keyPosY = t;
+	keyRoomIdx = a;
 	if (typeof messageBus !== "undefined" && messageBus) {
 		messageBus.publish("keyAppeared", { x: e, y: t, roomIndex: a });
 	}
 
 	return playSound("keyfound"), (n = new Button(globalScene, s, () => {
-		if (window.GameSDK && typeof window.GameSDK.gameplayStop === 'function') window.GameSDK.gameplayStop();
+		keyPosX = null;
+		keyPosY = null;
+		keyRoomIdx = null;
 		if (typeof messageBus !== "undefined" && messageBus) {
 			messageBus.publish("keyClicked");
 		}

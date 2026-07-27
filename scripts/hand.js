@@ -7,6 +7,9 @@ class Hand {
         this.x = i, this.y = s
     }
     switchHand() {
+        if (typeof gameVars !== "undefined") {
+            gameVars.bloodHandActive = true;
+        }
         let i = this.visualPoint.scaleX,
             s = this.visualPoint.x,
             t = this.visualPoint.y,

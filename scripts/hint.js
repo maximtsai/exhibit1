@@ -3,7 +3,7 @@
  */
 
 if (typeof gameVars !== "undefined" && gameVars.hintCount === undefined) {
-    gameVars.hintCount = 6;
+    gameVars.hintCount = 2;
 }
 
 class HintHand {
@@ -177,6 +177,9 @@ function createBaseHintHand(initialFrame = "hinthandopen") {
     let keySub = null;
     let keyClickSub = null;
     let fingerClickSub = null;
+    let roomCleanedSub = null;
+    let doorOpenSub = null;
+    let powerTurnOnSub = null;
 
     function stopAnimation() {
         if (isStopped) return;
@@ -189,6 +192,9 @@ function createBaseHintHand(initialFrame = "hinthandopen") {
         if (keySub) { keySub.unsubscribe(); keySub = null; }
         if (keyClickSub) { keyClickSub.unsubscribe(); keyClickSub = null; }
         if (fingerClickSub) { fingerClickSub.unsubscribe(); fingerClickSub = null; }
+        if (roomCleanedSub) { roomCleanedSub.unsubscribe(); roomCleanedSub = null; }
+        if (doorOpenSub) { doorOpenSub.unsubscribe(); doorOpenSub = null; }
+        if (powerTurnOnSub) { powerTurnOnSub.unsubscribe(); powerTurnOnSub = null; }
         if (hand) { hand.destroy(); hand = null; }
     }
 
@@ -197,6 +203,9 @@ function createBaseHintHand(initialFrame = "hinthandopen") {
         keySub = messageBus.subscribe("keyAppeared", stopAnimation);
         keyClickSub = messageBus.subscribe("keyClicked", stopAnimation);
         fingerClickSub = messageBus.subscribe("fingerClicked", stopAnimation);
+        roomCleanedSub = messageBus.subscribe("roomCleanedUp", stopAnimation);
+        doorOpenSub = messageBus.subscribe("doorOpened", stopAnimation);
+        powerTurnOnSub = messageBus.subscribe("powerTurnedOn", stopAnimation);
     }
 
     globalActiveHintCleanup = stopAnimation;
@@ -536,20 +545,40 @@ function getActiveFingerPos() {
     let x = halfW - 420;
     let y = halfH - 80;
 
-    if (typeof gameObjects !== "undefined" && gameObjects.roomHandyObjs && gameObjects.roomHandyObjs.fingerButton) {
+    if (typeof gameObjects !== "undefined" && gameObjects.roomHandyObjs && gameObjects.roomHandyObjs.fingerButton && gameObjects.roomHandyObjs.fingerButton.getPosY() >= 0) {
         x = halfW + gameObjects.roomHandyObjs.fingerButton.getPosX();
         y = gameObjects.roomHandyObjs.fingerButton.getPosY();
-    } else if (typeof gameObjects !== "undefined" && gameObjects.roomHandyObjs && gameObjects.roomHandyObjs.listOfButtonPos) {
+    } else if (typeof gameObjects !== "undefined" && gameObjects.roomHandyObjs) {
         let stateIdx = gameObjects.roomHandyObjs.fingerState || 0;
-        let pos = gameObjects.roomHandyObjs.listOfButtonPos[stateIdx] || gameObjects.roomHandyObjs.listOfButtonPos[0];
-        x = halfW + pos.x;
-        y = pos.y;
+        let list = (typeof gameVars !== "undefined" && gameVars.darkPoint && gameObjects.roomHandyObjs.listOfInverseButtonPos)
+            ? gameObjects.roomHandyObjs.listOfInverseButtonPos
+            : gameObjects.roomHandyObjs.listOfButtonPos;
+        if (list) {
+            let pos = list[stateIdx] || list[0];
+            if (pos) {
+                x = halfW + pos.x;
+                y = pos.y;
+            }
+        }
     }
     return { x, y };
 }
 
 function handleHandyHint(state) {
     let fingerPos = getActiveFingerPos();
+
+    if (typeof gameVars !== "undefined" && gameVars.bloodHandActive) {
+        let hintButtonX = (typeof gameVars !== "undefined") ? (gameVars.width - 140) : 1070;
+        let hintButtonY = 51;
+        let startX = hintButtonX - 40;
+        let startY = hintButtonY + 40;
+        let destX = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+        let destY = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
+        let midX = startX + 0.6 * (destX - startX);
+        let midY = startY + 0.6 * (destY - startY);
+        playBrokenHintAnimation(midX, midY, 0);
+        return;
+    }
 
     if (state === "horror" && isMoveRightEnabled()) {
         let rightPos = getMoveRightPos();
@@ -824,12 +853,14 @@ function handleIntroHint(state) {
     let switchPos = getLightSwitchPos();
     let doorPos = getExitDoorPos();
 
-    if (state === "dark") {
+    if (state === "normal") {
+        playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
+    } else if (state === "dark") {
         playPointHintAnimation(switchPos.x, switchPos.y, -40, false);
     } else if (state === "horror" && isExitDoorDisabled()) {
         playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
     } else {
-        playPointHintAnimation(doorPos.x, doorPos.y, -40, false);
+        playPointHintAnimation(doorPos.x + 200, doorPos.y, -240, false);
     }
 }
 
@@ -837,6 +868,12 @@ function handleHintPress() {
     let currentRoomIndex = (typeof gameObjects !== "undefined" && gameObjects && gameObjects.exhibit)
         ? gameObjects.exhibit.currentScene
         : 1;
+
+    if (typeof keyPosX !== "undefined" && keyPosX !== null && typeof keyRoomIdx !== "undefined" && keyRoomIdx === currentRoomIndex) {
+        playPointHintAnimation(keyPosX + 20, keyPosY - 65, -40, false);
+        return;
+    }
+
     let state = getMajorState();
 
     switch (currentRoomIndex) {
@@ -950,6 +987,9 @@ function onHintButtonPressed() {
                 () => {
                     // onFinished only fires on a successful/earned view - sdk-bridge.js
                     // calls it with no arguments, so there is no reward flag to check here.
+                    // Grant 1 bonus hint for watching the ad.
+                    let currentHints = (typeof gameVars !== "undefined" && gameVars.hintCount !== undefined) ? gameVars.hintCount : 0;
+                    updateHintCounter(currentHints + 1);
                     showHint();
                 },
                 (err) => {
@@ -959,6 +999,9 @@ function onHintButtonPressed() {
         } else if (window.GameSDK && typeof window.GameSDK.showAd === 'function') {
             window.GameSDK.showAd('rewarded', {
                 onFinished: () => {
+                    // Grant 1 bonus hint for watching the ad.
+                    let currentHints = (typeof gameVars !== "undefined" && gameVars.hintCount !== undefined) ? gameVars.hintCount : 0;
+                    updateHintCounter(currentHints + 1);
                     showHint();
                 }
             });

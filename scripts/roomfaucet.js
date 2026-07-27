@@ -30,7 +30,7 @@ function setupRoomFaucet(e, a, o) {
         },
         isDraggable: !0,
         onDrop: dropHandle
-    }), gameObjects.roomFaucetObjs.handle.setOnMouseDownFunc(() => { if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart(); }), gameObjects.roomFaucetObjs.placard = new Button(e, o, () => {
+    }), gameObjects.roomFaucetObjs.placard = new Button(e, o, () => {
         gameVars.horrorPoint ? gameObjects.roomFaucetObjs.roomCompleted ? updateInfoText("Faucet out of order") : updateInfoText("Mr. Washy") : gameVars.darkPoint ? updateInfoText("Just a gentle rinse") : updateInfoText("Mr. Washy")
     }, {
         atlas: "buttons",
@@ -74,7 +74,7 @@ function roomFaucetUpdate(e) {
         c > Math.PI ? c -= 2 * Math.PI : c < -Math.PI && (c += 2 * Math.PI);
         let b = 0;
         if (c > .01 ? b = Math.min(.0024, .006 * c) : c < -.01 && (b = Math.max(-.0024, .006 * c)), gameVars.horrorPoint && b < 0 && gameObjects.roomFaucetObjs.lever.rotation > .8 && (b = 0), gameObjects.roomFaucetObjs.lever.rotVel += b, gameObjects.roomFaucetObjs.lever.rotVel *= .88, a = !0, Math.abs(gameObjects.roomFaucetObjs.lever.rotation + .2) < .03 && gameObjects.roomFaucetObjs.soundCooldown <= 0 && (gameObjects.roomFaucetObjs.lever.rotVel > .005 ? (playSound("metalsqueak1"), gameObjects.roomFaucetObjs.soundCooldown = 50) : gameObjects.roomFaucetObjs.lever.rotVel < -.005 && (playSound("metalsqueak2"), gameObjects.roomFaucetObjs.soundCooldown = 50), gameObjects.roomFaucetObjs.lever.rotVel *= .5), gameObjects.roomFaucetObjs.lever.rotation < -.75) gameVars.darkPoint && gameObjects.exhibit.needCleanup && (gameObjects.exhibit.needCleanup = !1, gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.handle.disappear(), setWashyDollImage("washyRelaxed"), gameDelay(() => {
-            playSound("deepbell4"), updateInfoTextSoft("Room cleaned up.", 2e3), window.GameSDK && typeof window.GameSDK.gameplayStop === 'function' && window.GameSDK.gameplayStop();
+            playSound("deepbell4"), updateInfoTextSoft("Room cleaned up.", 2e3);
         }, 300)), gameObjects.roomFaucetObjs.lever.rotation = -.74, gameObjects.roomFaucetObjs.lever.rotVel *= -.35;
         else if (gameObjects.roomFaucetObjs.lever.rotVel > .001 && gameObjects.roomFaucetObjs.lever.rotation > .78 && !gameObjects.roomFaucetObjs.firstComplete && !gameVars.horrorPoint && !gameVars.darkPoint) gameObjects.roomFaucetObjs.handle.disappear(), gameObjects.roomFaucetObjs.firstComplete = !0, gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.lever.rotation = .799, gameDelay(() => {
             createKey(-365, gameVars.halfHeight + 85, gameObjects.roomFaucetObjs.roomIndex, gameObjects.roomFaucetObjs.roomContainer, !0)

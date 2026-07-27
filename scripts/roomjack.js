@@ -84,7 +84,6 @@ function setupRoomJack(e, a, o) {
 function roomJackUpdate(e) {
     if (gameObjects.roomJackObjs.shouldUpdate) {
         if (gameObjects.roomJackObjs.spinnerButton.getIsDragged() && gameObjects.roomJackObjs.canSpin || gameObjects.roomJackObjs.isAutopilot) {
-            if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
             let a = gameObjects.roomJackObjs.spinnerButton.getXPos(),
                 o = gameObjects.roomJackObjs.spinnerButton.getYPos(),
                 t = a - gameObjects.roomJackObjs.spinner.x,
@@ -180,7 +179,7 @@ function checkMusicSequenceDark(e) {
             zoomTemp(1.028), gameObjects.roomJackObjs.dollCreepy.y = 2010, gameObjects.roomJackObjs.lid.rotation = 0
         }, 170)
     }, 70), gameObjects.roomJackObjs.playedSlam = !0)), gameObjects.roomJackObjs.dollCreepy.y = Math.min(2010, gameObjects.roomJackObjs.dollCreepy.y - 5 * e), gameObjects.roomJackObjs.lid.rotation = Math.max(0, gameObjects.roomJackObjs.lid.rotation + .2 * e), gameObjects.roomJackObjs.lid.rotation <= .01 && (gameObjects.roomJackObjs.lid.rotation = 0, gameObjects.exhibit.needCleanup = !1, gameObjects.roomJackObjs.canSpin = !1, resetGuideArrowJack(), gameDelay(() => {
-        playSound("deepbell1"), updateInfoTextSoft("Room cleaned up.", 2500), window.GameSDK && typeof window.GameSDK.gameplayStop === 'function' && window.GameSDK.gameplayStop()
+        playSound("deepbell1"), updateInfoTextSoft("Room cleaned up.", 2500)
     }, 400))
 }
 

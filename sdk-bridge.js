@@ -626,18 +626,7 @@
 
 
     // Static Initialization
-    const params = new URLSearchParams(window.location.search);
-    const force = params.get('sdk');
-    let adapter;
-
-    if (force === 'youtube' ||
-        window.location.hostname.includes('youtube.com') ||
-        (window.ytgame && window.ytgame.IN_PLAYABLES_ENV) ||
-        window.ytPlayablesActive) {
-        adapter = new YouTubePlayablesAdapter();
-    } else {
-        adapter = new MockDevAdapter();
-    }
+    const adapter = new YouTubePlayablesAdapter();
 
     adapter.init();
 
