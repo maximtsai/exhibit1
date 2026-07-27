@@ -920,7 +920,14 @@ function beginGameplay(a) {
         addToUpdateFuncList(flipEntryLights)
     }, 350), gameDelay(() => {
         gameVarsTemp.hasMoved || ftueMoveButton()
-    }, 4e3)
+    }, 4e3);
+
+    // Everything drawn from the "loadingSS" atlas (the welcome images, the
+    // circles, brightLight, and the two transparent_pixel click blockers) has
+    // just been destroyed above, and nothing outside the intro references it.
+    // It is 1810x1656 - ~11MB of GPU memory that would otherwise sit there for
+    // the rest of the session.
+    releaseTextures(["loadingSS"]);
 }
 
 function updateWelcomeFollower() {
@@ -1449,16 +1456,61 @@ function adError() {
     restoreAdMutedSounds()
 }
 
-function showAltReality(a, c = 1) {
-    if (!a || 0 === a.length) return;
-    let d = a.shift(),
-        b = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, d);
-    b.depth = 1, b.scaleX = c, b.scaleY = c, gameDelay(() => {
-        b.destroy(), showAltReality(a, c)
-    }, 1 === a.length ? 70 : 40)
+// One pooled full-screen image reused for the whole sequence. The old version
+// created and destroyed a GameObject every 40ms.
+let altRealityImage = null,
+    altRealitySeq = 0;
+
+// Called by releaseTextures before it frees a key: if the pooled image is still
+// showing that texture, move it off before the texture is destroyed.
+function clearAltRealityTexture(key) {
+    if (!altRealityImage || !altRealityImage.scene) return;
+    if (altRealityImage.texture && altRealityImage.texture.key !== key) return;
+    if (globalScene.textures.exists("blackPixel")) altRealityImage.setTexture("blackPixel");
 }
+
+// releaseWhenDone frees the sequence's textures once it finishes - only pass it
+// for a group whose call site is the sole user, or the other call site will draw
+// missing frames. The altreality JPEGs are 1300x920 each, ~4.6MB of VRAM apiece.
+function showAltReality(a, c = 1, releaseWhenDone = false) {
+    if (!a || 0 === a.length) return;
+    let remaining = a.slice(),
+        toRelease = releaseWhenDone ? a.slice() : null,
+        seq = ++altRealitySeq;
+
+    if (!altRealityImage || !altRealityImage.scene) {
+        altRealityImage = globalScene.add.image(gameVars.halfWidth, gameVars.halfHeight, remaining[0]);
+    }
+    let b = altRealityImage;
+    b.depth = 1, b.scaleX = c, b.scaleY = c, b.setVisible(!0);
+
+    let step = () => {
+        // A later sequence has taken over the shared image; leave it alone.
+        if (seq !== altRealitySeq) return;
+        if (0 === remaining.length) {
+            b.setVisible(!1);
+            // releaseTextures moves the pooled image off any key it frees.
+            if (toRelease) releaseTextures(toRelease);
+            return;
+        }
+        let d = remaining.shift();
+        if (globalScene.textures.exists(d)) b.setTexture(d);
+        gameDelay(step, 1 === remaining.length ? 70 : 40);
+    };
+    step();
+}
+
+// Coalesced into one pass per frame: handleBorders() interleaves reads of
+// window.innerWidth/innerHeight with style writes, so running it once per resize
+// event forces a synchronous layout for each one during a drag-resize.
+let borderResizeQueued = false;
 window.addEventListener("resize", function (a, b) {
-    handleBorders();
+    if (borderResizeQueued) return;
+    borderResizeQueued = true;
+    requestAnimationFrame(() => {
+        borderResizeQueued = false;
+        handleBorders();
+    });
 }, !1)
 window.addEventListener('keydown', ev => {
     if (['ArrowDown', 'ArrowUp', ' '].includes(ev.key)) {

@@ -184,7 +184,10 @@ function roomStretchUpdate(e) {
             if (!gameObjects.roomStretchObjs.roomUnlocked) {
                 if (gameObjects.roomStretchObjs.roomUnlocked = !0, gameObjects.roomStretchObjs.doHorrorSection) {
                     gameObjects.roomStretchObjs.roomCompleted = !0, gameDelay(() => {
-                        removeFromUpdateFuncList(roomStretchUpdate)
+                        // Both showAltReality("stretch*") call sites live inside
+                        // roomStretchUpdate, so once it stops running nothing can
+                        // reference these six full-screen JPEGs again (~26MB VRAM).
+                        removeFromUpdateFuncList(roomStretchUpdate), releaseTextures(["stretch1", "stretch2", "stretch3", "stretch4", "stretch5", "stretch6"])
                     }, 1e4), gameObjects.roomStretchObjs.frame2.destroy(), gameObjects.roomStretchObjs.frame2x.alpha = 1, gameObjects.roomStretchObjs.handButton.destroy(), playSound("tear6"), showStaticLite(9, 10, 2), showAltReality(["stretch2", "stretch3", "stretch4", "stretch4", "stretch5", "stretch5", "stretch6"], 1.2), gameObjects.sounds.pumpamb.stop(), gameObjects.roomStretchObjs.hand.alpha = 0, gameObjects.roomStretchObjs.hand.x = gameObjects.roomStretchObjs.dollPosX + 25, gameObjects.roomStretchObjs.hand.y = 500;
                     let e = globalScene.add.image(gameObjects.roomStretchObjs.touchspot.x, gameObjects.roomStretchObjs.touchspot.y, "roomStretch", "hand");
                     gameObjects.roomStretchObjs.roomContainer.add(e), gameObjects.roomStretchObjs.armseg1.x = e.x - 25, gameObjects.roomStretchObjs.armseg1.y = e.y + 7, gameObjects.roomStretchObjs.handButton.setState("disable")

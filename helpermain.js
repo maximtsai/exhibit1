@@ -13,6 +13,25 @@ function gameDelay(callback, ms) {
 	return setTimeout(callback, ms);
 }
 
+// Phaser uploads every loaded texture to the GPU and never releases it on its
+// own, so a one-shot sequence's art stays resident for the whole session. Call
+// this once nothing can reference the keys again - a released key that is still
+// on a live GameObject renders as a missing frame.
+function releaseTextures(keys) {
+	if (!globalScene || !globalScene.textures) return;
+	for (let i = 0; i < keys.length; i++) {
+		if (globalScene.textures.exists(keys[i])) {
+			// The pooled altreality image keeps showing the last frame of a
+			// sequence after it ends, so it can still be holding a key that is
+			// about to be freed. Point it somewhere safe first.
+			if (typeof clearAltRealityTexture === "function") {
+				clearAltRealityTexture(keys[i]);
+			}
+			globalScene.textures.remove(keys[i]);
+		}
+	}
+}
+
 function updateInfoText(e, t = 3200, a) {
 	gameObjects.infoText.setText("\n " + e + " \n"), a && (gameObjects.infoText.setOrigin(0, .5), gameObjects.infoText.x = gameVars.halfWidth - 360, gameObjects.infoText.y = gameVars.halfHeight + 220),  gameVarsTemp.updateTextAnim && gameVarsTemp.updateTextAnim.isPlaying() && gameVarsTemp.updateTextAnim.stop(), gameVarsTemp.updateTextAnim = gameObjects.scene.tweens.chain({
 		targets: gameObjects.infoText,
@@ -153,7 +172,10 @@ function shakeImage(e, t, a, s) {
 	if (t <= 0 || !e || !e.scene) return;
 	let o = e.x,
 		c = e.y;
-	a && (o = a), s && (c = s), e.x += 7 * (Math.random() - .5) * e.scaleX, e.y += 7 * (Math.random() - .5) * e.scaleY, gameDelay(() => {
+	// setTimeout rather than gameDelay: at 20ms this re-arms 50x/sec, and each
+	// gameDelay allocates a Phaser TimerEvent. The `!e.scene` bail above already
+	// stops the chain, so it does not need the scene clock to end it.
+	a && (o = a), s && (c = s), e.x += 7 * (Math.random() - .5) * e.scaleX, e.y += 7 * (Math.random() - .5) * e.scaleY, setTimeout(() => {
 		shakeImage(e, t - 20, o, c)
 	}, 20)
 }

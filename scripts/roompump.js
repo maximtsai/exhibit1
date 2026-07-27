@@ -181,7 +181,7 @@ function updateFloatyPumpState(e) {
         } else if (e < 370) {
             3 === gameObjects.roomPumpObjs.floatyState && (showStaticLite(6, 10, 1.5), showStaticRand(3, void 0, void 0, .15), addFloatyShake(3), playSoundOnce("muffle3"), gameObjects.roomPumpObjs.floaty.scaleX = .82, gameObjects.roomPumpObjs.floaty.scaleY = .84, gameObjects.roomPumpObjs.pumpCheckpoint += 15), setFloatyState(4);
             let a = 1 - (370 - e) / 100;
-            !gameObjects.roomPumpObjs.showOverblown2 && e > 355 && (showStaticLite(1, 7, 1.5), showStaticRand(1, void 0, void 0, .25), playSoundOnce("muffle4"), gameObjects.roomPumpObjs.pumpCheckpoint += 1, gameObjects.roomPumpObjs.randFlash1 || (gameObjects.roomPumpObjs.randFlash1 = !0, showAltReality(["balloon1", "balloon2", "balloon3", "balloon4", "balloon5"], 1.02), playSound("rubber6"), gameObjects.sounds.pumpamb.play({
+            !gameObjects.roomPumpObjs.showOverblown2 && e > 355 && (showStaticLite(1, 7, 1.5), showStaticRand(1, void 0, void 0, .25), playSoundOnce("muffle4"), gameObjects.roomPumpObjs.pumpCheckpoint += 1, gameObjects.roomPumpObjs.randFlash1 || (gameObjects.roomPumpObjs.randFlash1 = !0, showAltReality(["balloon1", "balloon2", "balloon3", "balloon4", "balloon5"], 1.02, !0), playSound("rubber6"), gameObjects.sounds.pumpamb.play({
                 loop: !0
             }), gameObjects.sounds.pumpamb.volume = .1 * gameVars.soundMult, tweenVolume("pumpamb", .3, 500)), setFloatyState(7), gameObjects.roomPumpObjs.floaty.scaleX = .7 + .05 * Math.random(), gameObjects.roomPumpObjs.floaty.scaleY = .68 + .05 * Math.random(), addFloatyShake(4, .6), gameDelay(() => {
                 gameObjects.roomPumpObjs.showOverblown2 = !0, setFloatyState(4), gameObjects.roomPumpObjs.floaty.scaleX = .83 + .1 * a, gameObjects.roomPumpObjs.floaty.scaleY = .85 + .08 * a
@@ -231,7 +231,7 @@ function updateFloatyPumpState(e) {
                 }
             } else e > 525 ? (setFloatyState(6), gameObjects.roomPumpObjs.floaty.scaleX = .75 + .1 * Math.random() + .1 * o, gameObjects.roomPumpObjs.floaty.scaleY = .75 + .04 * Math.random() + .08 * o) : !gameObjects.roomPumpObjs.showOverblown3 && e > 505 && (gameObjects.roomPumpObjs.showOverblown3 = !0, tweenVolume("pumpamb", 0), gameDelay(() => {
                 gameObjects.sounds.pumpamb.stop()
-            }), showAltReality(["floaty1", "floaty2", "floaty3", "floaty2", "floaty4", "floaty1"], 1.02))
+            }), showAltReality(["floaty1", "floaty2", "floaty3", "floaty2", "floaty4", "floaty1"], 1.02, !0))
         }
     } else gameObjects.roomPumpObjs.canPump = !1, gameObjects.roomPumpObjs.pumpCheckpoint = 100, gameObjects.roomPumpObjs.pumpBtn.disappear(), setFloatyGoalPos(67.5, o - 215), gameDelay(() => {
         createKey(-60, gameVars.halfHeight - 130, gameObjects.roomPumpObjs.roomIndex, gameObjects.roomPumpObjs.roomContainer, !0)

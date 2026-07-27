@@ -344,6 +344,17 @@ class Button {
         let currImage = this.bgSprite;
         if (!currImage) return false;
 
+        // A hidden parent container is an off-screen room, so nothing inside it
+        // can be under the cursor. Container.visible does not propagate down to
+        // child.visible, so the sprite check above does not cover this. Testing
+        // it here also skips the getBounds() parent-matrix walk - which runs for
+        // every button, every frame, from buttonManager.updateHover.
+        let parent = currImage.parentContainer;
+        while (parent) {
+            if (!parent.visible) return false;
+            parent = parent.parentContainer;
+        }
+
         let scrollFactorX = this.scrollFactorX !== undefined ? this.scrollFactorX : (this.normal && this.normal.scrollFactorX !== undefined ? this.normal.scrollFactorX : 1);
         let scrollFactorY = this.scrollFactorY !== undefined ? this.scrollFactorY : (this.normal && this.normal.scrollFactorY !== undefined ? this.normal.scrollFactorY : 1);
 

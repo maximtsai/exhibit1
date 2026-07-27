@@ -48,6 +48,24 @@ class Exhibit {
             }
             //this.rightImage = currList[this.currentScene + 1];
         }
+        this.updateVisibility();
+    }
+
+    // Off-screen rooms are parked at x = -9999 but used to stay visible. Phaser
+    // 3.90's Container renderer has no bounds culling and Camera.cull() never
+    // reaches container children, so all ~220 sprites across all 16 rooms were
+    // transformed and batched every frame - and because each room draws from its
+    // own atlas, that also forced a texture rebind per room. Only the current
+    // room, plus the one sliding off during a transition, can ever be seen.
+    updateVisibility(outgoingIdx) {
+        for (let i = 0; i < this.listOfLists.length; i++) {
+            let list = this.listOfLists[i];
+            for (let idx = 0; idx < list.length; idx++) {
+                let obj = list[idx];
+                if (!obj || !obj.setVisible) continue;
+                obj.setVisible(idx === this.currentScene || idx === outgoingIdx);
+            }
+        }
     }
 
     moveLeft() {
@@ -104,6 +122,8 @@ class Exhibit {
             messageBus.publish('exhibitMoveLeft', this.currentScene, oldScene);
 
             gameObjects.exhibCntr.swayAccX = -0.8;
+            // Both rooms are on screen for the length of the slide.
+            this.updateVisibility(oldScene);
             for (let i = 0; i <this.listOfLists.length; i++) {
                 let currentList = this.listOfLists[i];
                 this.shiftListLeft(currentList, this.currentScene, oldScene, i === 0);
@@ -148,6 +168,8 @@ class Exhibit {
                     onComplete: () => {
                         if (isMain) {
                             this.isMoving = false;
+                            // Slide finished: the outgoing room is off screen.
+                            this.updateVisibility();
                             gameObjects.exhibCntr.swayAccX = -0.08;
                             gameObjects.exhibCntr.swayAccY = 0.05;
                             gameObjects.exhibCntr.swayAmt = 0.025;
@@ -230,6 +252,8 @@ class Exhibit {
             messageBus.publish('exhibitMove', this.currentScene, oldScene);
             messageBus.publish('exhibitMoveRight', this.currentScene, oldScene);
             gameObjects.exhibCntr.swayAccX = 0.8;
+            // Both rooms are on screen for the length of the slide.
+            this.updateVisibility(oldScene);
             for (let i = 0; i <this.listOfLists.length; i++) {
                 let currentList = this.listOfLists[i];
                 this.shiftListRight(currentList, this.currentScene, oldScene, i === 0, fast);
@@ -277,6 +301,8 @@ class Exhibit {
                     onComplete: () => {
                         if (isMain) {
                             this.isMoving = false;
+                            // Slide finished: the outgoing room is off screen.
+                            this.updateVisibility();
                             gameObjects.exhibCntr.swayAccX = fast ? 0.01 : 0.08;
                             gameObjects.exhibCntr.swayAccY = fast ? 0.01 : 0.05;
                             gameObjects.exhibCntr.swayAmt = 0.025;
@@ -302,6 +328,7 @@ class Exhibit {
             this.listOfBGs[x].destroy();
         }
         this.listOfBGs[x] = newImage;
+        newImage.setVisible(x === this.currentScene);
         if (x === this.currentScene) {
             this.listOfBGs[x].x = this.centerSpot;
         }
@@ -315,6 +342,7 @@ class Exhibit {
             this.listOfShadows[x].destroy();
         }
         this.listOfShadows[x] = newImage;
+        newImage.setVisible(x === this.currentScene);
         if (x === this.currentScene) {
             this.listOfShadows[x].x = this.centerSpot;
         }
@@ -329,6 +357,7 @@ class Exhibit {
             this.listOfForegrounds[x].destroy();
         }
         this.listOfForegrounds[x] = newImage;
+        newImage.setVisible(x === this.currentScene);
         if (x === this.currentScene) {
             this.listOfForegrounds[x].x = this.centerSpot;
         }
@@ -344,6 +373,7 @@ class Exhibit {
             }
         }
         this.listOfBtnCtnrs[x] = btnCtnr;
+        btnCtnr.setVisible(x === this.currentScene);
     }
 
     removeBtnCtnrFromIndex(x) {
