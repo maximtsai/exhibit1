@@ -842,6 +842,10 @@ function beginGameplay(a) {
         atlas: "buttons",
         ref: "hint_hover",
         alpha: 0.65
+    }, {
+        atlas: "buttons",
+        ref: "hint_normal",
+        alpha: 0.3
     });
     gameObjects.hintButton.setScrollFactor(0);
     gameObjects.hintButton.setDepth(1000);

@@ -225,6 +225,9 @@ function initFingerButton() {
 }
 
 function fingerPress() {
+    if (typeof messageBus !== "undefined" && messageBus) {
+        messageBus.publish("fingerClicked");
+    }
     if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
     let e = gameObjects.roomHandyObjs.fingerState + 1;
     if (gameObjects.roomHandyObjs.fingerState === 16) {
@@ -333,6 +336,9 @@ function fingerPress() {
 }
 
 function fingerUnPress() {
+    if (typeof messageBus !== "undefined" && messageBus) {
+        messageBus.publish("fingerClicked");
+    }
     if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
     let e = gameObjects.roomHandyObjs.fingerState - 1;
     e >= 0 ? (gameObjects.roomHandyObjs.fingerState = e, gameObjects.roomHandyObjs.cleanupButton.setPos(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 20), updateGuideArrowFat(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 200, .5 * Math.PI)) : (gameObjects.roomHandyObjs.cleanupButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), gameObjects.exhibit.needCleanup = !1, updateHandyExpression(1), gameDelay(() => {

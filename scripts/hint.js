@@ -107,8 +107,8 @@ function getMoveRightPos() {
 
 function getMoveLeftPos() {
     let x = (typeof gameObjects !== "undefined" && gameObjects && gameObjects.moveLeftBtn)
-        ? gameObjects.moveLeftBtn.getPosX()
-        : 15;
+        ? gameObjects.moveLeftBtn.getPosX() + 40
+        : 55;
     let y = (typeof gameObjects !== "undefined" && gameObjects && gameObjects.moveLeftBtn)
         ? gameObjects.moveLeftBtn.getPosY()
         : ((typeof gameVars !== "undefined") ? gameVars.halfHeight : 460);
@@ -129,20 +129,43 @@ function isMoveLeftEnabled() {
     return gameObjects.moveLeftBtn.state !== "disable";
 }
 
-function playPointHintAnimation(targetX, targetY, offsetY = -40, isLongPress = false) {
+function isDarkCleanupNeeded() {
+    if (typeof gameObjects !== "undefined" && gameObjects && gameObjects.exhibit) {
+        return gameObjects.exhibit.needCleanup === true;
+    }
+    return false;
+}
+
+function tryPlayMoveButtonHint(state) {
+    if ((state === "normal" || state === "horror") && isMoveRightEnabled()) {
+        let rightPos = getMoveRightPos();
+        playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
+        return true;
+    }
+    if (state === "dark" && !isDarkCleanupNeeded()) {
+        let leftPos = getMoveLeftPos();
+        playPointHintAnimation(leftPos.x, leftPos.y, -40, false);
+        return true;
+    }
+    return false;
+}
+
+function triggerGlitchAndFlash(staticCount = 3, flashCount = 3) {
+    if (typeof showStaticRand === "function") showStaticRand(staticCount * 3);
+    if (typeof showFlashRand === "function") showFlashRand(flashCount * 3);
+}
+
+function createBaseHintHand(initialFrame = "hinthandopen") {
     clearActiveHintHand();
 
-    if (typeof globalScene === "undefined" || !globalScene) return;
+    if (typeof globalScene === "undefined" || !globalScene) return null;
 
     let hintButtonX = (typeof gameVars !== "undefined") ? (gameVars.width - 140) : 1070;
     let hintButtonY = 51;
     let startX = hintButtonX - 40;
     let startY = hintButtonY + 40;
 
-    let destinationX = targetX;
-    let destinationY = targetY + offsetY;
-
-    let hand = globalScene.add.sprite(startX, startY, "roomHandy", "hinthandopen");
+    let hand = globalScene.add.sprite(startX, startY, "roomHandy", initialFrame);
     hand.setScrollFactor(0);
     hand.setDepth(1005);
     hand.setScale(0);
@@ -153,6 +176,7 @@ function playPointHintAnimation(targetX, targetY, offsetY = -40, isLongPress = f
     let moveSub = null;
     let keySub = null;
     let keyClickSub = null;
+    let fingerClickSub = null;
 
     function stopAnimation() {
         if (isStopped) return;
@@ -161,248 +185,30 @@ function playPointHintAnimation(targetX, targetY, offsetY = -40, isLongPress = f
             if (t && t.isPlaying) t.stop();
         });
         activeTweens = [];
-        if (moveSub) {
-            moveSub.unsubscribe();
-            moveSub = null;
-        }
-        if (keySub) {
-            keySub.unsubscribe();
-            keySub = null;
-        }
-        if (keyClickSub) {
-            keyClickSub.unsubscribe();
-            keyClickSub = null;
-        }
-        if (hand) {
-            hand.destroy();
-            hand = null;
-        }
-    }
-
-    if (typeof messageBus !== "undefined" && messageBus) {
-        moveSub = messageBus.subscribe("exhibitMove", () => {
-            stopAnimation();
-        });
-        keySub = messageBus.subscribe("keyAppeared", () => {
-            stopAnimation();
-        });
-        keyClickSub = messageBus.subscribe("keyClicked", () => {
-            stopAnimation();
-        });
-    }
-
-    globalActiveHintCleanup = stopAnimation;
-
-    function runAnimationCycle() {
-        if (isStopped || !hand) return;
-
-        hand.setFrame("hinthandopen");
-        hand.setPosition(startX, startY);
-        hand.setRotation(0);
-        hand.setScale(0);
-        hand.setAlpha(0);
-
-        // 1. Pop in from start position (40px left and down from hint button)
-        let popTween = globalScene.tweens.add({
-            targets: hand,
-            scaleX: 1,
-            scaleY: 1,
-            alpha: 1,
-            duration: 300,
-            ease: "Back.easeOut",
-            onComplete: () => {
-                if (isStopped || !hand) return;
-
-                // 2. Cubic.easeInOut tween to target position and turn into hinthandpointer
-                let moveTween = globalScene.tweens.add({
-                    targets: hand,
-                    x: destinationX,
-                    y: destinationY,
-                    duration: 1000,
-                    ease: "Cubic.easeInOut",
-                    onStart: () => {
-                        if (hand) hand.setFrame("hinthandpointer");
-                    },
-                    onComplete: () => {
-                        if (isStopped || !hand) return;
-
-                        // 3. Turn 165 degrees counter-clockwise (-165 degrees)
-                        let rotateTween = globalScene.tweens.add({
-                            targets: hand,
-                            angle: -165,
-                            duration: 350,
-                            ease: "Cubic.easeOut",
-                            onComplete: () => {
-                                if (isStopped || !hand) return;
-
-                                // 4. Press down short distance (+25px)
-                                let holdDuration = isLongPress ? 500 : 0;
-                                let pressDownTween = globalScene.tweens.add({
-                                    targets: hand,
-                                    y: destinationY + 25,
-                                    duration: 120,
-                                    ease: "Quad.easeOut",
-                                    onComplete: () => {
-                                        if (isStopped || !hand) return;
-
-                                        // Hold down (500ms if long press), then bounce back up
-                                        let releaseUpTween = globalScene.tweens.add({
-                                            targets: hand,
-                                            y: destinationY,
-                                            duration: 120,
-                                            delay: holdDuration,
-                                            ease: "Quad.easeIn",
-                                            onComplete: () => {
-                                                if (isStopped || !hand) return;
-
-                                                // 5. Fade away and repeat cycle
-                                                let fadeTween = globalScene.tweens.add({
-                                                    targets: hand,
-                                                    alpha: 0,
-                                                    duration: 400,
-                                                    delay: 200,
-                                                    onComplete: () => {
-                                                        if (isStopped || !hand) return;
-
-                                                        if (globalScene && globalScene.time) {
-                                                            globalScene.time.delayedCall(500, () => {
-                                                                if (!isStopped && hand) {
-                                                                    runAnimationCycle();
-                                                                }
-                                                            });
-                                                        }
-                                                    }
-                                                });
-                                                activeTweens.push(fadeTween);
-                                            }
-                                        });
-                                        activeTweens.push(releaseUpTween);
-                                    }
-                                });
-                                activeTweens.push(pressDownTween);
-                            }
-                        });
-                        activeTweens.push(rotateTween);
-                    }
-                });
-                activeTweens.push(moveTween);
-            }
-        });
-        activeTweens.push(popTween);
-    }
-
-    runAnimationCycle();
-}
-
-function handleEntranceHint(state) {
-    let rightPos = getMoveRightPos();
-    let leftPos = getMoveLeftPos();
-
-    switch (state) {
-        case "normal":
-        case "horror":
-            playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
-            break;
-        case "dark":
-            playPointHintAnimation(leftPos.x, leftPos.y, -40, false);
-            break;
-    }
-}
-
-function handlePumpHint(state) {
-    switch (state) {
-        case "normal":
-        case "horror":
-            if (isMoveRightEnabled()) {
-                let rightPos = getMoveRightPos();
-                playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
-            } else {
-                let fanX = ((typeof gameVars !== "undefined") ? gameVars.halfWidth : 605) - 240;
-                let fanY = (typeof gameObjects !== "undefined" && gameObjects.roomPumpObjs && gameObjects.roomPumpObjs.button)
-                    ? gameObjects.roomPumpObjs.button.y
-                    : 492;
-                playPointHintAnimation(fanX + 18, fanY, -110, true);
-            }
-            break;
-        case "dark":
-            if (isMoveLeftEnabled()) {
-                let leftPos = getMoveLeftPos();
-                playPointHintAnimation(leftPos.x, leftPos.y, -40, false);
-            } else {
-                let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
-                let floatyX = halfW + 135;
-                let floatyY = (typeof gameObjects !== "undefined" && gameObjects.roomPumpObjs && gameObjects.roomPumpObjs.floaty)
-                    ? gameObjects.roomPumpObjs.floaty.y
-                    : (((typeof gameVars !== "undefined") ? gameVars.halfHeight : 460) + 175);
-                if (typeof gameObjects !== "undefined" && gameObjects.roomPumpObjs && gameObjects.roomPumpObjs.cleanupBtn && gameObjects.roomPumpObjs.cleanupBtn.getPosX() !== 0) {
-                    floatyX = halfW + gameObjects.roomPumpObjs.cleanupBtn.getPosX();
-                    floatyY = gameObjects.roomPumpObjs.cleanupBtn.getPosY();
-                }
-                playPointHintAnimation(floatyX, floatyY, -40, false);
-            }
-            break;
-    }
-}
-
-function playGrabAtAnimation(targetX, targetY, onCompleteCallback) {
-    clearActiveHintHand();
-
-    if (typeof globalScene === "undefined" || !globalScene) return;
-
-    let hintButtonX = (typeof gameVars !== "undefined") ? (gameVars.width - 140) : 1070;
-    let hintButtonY = 51;
-    let startX = hintButtonX - 40;
-    let startY = hintButtonY + 40;
-
-    let hand = globalScene.add.sprite(startX, startY, "roomHandy", "hinthandopen");
-    hand.setScrollFactor(0);
-    hand.setDepth(1005);
-    hand.setScale(0);
-    hand.setAlpha(0);
-
-    let isStopped = false;
-    let activeTweens = [];
-    let moveSub = null;
-    let keySub = null;
-
-    function stopAnimation() {
-        if (isStopped) return;
-        isStopped = true;
-        activeTweens.forEach(t => {
-            if (t && t.isPlaying) t.stop();
-        });
-        activeTweens = [];
-        if (moveSub) {
-            moveSub.unsubscribe();
-            moveSub = null;
-        }
-        if (keySub) {
-            keySub.unsubscribe();
-            keySub = null;
-        }
-        if (hand) {
-            hand.destroy();
-            hand = null;
-        }
+        if (moveSub) { moveSub.unsubscribe(); moveSub = null; }
+        if (keySub) { keySub.unsubscribe(); keySub = null; }
+        if (keyClickSub) { keyClickSub.unsubscribe(); keyClickSub = null; }
+        if (fingerClickSub) { fingerClickSub.unsubscribe(); fingerClickSub = null; }
+        if (hand) { hand.destroy(); hand = null; }
     }
 
     if (typeof messageBus !== "undefined" && messageBus) {
         moveSub = messageBus.subscribe("exhibitMove", stopAnimation);
         keySub = messageBus.subscribe("keyAppeared", stopAnimation);
+        keyClickSub = messageBus.subscribe("keyClicked", stopAnimation);
+        fingerClickSub = messageBus.subscribe("fingerClicked", stopAnimation);
     }
 
     globalActiveHintCleanup = stopAnimation;
 
-    function runCycle() {
+    function startPopIn(onPopComplete) {
         if (isStopped || !hand) return;
-
-        hand.setFrame("hinthandopen");
+        hand.setFrame(initialFrame);
         hand.setPosition(startX, startY);
         hand.setRotation(0);
         hand.setScale(0);
         hand.setAlpha(0);
 
-        // 1. Pop-in
         let popTween = globalScene.tweens.add({
             targets: hand,
             scaleX: 1,
@@ -412,42 +218,151 @@ function playGrabAtAnimation(targetX, targetY, onCompleteCallback) {
             ease: "Back.easeOut",
             onComplete: () => {
                 if (isStopped || !hand) return;
-
-                // 2. Move to target position (no offset)
-                let moveTween = globalScene.tweens.add({
-                    targets: hand,
-                    x: targetX,
-                    y: targetY,
-                    duration: 1250,
-                    ease: "Cubic.easeInOut",
-                    completeDelay: 500,
-                    onComplete: () => {
-                        if (isStopped || !hand) return;
-
-                        // Transform to hinthandclose
-                        hand.setFrame("hinthandclose");
-
-                        if (onCompleteCallback) {
-                            onCompleteCallback({
-                                hand,
-                                isStopped: () => isStopped,
-                                activeTweens,
-                                restartCycle: runCycle,
-                                stopAnimation
-                            });
-                        }
-                    }
-                });
-                activeTweens.push(moveTween);
+                if (onPopComplete) onPopComplete();
             }
         });
         activeTweens.push(popTween);
     }
 
+    return {
+        hand,
+        startX,
+        startY,
+        isStopped: () => isStopped,
+        activeTweens,
+        stopAnimation,
+        startPopIn
+    };
+}
+
+function playPointHintAnimation(targetX, targetY, offsetY = -40, isLongPress = false) {
+    let base = createBaseHintHand("hinthandopen");
+    if (!base) return;
+    let { hand, isStopped, activeTweens, startPopIn } = base;
+
+    let destinationX = targetX;
+    let destinationY = targetY + offsetY;
+
+    function runAnimationCycle() {
+        if (isStopped() || !hand) return;
+
+        startPopIn(() => {
+            let moveTween = globalScene.tweens.add({
+                targets: hand,
+                x: destinationX,
+                y: destinationY,
+                duration: 1250,
+                ease: "Cubic.easeInOut",
+                onStart: () => {
+                    if (hand) hand.setFrame("hinthandpointer");
+                },
+                onComplete: () => {
+                    if (isStopped() || !hand) return;
+
+                    let rotateTween = globalScene.tweens.add({
+                        targets: hand,
+                        angle: -165,
+                        duration: 350,
+                        ease: "Cubic.easeOut",
+                        onComplete: () => {
+                            if (isStopped() || !hand) return;
+
+                            let holdDuration = isLongPress ? 500 : 0;
+                            let pressDownTween = globalScene.tweens.add({
+                                targets: hand,
+                                y: destinationY + 25,
+                                duration: 120,
+                                ease: "Quad.easeOut",
+                                onComplete: () => {
+                                    if (isStopped() || !hand) return;
+
+                                    let releaseUpTween = globalScene.tweens.add({
+                                        targets: hand,
+                                        y: destinationY,
+                                        duration: 120,
+                                        delay: holdDuration,
+                                        ease: "Quad.easeIn",
+                                        onComplete: () => {
+                                            if (isStopped() || !hand) return;
+
+                                            let fadeTween = globalScene.tweens.add({
+                                                targets: hand,
+                                                alpha: 0,
+                                                duration: 400,
+                                                delay: 200,
+                                                onComplete: () => {
+                                                    if (isStopped() || !hand) return;
+
+                                                    if (globalScene && globalScene.time) {
+                                                        globalScene.time.delayedCall(500, () => {
+                                                            if (!isStopped() && hand) {
+                                                                runAnimationCycle();
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                            activeTweens.push(fadeTween);
+                                        }
+                                    });
+                                    activeTweens.push(releaseUpTween);
+                                }
+                            });
+                            activeTweens.push(pressDownTween);
+                        }
+                    });
+                    activeTweens.push(rotateTween);
+                }
+            });
+            activeTweens.push(moveTween);
+        });
+    }
+
+    runAnimationCycle();
+}
+
+function playGrabAtAnimation(targetX, targetY, onCompleteCallback) {
+    let base = createBaseHintHand("hinthandopen");
+    if (!base) return;
+    let { hand, isStopped, activeTweens, startPopIn, stopAnimation } = base;
+
+    function runCycle() {
+        if (isStopped() || !hand) return;
+
+        startPopIn(() => {
+            let moveTween = globalScene.tweens.add({
+                targets: hand,
+                x: targetX,
+                y: targetY,
+                duration: 1250,
+                ease: "Cubic.easeInOut",
+                onComplete: () => {
+                    if (isStopped() || !hand) return;
+
+                    hand.setFrame("hinthandclose");
+
+                    if (onCompleteCallback) {
+                        gameDelay(() => {
+                            if (isStopped() || !hand) return;
+                            onCompleteCallback({
+                                hand,
+                                isStopped,
+                                activeTweens,
+                                restartCycle: runCycle,
+                                stopAnimation
+                            });
+                        }, 300);
+                    }
+                }
+            });
+            activeTweens.push(moveTween);
+        });
+    }
+
     runCycle();
 }
 
-function playClockwiseArcAnimation(context, pivotX, pivotY, sweepAngleDeg = 80, durationMs = 1500, onCompleteCallback) {
+function playClockwiseArcAnimation(context, pivotX, pivotY, sweepAngleDeg = 80, durationMs = 1000, onCompleteCallback) {
     let { hand, isStopped, activeTweens } = context;
     if (isStopped() || !hand) return;
 
@@ -461,7 +376,7 @@ function playClockwiseArcAnimation(context, pivotX, pivotY, sweepAngleDeg = 80, 
     let arcTween = globalScene.tweens.add({
         targets: progressObj,
         progress: 1,
-        duration: durationMs,
+        duration: durationMs * 2,
         ease: "Cubic.easeInOut",
         onUpdate: () => {
             if (isStopped() || !hand) return;
@@ -527,93 +442,214 @@ function getFaucetHandleAndPivot() {
     return { handleX, handleY, pivotX: leverX, pivotY: leverY };
 }
 
-function handleFaucetHint(state) {
-    let rightPos = getMoveRightPos();
-    let leftPos = getMoveLeftPos();
-
-    switch (state) {
-        case "normal":
-        case "horror":
-            if (isMoveRightEnabled()) {
-                playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
-            } else {
-                let { handleX, handleY, pivotX, pivotY } = getFaucetHandleAndPivot();
-                playGrabAtAnimation(handleX, handleY, (context) => {
-                    playClockwiseArcAnimation(context, pivotX, pivotY, 80, 800, (ctx) => {
-                        playFadeOutAnimation(ctx, 200, 400);
-                    });
-                });
-            }
-            break;
-        case "dark":
-            if (isMoveLeftEnabled()) {
-                playPointHintAnimation(leftPos.x, leftPos.y, -40, false);
-            } else {
-                let { handleX, handleY, pivotX, pivotY } = getFaucetHandleAndPivot();
-                playGrabAtAnimation(handleX, handleY, (context) => {
-                    playClockwiseArcAnimation(context, pivotX, pivotY, -80, 1500, (ctx) => {
-                        playFadeOutAnimation(ctx, 200, 400);
-                    });
-                });
-            }
-            break;
+function handleEntranceHint(state) {
+    if (!tryPlayMoveButtonHint(state)) {
+        console.log(`Hint: Entrance Room (${state} State)`);
     }
+}
+
+function handlePumpHint(state) {
+    if (tryPlayMoveButtonHint(state)) return;
+
+    if (state === "dark") {
+        let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+        let floatyX = halfW + 135;
+        let floatyY = (typeof gameObjects !== "undefined" && gameObjects.roomPumpObjs && gameObjects.roomPumpObjs.floaty)
+            ? gameObjects.roomPumpObjs.floaty.y
+            : (((typeof gameVars !== "undefined") ? gameVars.halfHeight : 460) + 175);
+        if (typeof gameObjects !== "undefined" && gameObjects.roomPumpObjs && gameObjects.roomPumpObjs.cleanupBtn && gameObjects.roomPumpObjs.cleanupBtn.getPosX() !== 0) {
+            floatyX = halfW + gameObjects.roomPumpObjs.cleanupBtn.getPosX();
+            floatyY = gameObjects.roomPumpObjs.cleanupBtn.getPosY();
+        }
+        playPointHintAnimation(floatyX, floatyY, -40, false);
+    } else {
+        let fanX = ((typeof gameVars !== "undefined") ? gameVars.halfWidth : 605) - 240;
+        let fanY = (typeof gameObjects !== "undefined" && gameObjects.roomPumpObjs && gameObjects.roomPumpObjs.button)
+            ? gameObjects.roomPumpObjs.button.y
+            : 492;
+        playPointHintAnimation(fanX + 18, fanY, -110, true);
+    }
+}
+
+function handleFaucetHint(state) {
+    if (tryPlayMoveButtonHint(state)) return;
+
+    let { handleX, handleY, pivotX, pivotY } = getFaucetHandleAndPivot();
+    let sweepAngle = (state === "dark") ? -80 : 80;
+    let duration = (state === "dark") ? 1500 : 800;
+
+    playGrabAtAnimation(handleX, handleY, (context) => {
+        playClockwiseArcAnimation(context, pivotX, pivotY, sweepAngle, duration, (ctx) => {
+            playFadeOutAnimation(ctx, 200, 400);
+        });
+    });
 }
 
 function handleClown1Hint(state) {
-    switch (state) {
-        case "normal":
-            console.log("Hint: Clown Room 1 (Normal State)");
-            break;
-        case "dark":
-            console.log("Hint: Clown Room 1 (Dark State)");
-            break;
-        case "horror":
-            console.log("Hint: Clown Room 1 (Horror State)");
-            break;
+    let nose = getClownNosePos("roomClown1", 12, 73);
+    playPointHintAnimation(nose.x + 20, nose.y, -100, false);
+}
+
+function playBrokenHintAnimation(targetX, targetY, offsetY = -40) {
+    let base = createBaseHintHand("hinthandbroken");
+    if (!base) return;
+    let { hand, isStopped, activeTweens, stopAnimation, startPopIn } = base;
+
+    let destinationX = targetX;
+    let destinationY = targetY + offsetY;
+
+    startPopIn(() => {
+        let moveTween = globalScene.tweens.add({
+            targets: hand,
+            x: destinationX,
+            y: destinationY,
+            duration: 4000,
+            ease: "Linear",
+            onComplete: () => {
+                if (isStopped() || !hand) return;
+                stopAnimation();
+                triggerGlitchAndFlash(3, 3);
+            }
+        });
+        activeTweens.push(moveTween);
+    });
+}
+
+function getClownNosePos(roomKey, defaultOffX, defaultOffY) {
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let halfH = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
+
+    let noseX = halfW + defaultOffX;
+    let noseY = halfH + defaultOffY;
+
+    if (typeof gameObjects !== "undefined" && gameObjects[roomKey] && gameObjects[roomKey].nose) {
+        noseX = halfW + gameObjects[roomKey].nose.getPosX();
+        noseY = gameObjects[roomKey].nose.getPosY();
     }
+    return { x: noseX, y: noseY };
+}
+
+function getActiveFingerPos() {
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let halfH = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
+
+    let x = halfW - 420;
+    let y = halfH - 80;
+
+    if (typeof gameObjects !== "undefined" && gameObjects.roomHandyObjs && gameObjects.roomHandyObjs.fingerButton) {
+        x = halfW + gameObjects.roomHandyObjs.fingerButton.getPosX();
+        y = gameObjects.roomHandyObjs.fingerButton.getPosY();
+    } else if (typeof gameObjects !== "undefined" && gameObjects.roomHandyObjs && gameObjects.roomHandyObjs.listOfButtonPos) {
+        let stateIdx = gameObjects.roomHandyObjs.fingerState || 0;
+        let pos = gameObjects.roomHandyObjs.listOfButtonPos[stateIdx] || gameObjects.roomHandyObjs.listOfButtonPos[0];
+        x = halfW + pos.x;
+        y = pos.y;
+    }
+    return { x, y };
 }
 
 function handleHandyHint(state) {
-    switch (state) {
-        case "normal":
-            console.log("Hint: Handy Room (Normal State)");
-            break;
-        case "dark":
-            console.log("Hint: Handy Room (Dark State)");
-            break;
-        case "horror":
-            console.log("Hint: Handy Room (Horror State)");
-            break;
+    let fingerPos = getActiveFingerPos();
+
+    if (state === "horror" && isMoveRightEnabled()) {
+        let rightPos = getMoveRightPos();
+        playBrokenHintAnimation(rightPos.x, rightPos.y, -40);
+        return;
     }
+
+    if (tryPlayMoveButtonHint(state)) return;
+
+    playPointHintAnimation(fingerPos.x + 20, fingerPos.y, -100, false);
+}
+
+function getStretchHandAndDropPos() {
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+
+    let handX = halfW - 120;
+    let handY = 630;
+
+    if (typeof gameObjects !== "undefined" && gameObjects.roomStretchObjs) {
+        if (gameObjects.roomStretchObjs.handButton) {
+            handX = halfW + gameObjects.roomStretchObjs.handButton.getPosX();
+            handY = gameObjects.roomStretchObjs.handButton.getPosY();
+        } else if (gameObjects.roomStretchObjs.hand) {
+            handX = halfW + gameObjects.roomStretchObjs.hand.x;
+            handY = gameObjects.roomStretchObjs.hand.y;
+        }
+    }
+
+    let dropX = halfW + 204;
+    let dropY = 380;
+
+    if (typeof gameObjects !== "undefined" && gameObjects.roomStretchObjs && gameObjects.roomStretchObjs.touchspot) {
+        dropX = halfW + gameObjects.roomStretchObjs.touchspot.x;
+        dropY = gameObjects.roomStretchObjs.touchspot.y;
+    }
+
+    return { handX, handY, dropX, dropY };
 }
 
 function handleStretchHint(state) {
+    let rightPos = getMoveRightPos();
+    let leftPos = getMoveLeftPos();
+    let { handX, handY, dropX, dropY } = getStretchHandAndDropPos();
+
+    let hintButtonX = (typeof gameVars !== "undefined") ? (gameVars.width - 140) : 1070;
+    let hintButtonY = 51;
+    let startX = hintButtonX - 40;
+    let startY = hintButtonY + 40;
+
     switch (state) {
         case "normal":
-            console.log("Hint: Stretch Room (Normal State)");
+            if (isMoveRightEnabled()) {
+                playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
+            } else {
+                playGrabAtAnimation(handX, handY, (context) => {
+                    let { hand, isStopped, activeTweens } = context;
+                    if (isStopped() || !hand) return;
+
+                    let moveToDropTween = globalScene.tweens.add({
+                        targets: hand,
+                        x: dropX,
+                        y: dropY,
+                        duration: 1250,
+                        ease: "Cubic.easeInOut",
+                        onComplete: () => {
+                            if (isStopped() || !hand) return;
+                            playFadeOutAnimation(context, 200, 400);
+                        }
+                    });
+                    activeTweens.push(moveToDropTween);
+                });
+            }
             break;
         case "dark":
-            console.log("Hint: Stretch Room (Dark State)");
+            if (!isDarkCleanupNeeded()) {
+                playPointHintAnimation(leftPos.x, leftPos.y, -40, false);
+            } else {
+                playPointHintAnimation(dropX, dropY, -40, false);
+            }
             break;
         case "horror":
-            console.log("Hint: Stretch Room (Horror State)");
+            let destX = isMoveRightEnabled() ? rightPos.x : handX;
+            let destY = isMoveRightEnabled() ? (rightPos.y - 40) : handY;
+
+            let midX = startX + 0.6 * (destX - startX);
+            let midY = startY + 0.6 * (destY - startY);
+
+            playBrokenHintAnimation(midX, midY, 0);
             break;
     }
 }
 
 function handleClown2Hint(state) {
-    switch (state) {
-        case "normal":
-            console.log("Hint: Clown Room 2 (Normal State)");
-            break;
-        case "dark":
-            console.log("Hint: Clown Room 2 (Dark State)");
-            break;
-        case "horror":
-            console.log("Hint: Clown Room 2 (Horror State)");
-            break;
+    if (isMoveRightEnabled()) {
+        let rightPos = getMoveRightPos();
+        playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
+        return;
     }
+    let nose = getClownNosePos("roomClown2", 19, -14);
+    playPointHintAnimation(nose.x + 20, nose.y, -100, false);
 }
 
 function handleFlowerHint(roomIndex, state) {
@@ -630,31 +666,170 @@ function handleFlowerHint(roomIndex, state) {
     }
 }
 
+function getJackHandleAndPivot() {
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+
+    let pivotX = halfW;
+    let pivotY = 670;
+
+    if (typeof gameObjects !== "undefined" && gameObjects.roomJackObjs && gameObjects.roomJackObjs.spinner) {
+        pivotX = halfW + gameObjects.roomJackObjs.spinner.x;
+        pivotY = gameObjects.roomJackObjs.spinner.y;
+    }
+
+    let handleX = pivotX + 121;
+    let handleY = pivotY;
+
+    if (typeof gameObjects !== "undefined" && gameObjects.roomJackObjs && gameObjects.roomJackObjs.spinnerButton) {
+        handleX = halfW + gameObjects.roomJackObjs.spinnerButton.getPosX();
+        handleY = gameObjects.roomJackObjs.spinnerButton.getPosY();
+    }
+
+    return { handleX, handleY, pivotX, pivotY };
+}
+
 function handleJackHint(state) {
+    let rightPos = getMoveRightPos();
+    let leftPos = getMoveLeftPos();
+    let { handleX, handleY, pivotX, pivotY } = getJackHandleAndPivot();
+
+    let hintButtonX = (typeof gameVars !== "undefined") ? (gameVars.width - 140) : 1070;
+    let hintButtonY = 51;
+    let startX = hintButtonX - 40;
+    let startY = hintButtonY + 40;
+
+    let centerX = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let centerY = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
     switch (state) {
         case "normal":
-            console.log("Hint: Jack in the Box Room (Normal State)");
+            if (isMoveRightEnabled()) {
+                playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
+            } else {
+                playGrabAtAnimation(handleX, handleY, (context) => {
+                    playClockwiseArcAnimation(context, pivotX, pivotY, 270, 1000, (ctx) => {
+                        playFadeOutAnimation(ctx, 200, 400);
+                    });
+                });
+            }
+
             break;
         case "dark":
-            console.log("Hint: Jack in the Box Room (Dark State)");
+            if (!isDarkCleanupNeeded()) {
+                playPointHintAnimation(leftPos.x, leftPos.y, -40, false);
+            } else {
+                playGrabAtAnimation(handleX, handleY, (context) => {
+                    playClockwiseArcAnimation(context, pivotX, pivotY, -180, 1000, (ctx) => {
+                        playFadeOutAnimation(ctx, 200, 400);
+                    });
+                });
+            }
             break;
         case "horror":
-            console.log("Hint: Jack in the Box Room (Horror State)");
+            let midX = startX + 0.6 * (centerX - startX);
+            let midY = startY + 0.6 * (centerY - startY);
+            playBrokenHintAnimation(midX, midY, 0);
             break;
     }
 }
 
+function playPointHintAnimationGlitch(targetX, targetY, offsetY = -40) {
+    let base = createBaseHintHand("hinthandopen");
+    if (!base) return;
+    let { hand, isStopped, activeTweens, stopAnimation, startPopIn } = base;
+
+    let destinationX = targetX;
+    let destinationY = targetY + offsetY;
+
+    startPopIn(() => {
+        let moveTween = globalScene.tweens.add({
+            targets: hand,
+            x: destinationX,
+            y: destinationY,
+            duration: 1250,
+            ease: "Cubic.easeInOut",
+            onStart: () => {
+                if (hand) hand.setFrame("hinthandpointer");
+            },
+            onComplete: () => {
+                if (isStopped() || !hand) return;
+                stopAnimation();
+                triggerGlitchAndFlash(3, 3);
+            }
+        });
+        activeTweens.push(moveTween);
+    });
+}
+
 function handleClown3Hint(state) {
+    let nose = getClownNosePos("roomClown3", 25.5, -83);
+    let leftPos = getMoveLeftPos();
+
+    let hintButtonX = (typeof gameVars !== "undefined") ? (gameVars.width - 140) : 1070;
+    let hintButtonY = 51;
+    let startX = hintButtonX - 40;
+    let startY = hintButtonY + 40;
+
+    let centerX = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let centerY = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
+
     switch (state) {
         case "normal":
-            console.log("Hint: Clown Room 3 (Normal State)");
+            playPointHintAnimationGlitch(nose.x, nose.y, -40);
             break;
         case "dark":
-            console.log("Hint: Clown Room 3 (Dark State)");
+            playPointHintAnimation(leftPos.x, leftPos.y, -40, false);
             break;
         case "horror":
-            console.log("Hint: Clown Room 3 (Horror State)");
+            let midX = startX + 0.6 * (centerX - startX);
+            let midY = startY + 0.6 * (centerY - startY);
+            playBrokenHintAnimation(midX, midY, 0);
             break;
+    }
+}
+
+function getLightSwitchPos() {
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let x = halfW - 395;
+    let y = 550;
+    if (typeof gameObjects !== "undefined" && gameObjects.powerSwitch) {
+        x = halfW + gameObjects.powerSwitch.getPosX();
+        y = gameObjects.powerSwitch.getPosY();
+    }
+    return { x, y };
+}
+
+function getExitDoorPos() {
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let x = halfW - 215;
+    let y = 507;
+    if (typeof gameObjects !== "undefined" && gameObjects.exitDoor) {
+        x = halfW + gameObjects.exitDoor.getPosX();
+        y = gameObjects.exitDoor.getPosY();
+    }
+    return { x, y };
+}
+
+function isExitDoorDisabled() {
+    if (typeof gameObjects !== "undefined" && gameObjects.exitDoor) {
+        return gameObjects.exitDoor.state === "disable";
+    }
+    if (typeof gameVarsTemp !== "undefined" && gameVarsTemp.doorFailed) {
+        return true;
+    }
+    return false;
+}
+
+function handleIntroHint(state) {
+    let rightPos = getMoveRightPos();
+    let switchPos = getLightSwitchPos();
+    let doorPos = getExitDoorPos();
+
+    if (state === "dark") {
+        playPointHintAnimation(switchPos.x, switchPos.y, -40, false);
+    } else if (state === "horror" && isExitDoorDisabled()) {
+        playPointHintAnimation(rightPos.x, rightPos.y, -40, false);
+    } else {
+        playPointHintAnimation(doorPos.x, doorPos.y, -40, false);
     }
 }
 
@@ -666,7 +841,7 @@ function handleHintPress() {
 
     switch (currentRoomIndex) {
         case 0:
-            console.log("Hint requested on Intro Screen - doing nothing.");
+            handleIntroHint(state);
             break;
         case 1:
             handleEntranceHint(state);
@@ -716,6 +891,35 @@ function showHint() {
     handleHintPress();
 }
 
+function isHintDisabledForRoom(roomIndex) {
+    return (roomIndex >= 8 && roomIndex <= 12) || roomIndex === 15;
+}
+
+function setHintButtonEnabled(enabled) {
+    if (typeof gameObjects === "undefined" || !gameObjects) return;
+
+    if (gameObjects.hintButton) {
+        gameObjects.hintButton.setState(enabled ? "normal" : "disable");
+    }
+}
+
+function updateHintButtonForRoom(roomIndex) {
+    if (typeof roomIndex === "undefined" && typeof gameObjects !== "undefined" && gameObjects.exhibit) {
+        roomIndex = gameObjects.exhibit.currentScene;
+    }
+    let disabled = isHintDisabledForRoom(roomIndex);
+    setHintButtonEnabled(!disabled);
+}
+
+if (typeof messageBus !== "undefined" && messageBus) {
+    messageBus.subscribe("exhibitMove", (newRoomIndex) => {
+        updateHintButtonForRoom(newRoomIndex);
+    });
+    messageBus.subscribe("exhibitMoveComplete", (newRoomIndex) => {
+        updateHintButtonForRoom(newRoomIndex);
+    });
+}
+
 function updateHintCounter(count) {
     if (typeof gameVars !== "undefined") {
         gameVars.hintCount = Math.max(0, count);
@@ -726,6 +930,15 @@ function updateHintCounter(count) {
 }
 
 function onHintButtonPressed() {
+    let currentRoomIndex = (typeof gameObjects !== "undefined" && gameObjects && gameObjects.exhibit)
+        ? gameObjects.exhibit.currentScene
+        : 1;
+
+    if (isHintDisabledForRoom(currentRoomIndex)) {
+        console.log(`Hint button is disabled in room ${currentRoomIndex}.`);
+        return;
+    }
+
     let currentHints = (typeof gameVars !== "undefined" && gameVars.hintCount !== undefined) ? gameVars.hintCount : 1;
     if (currentHints >= 1) {
         updateHintCounter(currentHints - 1);
@@ -748,7 +961,7 @@ function onHintButtonPressed() {
                 onFinished: () => {
                     showHint();
                 }
-            }, 'hint');
+            });
         } else {
             showHint();
         }
