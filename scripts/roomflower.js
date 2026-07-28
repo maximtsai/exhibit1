@@ -131,6 +131,17 @@ function setupRoomFlower5(scene, roomIndex, roomContainer) {
             gameObjects.generalDarkness.scaleX = 0;
             gameObjects.generalDarkness.scaleY = 0;
 
+            if (typeof showStaticLite === "function") {
+                showStaticLite(6, 12, 2.5, 0.4);
+            }
+            if (typeof showStaticRand === "function") {
+                showStaticRand(2);
+            }
+
+            if (typeof messageBus !== "undefined" && messageBus) {
+                messageBus.publish("switchToSet2Buttons");
+            }
+
             globalScene.tweens.add({
                 targets: gameObjects.roomJackObjs.lights,
                 alpha: 0.7,

@@ -962,7 +962,15 @@ function updateHintCounter(count) {
         gameVars.hintCount = Math.max(0, count);
     }
     if (typeof gameObjects !== "undefined" && gameObjects && gameObjects.hintCountText) {
-        gameObjects.hintCountText.setText(String(gameVars ? gameVars.hintCount : 0));
+        let val = (gameVars && gameVars.hintCount > 0) ? String(gameVars.hintCount) : "▷";
+        gameObjects.hintCountText.setText(val);
+        if (gameVars && gameVars.hintCount > 0 && typeof globalScene !== "undefined" && globalScene && globalScene.tweens) {
+            if (gameObjects.hintCountCircle && gameObjects.hintCountText) {
+                globalScene.tweens.killTweensOf([gameObjects.hintCountCircle, gameObjects.hintCountText]);
+                gameObjects.hintCountCircle.setScale(0.56);
+                gameObjects.hintCountText.setScale(0.56);
+            }
+        }
     }
 }
 
@@ -994,6 +1002,9 @@ function onHintButtonPressed() {
                 },
                 (err) => {
                     console.warn("Rewarded ad failed or closed early:", err);
+                    if (typeof updateInfoTextSoft === "function") {
+                        updateInfoTextSoft("AD HINT FAILED", 2500);
+                    }
                 }
             );
         } else if (window.GameSDK && typeof window.GameSDK.showAd === 'function') {
@@ -1003,6 +1014,12 @@ function onHintButtonPressed() {
                     let currentHints = (typeof gameVars !== "undefined" && gameVars.hintCount !== undefined) ? gameVars.hintCount : 0;
                     updateHintCounter(currentHints + 1);
                     showHint();
+                },
+                onError: (err) => {
+                    console.warn("Rewarded ad error:", err);
+                    if (typeof updateInfoTextSoft === "function") {
+                        updateInfoTextSoft("AD HINT FAILED", 2500);
+                    }
                 }
             });
         } else {

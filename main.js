@@ -834,7 +834,7 @@ function beginGameplay(a) {
         ref: "hint_normal",
         x: gameVars.width - 140,
         y: 51,
-        alpha: 0.85
+        alpha: 0.94
     }, {
         atlas: "buttons",
         ref: "hint_hover",
@@ -855,11 +855,12 @@ function beginGameplay(a) {
     gameObjects.hintCountCircle = a.add.image(gameVars.width - 140 + 25, 51 + 25, "buttons", "circle");
     gameObjects.hintCountCircle.setScrollFactor(0);
     gameObjects.hintCountCircle.setDepth(1002);
+    gameObjects.hintCountCircle.setScale(0.56);
     gameObjects.topBtnCntr.add(gameObjects.hintCountCircle);
 
-    gameObjects.hintCountText = a.add.text(gameVars.width - 140 + 25, 51 + 25, String(gameVars.hintCount), {
+    gameObjects.hintCountText = a.add.text(gameVars.width - 140 + 25, 51 + 25, (gameVars && gameVars.hintCount > 0) ? String(gameVars.hintCount) : "▷", {
         fontFamily: "Arial",
-        fontSize: "18px",
+        fontSize: "32px",
         fontStyle: "bold",
         color: "#ffffff",
         align: "center"
@@ -867,20 +868,48 @@ function beginGameplay(a) {
     gameObjects.hintCountText.setOrigin(0.5, 0.5);
     gameObjects.hintCountText.setScrollFactor(0);
     gameObjects.hintCountText.setDepth(1003);
+    gameObjects.hintCountText.setScale(0.56);
     gameObjects.topBtnCntr.add(gameObjects.hintCountText);
+
+    gameObjects.hintButton.setOnHoverFunc(() => {
+        if (typeof gameVars !== "undefined" && gameVars.hintCount === 0 && globalScene && globalScene.tweens) {
+            globalScene.tweens.killTweensOf([gameObjects.hintCountCircle, gameObjects.hintCountText]);
+            globalScene.tweens.add({
+                targets: [gameObjects.hintCountCircle, gameObjects.hintCountText],
+                scaleX: 1,
+                scaleY: 1,
+                duration: 350,
+                ease: "Bounce.easeOut"
+            });
+        }
+    });
+
+    gameObjects.hintButton.setOnHoverOutFunc(() => {
+        if (globalScene && globalScene.tweens && gameObjects.hintCountCircle && gameObjects.hintCountText) {
+            globalScene.tweens.killTweensOf([gameObjects.hintCountCircle, gameObjects.hintCountText]);
+            globalScene.tweens.add({
+                targets: [gameObjects.hintCountCircle, gameObjects.hintCountText],
+                scaleX: 0.56,
+                scaleY: 0.56,
+                duration: 200,
+                ease: "Cubic.easeOut"
+            });
+        }
+    });
 
     // Sound Mute Button (Top Right)
     gameObjects.muteButton = new Button(a, gameObjects.topBtnCntr, () => {
         gameVars.manualMuted = !gameVars.manualMuted;
 
+        let suffix = gameVars.darkPoint ? "2" : "";
         if (gameVars.manualMuted) {
-            gameObjects.muteButton.setNormalRef("sfx_muted_normal");
-            gameObjects.muteButton.setHoverRef("sfx_muted_hover");
-            gameObjects.muteButton.setPressRef("sfx_muted_hover");
+            gameObjects.muteButton.setNormalRef("sfx_muted_normal" + suffix);
+            gameObjects.muteButton.setHoverRef("sfx_muted_hover" + suffix);
+            gameObjects.muteButton.setPressRef("sfx_muted_hover" + suffix);
         } else {
-            gameObjects.muteButton.setNormalRef("sfx_normal");
-            gameObjects.muteButton.setHoverRef("sfx_hover");
-            gameObjects.muteButton.setPressRef("sfx_hover");
+            gameObjects.muteButton.setNormalRef("sfx_normal" + suffix);
+            gameObjects.muteButton.setHoverRef("sfx_hover" + suffix);
+            gameObjects.muteButton.setPressRef("sfx_hover" + suffix);
         }
 
         // Phaser's global mute silences everything in one place - including the
@@ -897,7 +926,7 @@ function beginGameplay(a) {
         ref: gameVars.manualMuted ? "sfx_muted_normal" : "sfx_normal",
         x: gameVars.width - 58,
         y: 51,
-        alpha: 0.85
+        alpha: 0.94
     }, {
         atlas: "buttons",
         ref: gameVars.manualMuted ? "sfx_muted_hover" : "sfx_hover",
@@ -1399,7 +1428,62 @@ function tempFreeze(a = 1e3) {
 function initOneTimeListeners() {
     let a;
     a = messageBus.subscribe("startDarkSequence", b => {
-        a.unsubscribe(), gameObjects.entrance.entryLights1.alpha = 0, gameObjects.entrance.entryLights2.alpha = 0, removeFromUpdateFuncList(flipEntryLights), gameObjects.entrance.welcomeBtn.setState("disable")
+        a.unsubscribe(), gameObjects.entrance.entryLights1.alpha = 0, gameObjects.entrance.entryLights2.alpha = 0, removeFromUpdateFuncList(flipEntryLights), gameObjects.entrance.welcomeBtn.setState("disable");
+
+        if (gameObjects.hintButton) {
+            gameObjects.hintButton.setNormalRef("hint_normal2");
+            gameObjects.hintButton.setHoverRef("hint_hover2");
+            gameObjects.hintButton.setPressRef("hint_hover2");
+        }
+        if (gameObjects.muteButton) {
+            if (gameVars.manualMuted) {
+                gameObjects.muteButton.setNormalRef("sfx_muted_normal2");
+                gameObjects.muteButton.setHoverRef("sfx_muted_hover2");
+                gameObjects.muteButton.setPressRef("sfx_muted_hover2");
+            } else {
+                gameObjects.muteButton.setNormalRef("sfx_normal2");
+                gameObjects.muteButton.setHoverRef("sfx_hover2");
+                gameObjects.muteButton.setPressRef("sfx_hover2");
+            }
+        }
+    });
+
+    messageBus.subscribe("powerTurnedOn", () => {
+        if (gameObjects.hintButton) {
+            gameObjects.hintButton.setNormalRef("hint_normal");
+            gameObjects.hintButton.setHoverRef("hint_hover");
+            gameObjects.hintButton.setPressRef("hint_hover");
+        }
+        if (gameObjects.muteButton) {
+            if (gameVars.manualMuted) {
+                gameObjects.muteButton.setNormalRef("sfx_muted_normal");
+                gameObjects.muteButton.setHoverRef("sfx_muted_hover");
+                gameObjects.muteButton.setPressRef("sfx_muted_hover");
+            } else {
+                gameObjects.muteButton.setNormalRef("sfx_normal");
+                gameObjects.muteButton.setHoverRef("sfx_hover");
+                gameObjects.muteButton.setPressRef("sfx_hover");
+            }
+        }
+    });
+
+    messageBus.subscribe("switchToSet2Buttons", () => {
+        if (gameObjects.hintButton) {
+            gameObjects.hintButton.setNormalRef("hint_normal2");
+            gameObjects.hintButton.setHoverRef("hint_hover2");
+            gameObjects.hintButton.setPressRef("hint_hover2");
+        }
+        if (gameObjects.muteButton) {
+            if (gameVars.manualMuted) {
+                gameObjects.muteButton.setNormalRef("sfx_muted_normal2");
+                gameObjects.muteButton.setHoverRef("sfx_muted_hover2");
+                gameObjects.muteButton.setPressRef("sfx_muted_hover2");
+            } else {
+                gameObjects.muteButton.setNormalRef("sfx_normal2");
+                gameObjects.muteButton.setHoverRef("sfx_hover2");
+                gameObjects.muteButton.setPressRef("sfx_hover2");
+            }
+        }
     });
     let b;
     b = messageBus.subscribe("startHorrorSequence", e => {
