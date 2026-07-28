@@ -974,7 +974,11 @@ function updateHintCounter(count) {
     }
 }
 
+let isHintOnCooldown = false;
+
 function onHintButtonPressed() {
+    if (isHintOnCooldown) return;
+
     let currentRoomIndex = (typeof gameObjects !== "undefined" && gameObjects && gameObjects.exhibit)
         ? gameObjects.exhibit.currentScene
         : 1;
@@ -984,6 +988,10 @@ function onHintButtonPressed() {
         return;
     }
 
+    isHintOnCooldown = true;
+    setTimeout(() => {
+        isHintOnCooldown = false;
+    }, 1200);
     let currentHints = (typeof gameVars !== "undefined" && gameVars.hintCount !== undefined) ? gameVars.hintCount : 1;
     if (currentHints >= 1) {
         updateHintCounter(currentHints - 1);
