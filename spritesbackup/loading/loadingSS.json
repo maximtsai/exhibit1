@@ -1,7 +1,7 @@
 {
 	"textures": [
 		{
-			"image": "sprites/loading/loadingSS.webp",
+			"image": "sprites/loading/loadingSS.png",
 			"format": "RGBA8888",
 			"size": {
 				"h": 1656,

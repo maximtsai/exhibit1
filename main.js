@@ -4,7 +4,7 @@ function testMobile() {
 }
 
 let isMobile = testMobile();
-
+console.log("Test");
 var currentResize;
 if (window.GameSDK && typeof window.GameSDK.init === 'function') window.GameSDK.init();
 
@@ -198,7 +198,7 @@ let deferredImages = [
     ["balloon3", "sprites/altreality/balloon3.jpg"],
     ["balloon4", "sprites/altreality/balloon4.jpg"],
     ["balloon5", "sprites/altreality/balloon5.jpg"],
-    ["candleDark", "sprites/candleDark.png"],
+    ["candleDark", "sprites/candleDark.webp"],
     ["redlight", "sprites/redlight.png"]
 ];
 let deferredAudioLoaded = !1;

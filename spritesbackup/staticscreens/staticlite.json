@@ -1,7 +1,7 @@
 {
 	"textures": [
 		{
-			"image": "sprites/staticscreens/staticlite.webp",
+			"image": "sprites/staticscreens/staticlite.png",
 			"format": "RGBA8888",
 			"size": {
 				"h": 520,

@@ -1,7 +1,7 @@
 {
 	"textures": [
 		{
-			"image": "sprites/flashscreens/flashscreens.webp",
+			"image": "sprites/flashscreens/flashscreens.png",
 			"format": "RGBA8888",
 			"size": {
 				"h": 3314,

@@ -1,7 +1,7 @@
 {
 	"textures": [
 		{
-			"image": "sprites/roomjack/roomjack.webp",
+			"image": "sprites/roomjack/roomjack.png",
 			"format": "RGBA8888",
 			"size": {
 				"h": 3195,

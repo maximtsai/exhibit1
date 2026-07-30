@@ -1,7 +1,7 @@
 {
 	"textures": [
 		{
-			"image": "sprites/buttons/buttons.webp",
+			"image": "sprites/buttons/buttons.png",
 			"format": "RGBA8888",
 			"size": {
 				"h": 2991,
