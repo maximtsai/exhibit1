@@ -432,37 +432,34 @@
         async showAd(type = 'midgame', callbacks = {}, rewardId = 'default-reward') {
             if (!this.yt || !this.yt.ads) {
                 console.log(`[YouTubePlayablesAdapter] showAd(${type}) — ytgame.ads not available.`);
+                // Do not treat missing ads as a successful rewarded view.
+                if (type === 'rewarded') {
+                    if (callbacks.onError) callbacks.onError('ads_unavailable');
+                    return false;
+                }
                 if (callbacks.onFinished) callbacks.onFinished();
                 return true;
             }
             try {
                 if (callbacks.onStarted) callbacks.onStarted();
 
-                // The ad calls resolve with an AdResult enum:
-                // { UNKNOWN: 0, SHOWED: 1, DISMISSED: 2, REJECTED: 3 }.
-                // Only SHOWED means the ad actually played - DISMISSED and
-                // REJECTED are truthy, so a plain truthiness test hands out the
-                // reward to anyone who closes the ad early.
-                const SHOWED = (this.yt.ads.AdResult && this.yt.ads.AdResult.SHOWED !== undefined)
-                    ? this.yt.ads.AdResult.SHOWED
-                    : 1;
-
+                // Official SDK:
+                //   requestRewardedAd(rewardId) → Promise<boolean> (true = earned)
+                //   requestInterstitialAd()     → Promise<void> (resolve = ok, reject = fail)
                 if (type === 'rewarded') {
-                    const result = await this.yt.ads.requestRewardedAd(rewardId);
-                    const earned = result === SHOWED;
+                    const earned = await this.yt.ads.requestRewardedAd(rewardId);
                     if (earned) {
                         if (callbacks.onFinished) callbacks.onFinished();
                     } else if (callbacks.onError) {
-                        callbacks.onError('ad_closed_early');
+                        callbacks.onError('ad_not_earned');
                     }
-                    return earned;
+                    return !!earned;
                 }
 
-                const result = await this.yt.ads.requestInterstitialAd();
-                // Gameplay must resume whatever the ad did, so onFinished always
-                // fires here; the return value just reports whether it played.
+                await this.yt.ads.requestInterstitialAd();
+                // Gameplay must resume after a successful interstitial request.
                 if (callbacks.onFinished) callbacks.onFinished();
-                return result === SHOWED;
+                return true;
             } catch (e) {
                 console.warn('[YouTubePlayablesAdapter] showAd failed:', e);
                 if (callbacks.onError) callbacks.onError(e);
