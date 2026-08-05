@@ -261,6 +261,14 @@
                 this._watchForSdk();
                 return;
             }
+            // firstFrameReady must reach YouTube before gameReady. If the SDK was
+            // missing at first render the call is sitting in _pending, and the
+            // watcher only drains it on its next 250ms tick - so drain it here
+            // rather than racing that timer.
+            if (this._pending.firstFrameReady) {
+                this._pending.firstFrameReady = false;
+                this.firstFrameReady();
+            }
             try {
                 yt.game.gameReady();
                 console.log('[YouTubePlayablesAdapter] gameReady() called.');

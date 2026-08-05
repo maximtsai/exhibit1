@@ -2,9 +2,13 @@
  * @fileoverview Hint system module for managing hint counter, badge display, and rewarded ads.
  */
 
-if (typeof gameVars !== "undefined" && gameVars.hintCount === undefined) {
-    gameVars.hintCount = 2;
-}
+// NOTE: no top-level access to gameVars/gameObjects/globalScene in this file.
+// main.js declares them with `let`, and it is concatenated after this file in
+// the production bundle (build.js), so at load time they are in the temporal
+// dead zone - where even `typeof x !== "undefined"` throws rather than yielding
+// "undefined". As separate <script> tags the name is merely undeclared and the
+// same guard is safe, so a hazard here breaks only the built game.
+// hintCount's default lives in the gameVars literal in main.js.
 
 class HintHand {
     constructor(scene, container, x = 0, y = 0, initialFrame = "hinthandopen", frames = ["hinthandopen", "hinthandclose", "hinthandpointer", "hinthandbroken"]) {
