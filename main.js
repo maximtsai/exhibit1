@@ -197,9 +197,7 @@ let deferredImages = [
     ["balloon2", "sprites/altreality/balloon2.jpg"],
     ["balloon3", "sprites/altreality/balloon3.jpg"],
     ["balloon4", "sprites/altreality/balloon4.jpg"],
-    ["balloon5", "sprites/altreality/balloon5.jpg"],
-    ["candleDark", "sprites/candleDark.webp"],
-    ["redlight", "sprites/redlight.png"]
+    ["balloon5", "sprites/altreality/balloon5.jpg"]
 ];
 let deferredAudioLoaded = !1;
 
@@ -475,7 +473,7 @@ function onPreloadComplete(a) {
         }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"),
         a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
         a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
-        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.start()
+        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("candleDark", "sprites/candleDark.webp"), a.load.image("redlight", "sprites/redlight.png"), a.load.start()
 }
 
 let gameLoadedOnce = false;
@@ -609,12 +607,9 @@ function loadDeferredAudio(a) {
         } else {
             console.warn("loadDeferredAudio: atlas missing: roomClown2");
         }
-        if (a.textures.exists("candleDark") && gameObjects.candleDark) {
-            gameObjects.candleDark.setTexture("candleDark");
-        }
-        if (a.textures.exists("redlight") && gameObjects.generalRedness) {
-            gameObjects.generalRedness.setTexture("redlight");
-        }
+        // candleDark and redlight are now loaded in the initial preload batch,
+        // so their textures are already set up by the time setupGame runs.
+        // No deferred setTexture needed here.
     };
     a.load.once("complete", onDeferredComplete);
     a.load.start()

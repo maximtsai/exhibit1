@@ -19,8 +19,12 @@ function setupRoomClown1(e, o, a) {
         alpha: 1,
         scaleX: .158,
         scaleY: .158
+    }), registerRoomSaveState(o, {
+        getStage: roomClown1GetSaveStage,
+        setStage: roomClown1SetSaveStage
     }), l = messageBus.subscribe("exhibitMove", e => {
         if (e === o) {
+            roomClownMarkStage(gameObjects.roomClown1, ROOM_CLOWN_STAGE_VISITED);
             gameDelay(() => {
                 if (gameVars.firstNosePressed) {
                     return;
@@ -98,8 +102,11 @@ function setupRoomClown2(e, o, a) {
         alpha: 1,
         scaleX: .25,
         scaleY: .25
+    }), registerRoomSaveState(o, {
+        getStage: roomClown2GetSaveStage,
+        setStage: roomClown2SetSaveStage
     }), l = messageBus.subscribe("exhibitMove", e => {
-        e === o && (l.unsubscribe(), gameObjects.roomClown1 && gameObjects.exhibit.removeIndex(gameObjects.roomClown1.roomIndex))
+        e === o && (l.unsubscribe(), roomClownMarkStage(gameObjects.roomClown2, ROOM_CLOWN_STAGE_VISITED), roomClownPrune(gameObjects.roomClown1))
     })
 }
 
@@ -129,8 +136,11 @@ function setupRoomClown3(e, o, a) {
         onMouseUp: () => {
             nosePress3(o, a)
         }
+    }), registerRoomSaveState(o, {
+        getStage: roomClown3GetSaveStage,
+        setStage: roomClown3SetSaveStage
     }), l = messageBus.subscribe("exhibitMove", e => {
-        e === o && (l.unsubscribe(), gameObjects.roomClown2 && gameObjects.exhibit.removeIndex(gameObjects.roomClown2.roomIndex))
+        e === o && (l.unsubscribe(), roomClownMarkStage(gameObjects.roomClown3, ROOM_CLOWN_STAGE_VISITED), roomClownPrune(gameObjects.roomClown1), roomClownPrune(gameObjects.roomClown2))
     }), messageBus.subscribe("prepareFinalClown", l => {
         disableMoveButtons(), gameObjects.roomClown3.portrait.destroy(), gameObjects.roomClown3.clown = globalScene.add.image(0, gameVars.halfHeight + 60, "roomClown", "clowncreepy"), gameObjects.roomClown3.clown.scaleX = .75, gameObjects.roomClown3.clown.scaleY = .75, gameObjects.roomClown3.clownLeftEye = globalScene.add.image(-66, gameVars.halfHeight - 100, "roomClown", "leftEye"), gameObjects.roomClown3.clownLeftEye.origX = gameObjects.roomClown3.clownLeftEye.x, gameObjects.roomClown3.clownLeftEye.origY = gameObjects.roomClown3.clownLeftEye.y, gameObjects.roomClown3.clownLeftEye.scaleX = .75, gameObjects.roomClown3.clownLeftEye.scaleY = .75, gameObjects.roomClown3.clownRightEye = globalScene.add.image(203, gameVars.halfHeight - 60, "roomClown", "leftEye"), gameObjects.roomClown3.clownRightEye.origX = gameObjects.roomClown3.clownRightEye.x, gameObjects.roomClown3.clownRightEye.origY = gameObjects.roomClown3.clownRightEye.y, gameObjects.roomClown3.clownRightEye.scaleX = .75, gameObjects.roomClown3.clownRightEye.scaleY = .75, a.add(gameObjects.roomClown3.clown), a.add(gameObjects.roomClown3.clownLeftEye), a.add(gameObjects.roomClown3.clownRightEye), addToUpdateFuncList(shakeClownEyes), disableMoveLeftButton(), gameObjects.roomClown3.nose2 = new Button(e, a, () => {
             nosePressFinal(o, a)
@@ -172,6 +182,7 @@ function nosePress1(e, o) {
 }
 
 function nosePress2(e, o) {
+    roomClownMarkStage(gameObjects.roomClown2, ROOM_CLOWN_STAGE_DONE), gameObjects.roomClown2.nosePressed = !0;
     gameObjects.roomClown2.nose.destroy();
     let a = gameObjects.roomClown2.clown.y;
     gameObjects.roomClown2.clown.destroy(), gameObjects.roomClown2.clown = globalScene.add.image(0, a, "roomClown", "clownlarge1"), o.add(gameObjects.roomClown2.clown), gameObjects.roomClown2.clown.scaleX = .76, gameObjects.roomClown2.clown.scaleY = .76, gameDelay(() => {
@@ -349,4 +360,113 @@ function nosePressFinal(e, o) {
 
 function shakeClownMouth() {
     gameObjects.roomClown3.mouthlarge.scaleY = gameObjects.roomClown3.mouthlarge.origScaleY + .05 * Math.random() + .01
+}
+
+// ============================================================== save state ===
+//
+// The three clown rooms prune the corridor behind them: walking into clown 2
+// removes clown 1, walking into clown 3 removes clown 2 (the exhibitMove
+// subscribers in setupRoomClown2 / setupRoomClown3). That pruning is triggered
+// by ENTERING a room, and a restore only re-enters the one room the player was
+// saved in — so reloading anywhere else left the earlier clown rooms back in
+// the corridor, and the player could walk into clown 1 again during the dark
+// phase. Each room therefore records that it was visited and re-applies the
+// pruning itself on restore.
+//
+// Pruning is stated absolutely rather than as a chain: clown 2 removes clown 1,
+// clown 3 removes BOTH. Live, clown 1 is already gone by the time clown 3 is
+// reached, so the extra call is a no-op — but it means a save can never come
+// back with a clown room that should have been left behind.
+
+var ROOM_CLOWN_STAGE_NONE = 0;
+var ROOM_CLOWN_STAGE_VISITED = 1; // player has walked in; corridor pruning applies
+var ROOM_CLOWN_STAGE_DONE = 2;    // this room's nose has been pressed
+
+function roomClownMarkStage(room, stage) {
+    if (room && (!room.saveStage || room.saveStage < stage)) {
+        room.saveStage = stage;
+    }
+}
+
+function roomClownGetStage(room, doneCondition) {
+    if (!room) return ROOM_CLOWN_STAGE_NONE;
+    if (doneCondition) return ROOM_CLOWN_STAGE_DONE;
+    return room.saveStage || ROOM_CLOWN_STAGE_NONE;
+}
+
+// Drops a clown room out of the corridor. removeIndex only nulls the exhibit's
+// list entries; the sprites stay put but were already parked off-screen and
+// invisible by setup, so nothing needs destroying. Safe to call twice.
+function roomClownPrune(room) {
+    if (room && gameObjects.exhibit) {
+        gameObjects.exhibit.removeIndex(room.roomIndex);
+    }
+}
+
+// ------------------------------------------------------------- clown 1 (4) ---
+
+function roomClown1GetSaveStage() {
+    return roomClownGetStage(gameObjects.roomClown1,
+        typeof gameVars !== "undefined" && gameVars.firstNosePressed);
+}
+
+function roomClown1SetSaveStage(stage) {
+    let r = gameObjects.roomClown1;
+    if (!r || !stage) return;
+    r.saveStage = stage;
+    if (stage < ROOM_CLOWN_STAGE_DONE) return;
+    // Nose already pressed: it is gone and the clown has changed face.
+    if (typeof gameVars !== "undefined") gameVars.firstNosePressed = !0;
+    if (saveAlive(r.nose)) r.nose.destroy();
+    let y = r.clown.y;
+    if (saveAlive(r.clown)) r.clown.destroy();
+    r.clown = globalScene.add.image(0, y, "roomClown", "clownsmall2");
+    r.roomContainer.add(r.clown);
+}
+
+// ------------------------------------------------------------- clown 2 (7) ---
+
+function roomClown2GetSaveStage() {
+    return roomClownGetStage(gameObjects.roomClown2,
+        gameObjects.roomClown2 && gameObjects.roomClown2.nosePressed);
+}
+
+function roomClown2SetSaveStage(stage) {
+    let r = gameObjects.roomClown2;
+    if (!r || !stage) return;
+    r.saveStage = stage;
+    // Reaching clown 2 at all means clown 1 is behind us for good.
+    roomClownPrune(gameObjects.roomClown1);
+    if (stage < ROOM_CLOWN_STAGE_DONE) return;
+    r.nosePressed = !0;
+    if (saveAlive(r.nose)) r.nose.destroy();
+    let y = r.clown.y;
+    if (saveAlive(r.clown)) r.clown.destroy();
+    r.clown = globalScene.add.image(0, y, "roomClown", "clownlarge1");
+    r.roomContainer.add(r.clown);
+    r.clown.scaleX = .76;
+    r.clown.scaleY = .76;
+}
+
+// ------------------------------------------------------------ clown 3 (14) ---
+
+function roomClown3GetSaveStage() {
+    return roomClownGetStage(gameObjects.roomClown3,
+        gameObjects.roomClown3 && gameObjects.roomClown3.clickedOnce);
+}
+
+function roomClown3SetSaveStage(stage) {
+    let r = gameObjects.roomClown3;
+    if (!r || !stage) return;
+    r.saveStage = stage;
+    // Reaching clown 3 means both earlier clown rooms are behind us.
+    roomClownPrune(gameObjects.roomClown1);
+    roomClownPrune(gameObjects.roomClown2);
+    if (stage < ROOM_CLOWN_STAGE_DONE) return;
+    r.clickedOnce = !0;
+    // End of the live first-press chain (nosePress3): the nose returns as the
+    // clickable second nose, with the bait key on the floor.
+    if (saveAlive(r.nose)) r.nose.setPos(35, gameVars.halfHeight - 155);
+    let bait = globalScene.add.image(gameVars.halfWidth + 20, 600, "buttons", "key_yellow");
+    r.roomContainer.add(bait);
 }

@@ -48,6 +48,9 @@ function setupRoomFaucet(e, a, o) {
             duration: 400,
             delay: 1500
         })), addGuideArrowToContainer(gameObjects.roomFaucetObjs.roomContainer), updateGuideArrow(0, -9999), tweenVolume("gladiator0", .3), tweenVolume("gladiator1", .6), tweenVolume("gladiator2", .5))
+    }), registerRoomSaveState(a, {
+        getStage: roomFaucetGetSaveStage,
+        setStage: roomFaucetSetSaveStage
     }), t = messageBus.subscribe("startDarkSequence", e => {
         gameObjects.roomFaucetObjs.isLocked = !1, gameObjects.roomFaucetObjs.handle.reappear(), resetHandlePos(), gameObjects.roomFaucetObjs.portraitRed.alpha = 1, t.unsubscribe()
     }), s = messageBus.subscribe("startHorrorSequence", e => {
@@ -73,10 +76,10 @@ function roomFaucetUpdate(e) {
         let c = m - gameObjects.roomFaucetObjs.lever.rotation;
         c > Math.PI ? c -= 2 * Math.PI : c < -Math.PI && (c += 2 * Math.PI);
         let b = 0;
-        if (c > .01 ? b = Math.min(.0024, .006 * c) : c < -.01 && (b = Math.max(-.0024, .006 * c)), gameVars.horrorPoint && b < 0 && gameObjects.roomFaucetObjs.lever.rotation > .8 && (b = 0), gameObjects.roomFaucetObjs.lever.rotVel += b, gameObjects.roomFaucetObjs.lever.rotVel *= .88, a = !0, Math.abs(gameObjects.roomFaucetObjs.lever.rotation + .2) < .03 && gameObjects.roomFaucetObjs.soundCooldown <= 0 && (gameObjects.roomFaucetObjs.lever.rotVel > .005 ? (playSound("metalsqueak1"), gameObjects.roomFaucetObjs.soundCooldown = 50) : gameObjects.roomFaucetObjs.lever.rotVel < -.005 && (playSound("metalsqueak2"), gameObjects.roomFaucetObjs.soundCooldown = 50), gameObjects.roomFaucetObjs.lever.rotVel *= .5), gameObjects.roomFaucetObjs.lever.rotation < -.75) gameVars.darkPoint && gameObjects.exhibit.needCleanup && (gameObjects.exhibit.needCleanup = !1, gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.handle.disappear(), setWashyDollImage("washyRelaxed"), gameDelay(() => {
+        if (c > .01 ? b = Math.min(.0024, .006 * c) : c < -.01 && (b = Math.max(-.0024, .006 * c)), gameVars.horrorPoint && b < 0 && gameObjects.roomFaucetObjs.lever.rotation > .8 && (b = 0), gameObjects.roomFaucetObjs.lever.rotVel += b, gameObjects.roomFaucetObjs.lever.rotVel *= .88, a = !0, Math.abs(gameObjects.roomFaucetObjs.lever.rotation + .2) < .03 && gameObjects.roomFaucetObjs.soundCooldown <= 0 && (gameObjects.roomFaucetObjs.lever.rotVel > .005 ? (playSound("metalsqueak1"), gameObjects.roomFaucetObjs.soundCooldown = 50) : gameObjects.roomFaucetObjs.lever.rotVel < -.005 && (playSound("metalsqueak2"), gameObjects.roomFaucetObjs.soundCooldown = 50), gameObjects.roomFaucetObjs.lever.rotVel *= .5), gameObjects.roomFaucetObjs.lever.rotation < -.75) gameVars.darkPoint && gameObjects.exhibit.needCleanup && (gameObjects.exhibit.needCleanup = !1, gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.handle.disappear(), setWashyDollImage("washyRelaxed"), roomFaucetMarkStage(ROOM_FAUCET_STAGE_CLEANED), messageBus.publish("saveCheckpoint"), gameDelay(() => {
             playSound("deepbell4"), updateInfoTextSoft("Room cleaned up.", 2e3);
         }, 300)), gameObjects.roomFaucetObjs.lever.rotation = -.74, gameObjects.roomFaucetObjs.lever.rotVel *= -.35;
-        else if (gameObjects.roomFaucetObjs.lever.rotVel > .001 && gameObjects.roomFaucetObjs.lever.rotation > .78 && !gameObjects.roomFaucetObjs.firstComplete && !gameVars.horrorPoint && !gameVars.darkPoint) gameObjects.roomFaucetObjs.handle.disappear(), gameObjects.roomFaucetObjs.firstComplete = !0, gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.lever.rotation = .799, gameDelay(() => {
+        else if (gameObjects.roomFaucetObjs.lever.rotVel > .001 && gameObjects.roomFaucetObjs.lever.rotation > .78 && !gameObjects.roomFaucetObjs.firstComplete && !gameVars.horrorPoint && !gameVars.darkPoint) gameObjects.roomFaucetObjs.handle.disappear(), gameObjects.roomFaucetObjs.firstComplete = !0, roomFaucetMarkStage(ROOM_FAUCET_STAGE_FIRST), gameObjects.roomFaucetObjs.isLocked = !0, gameObjects.roomFaucetObjs.lever.rotation = .799, gameDelay(() => {
             createKey(-365, gameVars.halfHeight + 85, gameObjects.roomFaucetObjs.roomIndex, gameObjects.roomFaucetObjs.roomContainer, !0)
         }, 100);
         else if (gameObjects.roomFaucetObjs.lever.rotation > .8) {
@@ -115,7 +118,7 @@ function roomFaucetUpdate(e) {
                             showStaticRand(1, void 0, void 0, .05)
                         }, 750)
                     }, 750)
-                }), gameVars.walkSlow = !0, gameObjects.roomFaucetObjs.roomCompleted = !0, updateWashyExpression(999), gameDelay(() => {
+                }), gameVars.walkSlow = !0, gameObjects.roomFaucetObjs.roomCompleted = !0, roomFaucetMarkStage(ROOM_FAUCET_STAGE_BROKEN), updateWashyExpression(999), gameDelay(() => {
                     gameObjects.roomFaucetObjs.startOverflow = !0
                 }, 600), gameDelay(() => {
                     createKey(-155, gameVars.halfHeight + 160, gameObjects.roomFaucetObjs.roomIndex, gameObjects.roomFaucetObjs.roomContainer, !1)
@@ -243,4 +246,100 @@ function faucetRedUpdate() {
         o = Math.abs(e) + Math.abs(a),
         t = Math.max(0, Math.min(1, .003 * (o - 70 - gameObjects.roomFaucetObjs.redDamper)));
     t > gameObjects.roomFaucetObjs.portraitRed.alpha ? (gameObjects.roomFaucetObjs.portraitRed.alpha = .95 * gameObjects.roomFaucetObjs.portraitRed.alpha + .05 * t, gameObjects.roomFaucetObjs.portraitRed.alpha < .85 && (gameObjects.roomFaucetObjs.redDamper += .8)) : gameObjects.roomFaucetObjs.portraitRed.alpha = .88 * gameObjects.roomFaucetObjs.portraitRed.alpha + .12 * t
+}
+
+// ============================================================== save state ===
+//
+// Mr. Washy is completed three times, once per phase: the tap is turned on
+// (normal), turned back off (dark cleanup), then forced until the plumbing
+// bursts (horror).
+//
+// The handle is the subtle part. Each phase transition RE-ARMS it — the
+// startDarkSequence and startHorrorSequence subscribers in setupRoomFaucet call
+// handle.reappear() + resetHandlePos() and clear isLocked, because the player
+// needs it again for that phase's work. Restore republishes those topics before
+// it applies room state, so a restorer that unconditionally disarms the handle
+// undoes them and leaves the tap dead. That was the "handle isn't clickable in
+// dark mode" bug: the old restorer called handle.disappear() for stage 1 no
+// matter which phase the save was taken in.
+//
+// The rule below: disarm the handle only when this room's work for the CURRENT
+// phase is already done. Otherwise leave it armed, exactly as the phase
+// subscriber just set it up.
+
+var ROOM_FAUCET_STAGE_NONE = 0;
+var ROOM_FAUCET_STAGE_FIRST = 1;   // normal phase: tap turned on, yellow key given
+var ROOM_FAUCET_STAGE_CLEANED = 2; // dark phase: tap turned back off
+var ROOM_FAUCET_STAGE_BROKEN = 3;  // horror phase: plumbing burst, red key given
+
+function roomFaucetMarkStage(stage) {
+    let r = gameObjects.roomFaucetObjs;
+    if (r && (!r.saveStage || r.saveStage < stage)) {
+        r.saveStage = stage;
+    }
+}
+
+function roomFaucetGetSaveStage() {
+    let r = gameObjects.roomFaucetObjs;
+    return (r && r.saveStage) || ROOM_FAUCET_STAGE_NONE;
+}
+
+// Has this room's work for the phase the player is currently in been done?
+function roomFaucetPhaseSatisfied(stage) {
+    if (gameVars.horrorPoint) return stage >= ROOM_FAUCET_STAGE_BROKEN;
+    if (gameVars.darkPoint) return stage >= ROOM_FAUCET_STAGE_CLEANED;
+    return stage >= ROOM_FAUCET_STAGE_FIRST;
+}
+
+// Puts the room straight into the end state of `stage`.
+//
+// STATE ONLY — no tweens, sounds, static or gameDelay chains.
+function roomFaucetSetSaveStage(stage) {
+    let r = gameObjects.roomFaucetObjs;
+    if (!r || !stage) return;
+    r.saveStage = stage;
+
+    if (stage >= ROOM_FAUCET_STAGE_FIRST) r.firstComplete = !0;
+
+    if (stage >= ROOM_FAUCET_STAGE_BROKEN) {
+        // Tail of the horror completion in roomFaucetUpdate.
+        r.roomCompleted = !0;
+        let px = r.portrait.x, py = r.portrait.y;
+        if (saveAlive(r.portrait)) r.portrait.destroy();
+        r.portrait = globalScene.add.image(px, py, "roomFaucet", "portraitBlack");
+        r.roomContainer.add(r.portrait);
+        r.ink.alpha = 1;
+        let hx = r.hose.origX, hy = r.hose.origY;
+        if (saveAlive(r.hose)) r.hose.destroy();
+        r.hose = globalScene.add.image(hx, hy, "roomFaucet", "hosebroken");
+        r.hose.origX = hx;
+        r.hose.origY = hy;
+        r.hose.setOrigin(.5, 0);
+        r.hose.velX = 0;
+        r.hose.velY = 0;
+        r.roomContainer.add(r.hose);
+        if (saveAlive(r.leverBent)) r.leverBent.destroy();
+        r.leverBent = globalScene.add.image(r.lever.x, r.lever.y, "roomFaucet", "leverbroken");
+        r.roomContainer.add(r.leverBent);
+        r.duck.scaleX = -.45;
+        r.lever.rotation = 3;
+    } else if (stage === ROOM_FAUCET_STAGE_CLEANED) {
+        r.lever.rotation = -.74;
+        setWashyDollImage("washyRelaxed");
+    } else {
+        r.lever.rotation = .799;
+    }
+
+    // Arm or disarm the handle for the phase the player is actually in. Never
+    // unconditionally disappear it — see the note at the top of this section.
+    if (roomFaucetPhaseSatisfied(stage)) {
+        r.isLocked = !0;
+        if (saveAlive(r.handle)) r.handle.disappear();
+    } else {
+        r.isLocked = !1;
+        if (saveAlive(r.handle)) {
+            r.handle.reappear();
+            resetHandlePos();
+        }
+    }
 }

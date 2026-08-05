@@ -77,10 +77,11 @@ var saveRoomStage = {};
 // would not work — save.js is concatenated after the room files (build.js), so
 // only the hoisted function declaration is available that early, not this map.
 //
-// MIGRATION: roomhandy.js is converted. The remaining rooms still use
-// saveCollectRoomStages / saveRoomStage1Restorers / saveRoomStage2Restorers,
-// which duplicate each room's completion visuals. Convert them one at a time;
-// when the last one lands, all of that can be deleted.
+// MIGRATION: roomhandy.js, roomjack.js, roomclown.js and roomfaucet.js are
+// converted. Rooms 2 (pump) and 6 (stretch) still use saveCollectRoomStages /
+// saveRoomStage1Restorers / saveRoomStage2Restorers, which duplicate each
+// room's completion visuals. Convert them one at a time; when the last one
+// lands, all of that can be deleted.
 var saveRoomStateProviders = {};
 
 function registerRoomSaveState(roomIndex, provider) {
@@ -247,14 +248,10 @@ function saveCollectRoomStages() {
     var dark = typeof gameVars !== "undefined" && (gameVars.darkPoint || gameVars.horrorPoint);
 
     // Stage 1 — the normal-phase completion flag each room sets.
-    if (typeof gameVars !== "undefined" && gameVars.firstNosePressed) setStage(4, SAVE_ROOM_DONE);
-    if (g.roomFaucetObjs && g.roomFaucetObjs.firstComplete) setStage(3, SAVE_ROOM_DONE);
     if (g.roomStretchObjs && g.roomStretchObjs.roomUnlocked) setStage(6, SAVE_ROOM_DONE);
-    if (g.roomClown3 && g.roomClown3.clickedOnce) setStage(14, SAVE_ROOM_DONE);
 
     // Stage 2 — the dark/horror-phase completion.
     if (g.roomPumpObjs && g.roomPumpObjs.roomComplete) setStage(2, SAVE_ROOM_CLEANED);
-    if (g.roomFaucetObjs && g.roomFaucetObjs.roomCompleted) setStage(3, SAVE_ROOM_CLEANED);
     if (g.roomStretchObjs && g.roomStretchObjs.roomCompleted) setStage(6, SAVE_ROOM_CLEANED);
 
     // Rooms that own their state report it themselves and win outright — their
@@ -516,18 +513,15 @@ function makeKeyButton(roomIdx, x, y, red, container) {
 // no dark-phase variant, so they only ever appear here.
 var saveRoomStage1Restorers = {
     2: saveDoneRoomPump,
-    3: saveDoneRoomFaucet,
-    4: saveDoneRoomClown1,
+    // 3 (Mr. Washy) owns its own save state — see roomfaucet.js.
+    // 4, 7, 14 (the clown rooms) own their own save state — see roomclown.js.
     // 5 (Mr. Handy) owns its own save state — see roomhandy.js.
-    6: saveDoneRoomStretch,
-    7: saveDoneRoomClown2,
-    14: saveDoneRoomClown3
+    6: saveDoneRoomStretch
 };
 
 // Stage 2: the dark/horror-phase completion, applied on top of stage 1.
 var saveRoomStage2Restorers = {
     2: saveCleanedRoomPump,
-    3: saveCleanedRoomFaucet,
     6: saveCleanedRoomStretch
 };
 
@@ -593,55 +587,7 @@ function saveCleanedRoomPump() {
     removeFromUpdateFuncList(roomPumpUpdate);
 }
 
-// Tap turned on once: the handle comes away and the lever rests open
-// (roomfaucet.js, the `!firstComplete && !horrorPoint && !darkPoint` branch).
-function saveDoneRoomFaucet() {
-    var r = gameObjects.roomFaucetObjs;
-    if (!r) return;
-    r.firstComplete = true;
-    if (saveAlive(r.handle)) r.handle.disappear();
-    r.lever.rotation = .799;
-}
 
-function saveCleanedRoomFaucet() {
-    var r = gameObjects.roomFaucetObjs;
-    if (!r) return;
-    r.roomCompleted = true;
-    r.firstComplete = true;
-    if (saveAlive(r.handle)) r.handle.destroy();
-    var px = r.portrait.x, py = r.portrait.y;
-    if (saveAlive(r.portrait)) r.portrait.destroy();
-    r.portrait = globalScene.add.image(px, py, "roomFaucet", "portraitBlack");
-    r.roomContainer.add(r.portrait);
-    r.ink.alpha = 1;
-    var hx = r.hose.origX, hy = r.hose.origY;
-    if (saveAlive(r.hose)) r.hose.destroy();
-    r.hose = globalScene.add.image(hx, hy, "roomFaucet", "hosebroken");
-    r.hose.origX = hx;
-    r.hose.origY = hy;
-    r.hose.setOrigin(.5, 0);
-    r.hose.velX = 0;
-    r.hose.velY = 0;
-    r.roomContainer.add(r.hose);
-    if (saveAlive(r.leverBent)) r.leverBent.destroy();
-    r.leverBent = globalScene.add.image(r.lever.x, r.lever.y, "roomFaucet", "leverbroken");
-    r.roomContainer.add(r.leverBent);
-    r.duck.scaleX = -.45;
-    r.lever.rotation = 3;
-}
-
-function saveDoneRoomClown1() {
-    var r = gameObjects.roomClown1;
-    if (!r) return;
-    // This flag is what saveCollectRoomStages reads back for room 4, so set it
-    // here too or the restored room and its recorded stage can disagree.
-    if (typeof gameVars !== "undefined") gameVars.firstNosePressed = true;
-    if (saveAlive(r.nose)) r.nose.destroy();
-    var y = r.clown.y;
-    if (saveAlive(r.clown)) r.clown.destroy();
-    r.clown = globalScene.add.image(0, y, "roomClown", "clownsmall2");
-    r.roomContainer.add(r.clown);
-}
 
 
 // Ms. Stretch's arm pulled out far enough to unlock the room, but not yet the
@@ -675,28 +621,6 @@ function saveCleanedRoomStretch() {
     removeFromUpdateFuncList(roomStretchUpdate);
 }
 
-function saveDoneRoomClown2() {
-    var r = gameObjects.roomClown2;
-    if (!r) return;
-    if (saveAlive(r.nose)) r.nose.destroy();
-    var y = r.clown.y;
-    if (saveAlive(r.clown)) r.clown.destroy();
-    r.clown = globalScene.add.image(0, y, "roomClown", "clownlarge1");
-    r.roomContainer.add(r.clown);
-    r.clown.scaleX = .76;
-    r.clown.scaleY = .76;
-}
-
-function saveDoneRoomClown3() {
-    var r = gameObjects.roomClown3;
-    if (!r) return;
-    r.clickedOnce = true;
-    // Matches the end of the live first-press chain (roomclown.js): the nose
-    // returns as the clickable second nose, with the bait key on the floor.
-    if (saveAlive(r.nose)) r.nose.setPos(35, gameVars.halfHeight - 155);
-    var bait = globalScene.add.image(gameVars.halfWidth + 20, 600, "buttons", "key_yellow");
-    r.roomContainer.add(bait);
-}
 
 // ------------------------------------------- start-screen wipe UI (main.js) ---
 
@@ -836,8 +760,9 @@ function showWipeConfirm(a) {
         });
         wiped.setOrigin(.5, .5);
         wiped.setDepth(3);
-        wiped.alpha = .6;
+        wiped.alpha = 0;
         c.add(wiped);
+        a.tweens.add({ targets: wiped, alpha: .6, duration: 1500, ease: "Linear" });
         if (typeof gameObjectsTemp !== "undefined" && gameObjectsTemp) gameObjectsTemp.saveWipeUI = { text: wiped };
     }, {
         atlas: "loadingSS",
