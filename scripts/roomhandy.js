@@ -571,14 +571,17 @@ function roomHandySetHands(leftFrame, rightFrame) {
 // STATE ONLY — no tweens, sounds, static, flashes or gameDelay chains. The live
 // path plays those itself and then calls roomHandyMarkStage; this function is
 // the half of each completion that a reloaded game needs to look right.
+// Has this room's work for the phase the player is currently in been done?
+function roomHandyPhaseSatisfied(stage) {
+    if (gameVars.horrorPoint) return stage >= ROOM_HANDY_STAGE_FINISHED;
+    if (gameVars.darkPoint) return stage >= ROOM_HANDY_STAGE_CLEANED;
+    return stage >= ROOM_HANDY_STAGE_COUNTED;
+}
+
 function roomHandySetSaveStage(stage) {
     let r = gameObjects.roomHandyObjs;
     if (!r || !stage) return;
     r.saveStage = stage;
-
-    // Every completed state parks the finger button and its guide arrow.
-    if (r.fingerButton) r.fingerButton.setPos(0, -9999);
-    if (gameObjects.guideArrowFat) gameObjects.guideArrowFat.alpha = 0;
 
     if (stage === ROOM_HANDY_STAGE_COUNTED) {
         // fingerPress stops advancing at 7 outside the horror phase, then falls
@@ -587,33 +590,46 @@ function roomHandySetSaveStage(stage) {
         r.fingerState = 7;
         roomHandySetHands("lefthand5", "righthand5");
         updateHandyExpression(8);
-        return;
-    }
-
-    if (stage === ROOM_HANDY_STAGE_CLEANED) {
+    } else if (stage === ROOM_HANDY_STAGE_CLEANED) {
         // fingerUnPress counts back down to -1, landing both hands on frame 1
         // and resetting the expression to case 1.
         r.fingerState = 0;
         roomHandySetHands("lefthand1", "righthand1");
         updateHandyExpression(1);
         if (r.cleanupButton) r.cleanupButton.setPos(0, -9999);
-        return;
+    } else {
+        // ROOM_HANDY_STAGE_FINISHED. In the horror phase the count runs the
+        // full length of listOfButtonPos; fingerPress advances while
+        // `length > fingerState + 1`, so it ends one short of the length. It
+        // must stay a valid index — the room's exhibitMove subscriber does an
+        // unguarded listOfButtonPos[fingerState] on every entry.
+        r.roomComplete = true;
+        r.fingerState = r.listOfButtonPos.length - 1;
+        // handleFingerSound is called with fingerState + 1, so the last frames
+        // the live path paints are case 19's righthand12 and case 12's lefthand9.
+        roomHandySetHands("lefthand9", "righthand12");
+        if (r.dollPicture) r.dollPicture.setFrame("handy5");
+        if (r.cleanupButton) r.cleanupButton.setPos(0, -9999);
+        // The tail of updateHandyExpression(19), without its static and delays.
+        if (r.dollBody) r.dollBody.setVisible(false);
+        setHandyDollImage("dollDefeated");
+        removeFromUpdateFuncList(shakeHandyDoll);
     }
 
-    // ROOM_HANDY_STAGE_FINISHED. In the horror phase the count runs the full
-    // length of listOfButtonPos; fingerPress advances while
-    // `length > fingerState + 1`, so it ends one short of the length. It must
-    // stay a valid index — the room's exhibitMove subscriber does an unguarded
-    // listOfButtonPos[fingerState] on every entry.
-    r.roomComplete = true;
-    r.fingerState = r.listOfButtonPos.length - 1;
-    // handleFingerSound is called with fingerState + 1, so the last frames the
-    // live path paints are case 19's righthand12 and case 12's lefthand9.
-    roomHandySetHands("lefthand9", "righthand12");
-    if (r.dollPicture) r.dollPicture.setFrame("handy5");
-    if (r.cleanupButton) r.cleanupButton.setPos(0, -9999);
-    // The tail of updateHandyExpression(19), without its static and delays.
-    if (r.dollBody) r.dollBody.setVisible(false);
-    setHandyDollImage("dollDefeated");
-    removeFromUpdateFuncList(shakeHandyDoll);
+    // Where the finger counter sits belongs to the PHASE, not the stage.
+    // Parking it unconditionally (as this used to) undid startHorrorSequence,
+    // which places it on the current finger so the horror count can begin —
+    // Mr. Handy arrives in the horror phase at CLEANED, so that path matters.
+    if (roomHandyPhaseSatisfied(stage)) {
+        if (r.fingerButton) r.fingerButton.setPos(0, -9999);
+        if (gameObjects.guideArrowFat) gameObjects.guideArrowFat.alpha = 0;
+    } else if (gameVars.horrorPoint) {
+        let pos = r.listOfButtonPos[r.fingerState];
+        if (pos && r.fingerButton) r.fingerButton.setPos(pos.x, pos.y);
+        if (gameObjects.guideArrowFat) gameObjects.guideArrowFat.alpha = 1;
+    } else {
+        // Dark phase: cleanupButton does the work, the counter stays parked.
+        if (r.fingerButton) r.fingerButton.setPos(0, -9999);
+        if (gameObjects.guideArrowFat) gameObjects.guideArrowFat.alpha = 0;
+    }
 }

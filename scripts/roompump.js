@@ -384,7 +384,8 @@ function roomPumpSetSaveStage(stage) {
 
     if (stage === ROOM_PUMP_STAGE_DEFLATED) {
         // cleanupPump: the checkpoint drops to 0 and Floaty sinks back down.
-        r.canPump = !1;
+        // NOTE: canPump is deliberately NOT set here — it belongs to the phase,
+        // and is decided once in the control block below.
         r.pumpAmt = 0;
         r.pumpCheckpoint = 0;
         updateFloatyPumpState(0);
@@ -405,13 +406,25 @@ function roomPumpSetSaveStage(stage) {
     }
 
     // Arm the control this phase actually uses, now that Floaty is in place.
+    //
+    // canPump is set on BOTH paths of every branch. Leaving it untouched on the
+    // "not satisfied" path is not good enough: a stage branch above may have
+    // cleared it, which is exactly how the horror phase broke — Floaty is at
+    // DEFLATED when horror begins, startHorrorSequence re-armed the pump, and
+    // the DEFLATED branch then set canPump back to false, leaving the button
+    // visible but inert.
     let satisfied = roomPumpPhaseSatisfied(stage);
     if (gameVars.horrorPoint) {
-        // The horror phase pumps him again; startHorrorSequence already
-        // re-armed the pump, so leave it alone unless the work is done.
+        // The horror phase pumps him again, harder.
         if (satisfied) {
             r.canPump = !1;
             if (saveAlive(r.pumpBtn)) r.pumpBtn.disappear();
+        } else {
+            r.canPump = !0;
+            if (saveAlive(r.pumpBtn)) {
+                r.pumpBtn.reappear();
+                r.pumpBtn.setPos(-240, 500);
+            }
         }
     } else if (gameVars.darkPoint) {
         // The dark phase is a single click on Floaty himself, never pumping.

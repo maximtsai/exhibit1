@@ -770,6 +770,23 @@ function ftueMoveButton(e = !1) {
 	})
 }
 
+// Puts the music box into its stopped state without the click cinematic: the
+// handle stops turning (updateMusicBox gates the spin on stoppedMusic), the
+// floating notes vanish, and the gladiator0 loop it feeds is silenced.
+//
+// Used when a save is restored during the horror phase, where the box should
+// never still be playing. gladiator1/gladiator2 are deliberately left alone —
+// those are per-room ambience the horror rooms set for themselves, and
+// gladiatorx is already running by then.
+function silenceMusicBox() {
+	gameObjectsTemp.stoppedMusic = !0;
+	if (gameObjects.musicBoxNote) gameObjects.musicBoxNote.alpha = 0;
+	if (gameObjects.musicBoxNote2) gameObjects.musicBoxNote2.alpha = 0;
+	if (gameObjects.sounds && gameObjects.sounds.gladiator0) {
+		gameObjects.sounds.gladiator0.stop();
+	}
+}
+
 function updateMusicBox(e) {
 	if (gameObjectsTemp.boxBroken || (gameObjects.musicBoxHandle.x = gameObjects.musicBox.x, gameObjects.musicBoxHandle.y = gameObjects.musicBox.y + 15), 1 === gameVars.lateUpdateCurrentScene && 1 === gameObjects.exhibit.getCurrentScene() && gameObjects.musicBoxNote2.alpha > .01) {
 		let t = gameObjects.musicBoxNote2.velY * e;

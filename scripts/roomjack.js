@@ -1403,7 +1403,7 @@ function roomJackSetSaveState(state) {
         r.dollEyes.visible = !0;
         if (saveAlive(r.dollHeadUnder)) r.dollHeadUnder.visible = !1;
         if (normalPhase) {
-            r.canSpin = !1;
+            // canSpin is decided below, for every phase at once.
             r.noteCount = r.musicDataNormal.length;
             r.rotateMusicAccumulate = 0;
             r.slowRotation = !1;
@@ -1420,8 +1420,18 @@ function roomJackSetSaveState(state) {
         r.dollEyes.visible = !1;
         if (saveAlive(r.dollHeadUnder)) r.dollHeadUnder.visible = !0;
         r.playedSlam = !0;
-        r.canSpin = !1;
     }
+
+    // canSpin belongs to the phase, not the stage — startDarkSequence and
+    // startHorrorSequence both re-arm the crank because each phase needs it
+    // turned again. Decide it once, here, after the branches above.
+    //
+    // The horror finale is never saved (saveInFinale), so arriving in the
+    // horror phase always means there is still spinning to do.
+    let spinDone = gameVars.horrorPoint ? !1
+        : gameVars.darkPoint ? state.stage >= ROOM_JACK_STAGE_CLOSED
+        : state.stage >= ROOM_JACK_STAGE_POPPED;
+    r.canSpin = !spinDone;
 
     // roomJackUpdate re-derives these from dollCreepy every frame, but only
     // while the player is in the room. Sync them now so the room also looks

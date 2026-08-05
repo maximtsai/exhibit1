@@ -391,7 +391,12 @@ function roomStretchSetSaveStage(stage) {
     r.saveStage = stage;
 
     if (stage >= ROOM_STRETCH_STAGE_CLEANED) {
-        r.doDarkCleanup = !0;
+        // doDarkCleanup belongs to the phase: both startHorrorSequence and
+        // startTrueStretchHorror clear it, because the arm has to be pulled
+        // again in the horror phase. roomStretchUpdate gates its ENTIRE
+        // completion path on !doDarkCleanup, so setting it here once the horror
+        // phase has begun would make the room impossible to finish.
+        if (!gameVars.horrorPoint) r.doDarkCleanup = !0;
         if (saveAlive(r.cleanupButton)) r.cleanupButton.destroy();
     }
 

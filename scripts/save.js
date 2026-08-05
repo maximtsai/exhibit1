@@ -341,7 +341,12 @@ function applySaveState(save) {
         //    during setup and self-unsubscribes, so publishing once here
         //    reconstructs the per-room phase visuals exactly once.
         if (story.darkPoint && !story.finishedDarkPoint) initDarkSequence(globalScene);
-        if (story.horrorPoint) messageBus.publish("startHorrorSequence");
+        if (story.horrorPoint) {
+            messageBus.publish("startHorrorSequence");
+            // By the horror phase the music box has long since been stopped, so
+            // a restored game must not bring it back turning and playing.
+            if (typeof silenceMusicBox === "function") silenceMusicBox();
+        }
         if (story.finishedDarkPoint) {
             messageBus.publish("powerTurnedOn");
             gameObjects.powerSwitch.setState("disable");

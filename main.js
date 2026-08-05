@@ -940,9 +940,13 @@ function beginGameplay(a) {
     for (let b in removeFromUpdateFuncList(updateWelcomeFollower), gameObjects.loadingMusic.stop(), gameVars.gameConstructed = !0, gameObjects.loadingWelcomes) gameObjects.loadingWelcomes[b].destroy();
     for (let a = 0; a < gameObjectsTemp.circleLoading.length; a++) gameObjectsTemp.circleLoading[a].destroy();
     gameObjectsTemp.brightLight.destroy(), gameObjects.clickBlocker.destroy(), gameObjectsTemp.loadingBg.destroy(), gameObjectsTemp.blackTeeth.destroy(), gameObjectsTemp.blackTeethAnim.destroy(), gameDelay(() => {
-        gameObjects.sounds.gladiator0.play({
+        // Skipped when loading straight into the horror phase: the music box is
+        // silenced on restore (silenceMusicBox) and gladiatorx is the track that
+        // plays by then. This callback is deferred, so without the guard it
+        // would restart gladiator0 after restore had already stopped it.
+        gameVars.horrorPoint || (gameObjects.sounds.gladiator0.play({
             loop: !0
-        }), gameObjects.sounds.gladiator0.volume = .6, tweenVolume("gladiator0", .7, 50)
+        }), gameObjects.sounds.gladiator0.volume = .6, tweenVolume("gladiator0", .7, 50))
     }, 0), gameDelay(() => {
         addToUpdateFuncList(flipEntryLights)
     }, 350), gameDelay(() => {
