@@ -680,14 +680,32 @@ function saveDoneRoomClown3() {
 
 // ------------------------------------------- start-screen wipe UI (main.js) ---
 
-function destroySaveWipeUI() {
-    var u = (typeof gameObjectsTemp !== "undefined" && gameObjectsTemp) ? gameObjectsTemp.saveWipeUI : null;
-    if (!u) return;
-    var items = [u.blocker, u.panel, u.title, u.text, u.button, u.yesBtn, u.yesText, u.noBtn, u.noText, u.wipedText];
+function saveDestroyAll(items) {
     for (var i = 0; i < items.length; i++) {
         if (saveAlive(items[i])) items[i].destroy();
     }
+}
+
+// Tears down everything, link included. Used when the game actually starts.
+function destroySaveWipeUI() {
+    var u = (typeof gameObjectsTemp !== "undefined" && gameObjectsTemp) ? gameObjectsTemp.saveWipeUI : null;
+    if (!u) return;
+    saveDestroyAll([u.blocker, u.outline, u.panel, u.title, u.text, u.button, u.yesBtn, u.yesText, u.noBtn, u.noText, u.closeBtn, u.closeText, u.wipedText]);
     if (typeof gameObjectsTemp !== "undefined" && gameObjectsTemp) gameObjectsTemp.saveWipeUI = null;
+}
+
+// Tears down ONLY the confirmation popup, leaving the start-screen link alive.
+//
+// Declining must not take away the way back to the option — the previous
+// version routed NO through destroySaveWipeUI, which killed the link too and
+// left the player unable to wipe without reloading the page.
+function closeWipeConfirm() {
+    var u = (typeof gameObjectsTemp !== "undefined" && gameObjectsTemp) ? gameObjectsTemp.saveWipeUI : null;
+    if (!u) return;
+    saveDestroyAll([u.blocker, u.outline, u.panel, u.title, u.yesBtn, u.yesText, u.noBtn, u.noText, u.closeBtn, u.closeText]);
+    // Drop the popup handles so showWipeConfirm's re-entry guard (which tests
+    // for a live blocker) lets the box open again.
+    gameObjectsTemp.saveWipeUI = { text: u.text, button: u.button };
 }
 
 // Shows the "SAVED GAME DETECTED" wipe link on the start screen. Called from
@@ -734,19 +752,59 @@ function showWipeConfirm(a) {
         scaleY: 1000,
         alpha: .75
     });
+
+    var outline = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "whitePixel");
+    outline.scaleX = 458;
+    outline.scaleY = 208;
+    c.add(outline);
+
     var panel = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel");
-    panel.scaleX = 340;
-    panel.scaleY = 160;
+    panel.scaleX = 450;
+    panel.scaleY = 200;
     panel.alpha = .95;
     c.add(panel);
-    var title = a.add.text(gameVars.halfWidth, gameVars.halfHeight - 30, "WIPE SAVED GAME?", {
+
+    var title = a.add.text(gameVars.halfWidth, gameVars.halfHeight - 40, "WIPE SAVED GAME?", {
         fontFamily: "Times New Roman",
-        fontSize: 26,
+        fontSize: 34,
         color: "#ffffff",
         align: "center"
     });
     title.setOrigin(.5, .5);
     c.add(title);
+
+    var closeBtn = new Button(a, c, function () {
+        closeWipeConfirm();
+    }, {
+        atlas: "loadingSS",
+        ref: "transparent_pixel",
+        x: gameVars.halfWidth + 200,
+        y: gameVars.halfHeight - 75,
+        scaleX: 40,
+        scaleY: 40
+    });
+
+    var closeText = a.add.text(gameVars.halfWidth + 200, gameVars.halfHeight - 75, "X", {
+        fontFamily: "Times New Roman",
+        fontSize: 26,
+        color: "#dddddd",
+        align: "center"
+    });
+    closeText.setOrigin(.5, .5);
+    closeText.setAlpha(0.8);
+    c.add(closeText);
+
+    closeBtn.setOnHoverFunc(function () {
+        closeText.setScale(1.25);
+        closeText.setColor("#ffffff");
+        closeText.setAlpha(1.0);
+    });
+    closeBtn.setOnHoverOutFunc(function () {
+        closeText.setScale(1.0);
+        closeText.setColor("#dddddd");
+        closeText.setAlpha(0.8);
+    });
+
     var yesBtn = new Button(a, c, function () {
         saveClear();
         destroySaveWipeUI();
@@ -764,44 +822,75 @@ function showWipeConfirm(a) {
     }, {
         atlas: "loadingSS",
         ref: "transparent_pixel",
-        x: gameVars.halfWidth - 95,
+        x: gameVars.halfWidth - 110,
         y: gameVars.halfHeight + 40,
-        scaleX: 90,
-        scaleY: 36
+        scaleX: 110,
+        scaleY: 48
     });
-    var yesText = a.add.text(gameVars.halfWidth - 95, gameVars.halfHeight + 40, "YES", {
+
+    var yesText = a.add.text(gameVars.halfWidth - 110, gameVars.halfHeight + 40, "YES", {
         fontFamily: "Times New Roman",
-        fontSize: 22,
-        color: "#ffffff",
+        fontSize: 28,
+        color: "#dddddd",
         align: "center"
     });
     yesText.setOrigin(.5, .5);
+    yesText.setAlpha(0.8);
     c.add(yesText);
+
+    yesBtn.setOnHoverFunc(function () {
+        yesText.setScale(1.25);
+        yesText.setColor("#ffffff");
+        yesText.setAlpha(1.0);
+    });
+    yesBtn.setOnHoverOutFunc(function () {
+        yesText.setScale(1.0);
+        yesText.setColor("#dddddd");
+        yesText.setAlpha(0.8);
+    });
+
     var noBtn = new Button(a, c, function () {
-        destroySaveWipeUI();
+        closeWipeConfirm();
     }, {
         atlas: "loadingSS",
         ref: "transparent_pixel",
-        x: gameVars.halfWidth + 95,
+        x: gameVars.halfWidth + 110,
         y: gameVars.halfHeight + 40,
-        scaleX: 90,
-        scaleY: 36
+        scaleX: 110,
+        scaleY: 48
     });
-    var noText = a.add.text(gameVars.halfWidth + 95, gameVars.halfHeight + 40, "NO", {
+
+    var noText = a.add.text(gameVars.halfWidth + 110, gameVars.halfHeight + 40, "NO", {
         fontFamily: "Times New Roman",
-        fontSize: 22,
-        color: "#ffffff",
+        fontSize: 28,
+        color: "#dddddd",
         align: "center"
     });
     noText.setOrigin(.5, .5);
+    noText.setAlpha(0.8);
     c.add(noText);
+
+    noBtn.setOnHoverFunc(function () {
+        noText.setScale(1.25);
+        noText.setColor("#ffffff");
+        noText.setAlpha(1.0);
+    });
+    noBtn.setOnHoverOutFunc(function () {
+        noText.setScale(1.0);
+        noText.setColor("#dddddd");
+        noText.setAlpha(0.8);
+    });
+
     var existing = gameObjectsTemp.saveWipeUI;
     gameObjectsTemp.saveWipeUI = {
         text: existing ? existing.text : null,
         button: existing ? existing.button : null,
         blocker: blocker,
+        outline: outline,
         panel: panel,
         title: title,
+        closeBtn: closeBtn,
+        closeText: closeText,
         yesBtn: yesBtn,
         yesText: yesText,
         noBtn: noBtn,

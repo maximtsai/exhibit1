@@ -177,6 +177,9 @@ gameObjects.roomHandyObjs.dollPicture = e.add.sprite(4, 188, "roomHandy", "handy
                 updateSparklePos(e.x, e.y), updateGuideArrowFat(e.x + e.arrOffX + 50, e.y - 230 + e.arrOffY, .5 * Math.PI + e.arrOffRot)
             }
         }
+    }), registerRoomSaveState(a, {
+        getStage: roomHandyGetSaveStage,
+        setStage: roomHandySetSaveStage
     }), t = messageBus.subscribe("startDarkSequence", e => {
 		gameObjects.roomHandyObjs.dollPicture.setVisible(true);
         t.unsubscribe();
@@ -262,7 +265,7 @@ function fingerPress() {
                     gameObjects.roomHandyObjs.fingerButton.setPos(a.x, a.y), updateGuideArrowFat(a.x + a.arrOffX, a.y - 200 + a.arrOffY, .5 * Math.PI + a.arrOffRot)
                 }, 800)) : (gameObjects.roomHandyObjs.fingerButton.setPos(a.x, a.y), updateGuideArrowFat(a.x + a.arrOffX, a.y - 200 + a.arrOffY, .5 * Math.PI + a.arrOffRot))
             }
-    else gameObjects.roomHandyObjs.roomComplete = !0, updateHandyExpression(gameObjects.roomHandyObjs.fingerState + 1), gameObjects.roomHandyObjs.fingerButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), tweenVolume("gladiatorx", .85), gameObjects.guideArrowFat.alpha = 0, gameDelay(() => {
+    else gameObjects.roomHandyObjs.roomComplete = !0, roomHandyMarkStage(ROOM_HANDY_STAGE_FINISHED), updateHandyExpression(gameObjects.roomHandyObjs.fingerState + 1), gameObjects.roomHandyObjs.fingerButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), tweenVolume("gladiatorx", .85), gameObjects.guideArrowFat.alpha = 0, gameDelay(() => {
         gameObjects.hand.switchHand();
         createKey(-15, gameVars.halfHeight - 10, gameObjects.roomHandyObjs.roomIndex, gameObjects.roomHandyObjs.roomContainer, !1)
     }, 1200);
@@ -270,7 +273,7 @@ function fingerPress() {
         gameObjects.roomHandyObjs.fingerState = e, updateHandyExpression(gameObjects.roomHandyObjs.fingerState);
         let a = null;
         a = gameVars.darkPoint ? gameObjects.roomHandyObjs.listOfInverseButtonPos[e] : gameObjects.roomHandyObjs.listOfButtonPos[e], gameObjects.roomHandyObjs.fingerButton.setPos(a.x, a.y), updateGuideArrowFat(a.x + a.arrOffX, a.y - 200 + a.arrOffY, .5 * Math.PI + a.arrOffRot), addGuideArrowFatToContainer(gameObjects.roomHandyObjs.roomContainer)
-    } else gameObjects.roomHandyObjs.fingerButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), updateHandyExpression(gameObjects.roomHandyObjs.fingerState + 1), gameObjects.guideArrowFat.alpha = 0, gameDelay(() => {
+    } else roomHandyMarkStage(ROOM_HANDY_STAGE_COUNTED), gameObjects.roomHandyObjs.fingerButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), updateHandyExpression(gameObjects.roomHandyObjs.fingerState + 1), gameObjects.guideArrowFat.alpha = 0, gameDelay(() => {
         gameObjects.roomHandyObjs.doll.scaleY = .97, gameDelay(() => {
             gameObjects.roomHandyObjs.doll.scaleY = 1.05, gameDelay(() => {
                 gameObjects.roomHandyObjs.doll.scaleY = 1.04, gameDelay(() => {
@@ -339,7 +342,7 @@ function fingerUnPress() {
         messageBus.publish("fingerClicked");
     }
     let e = gameObjects.roomHandyObjs.fingerState - 1;
-    e >= 0 ? (gameObjects.roomHandyObjs.fingerState = e, gameObjects.roomHandyObjs.cleanupButton.setPos(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 20), updateGuideArrowFat(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 200, .5 * Math.PI)) : (gameObjects.roomHandyObjs.cleanupButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), gameObjects.exhibit.needCleanup = !1, updateHandyExpression(1), gameDelay(() => {
+    e >= 0 ? (gameObjects.roomHandyObjs.fingerState = e, gameObjects.roomHandyObjs.cleanupButton.setPos(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 20), updateGuideArrowFat(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 200, .5 * Math.PI)) : (gameObjects.roomHandyObjs.cleanupButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), gameObjects.exhibit.needCleanup = !1, roomHandyMarkStage(ROOM_HANDY_STAGE_CLEANED), updateHandyExpression(1), gameDelay(() => {
         playSound("deepbell3"), updateInfoTextSoft("Room cleaned up.", 2250);
     }, 100)), handleFingerSound(e + 2);
     let a = 0;
@@ -520,4 +523,97 @@ function handleFingerSound(e) {
         case 18:
             playSound("tear4")
     }
+}
+
+// ============================================================== save state ===
+//
+// Mr. Handy owns his own progress ladder. save.js stores whatever number
+// roomHandyGetSaveStage returns and hands it straight back to
+// roomHandySetSaveStage on restore — it never interprets the value, so the
+// stages below describe this room and nothing else.
+//
+// The room is completed three separate times over the course of the game, which
+// is why a plain "finished / not finished" bit was never enough here.
+
+var ROOM_HANDY_STAGE_NONE = 0;
+var ROOM_HANDY_STAGE_COUNTED = 1;  // normal phase: fingers counted, yellow key given
+var ROOM_HANDY_STAGE_CLEANED = 2;  // dark phase: fingers uncounted again
+var ROOM_HANDY_STAGE_FINISHED = 3; // horror phase: counted to the end, red key given
+
+// Called by the live gameplay path at each milestone, so the stage is recorded
+// rather than re-derived from fingerState later. Monotonic: never goes back.
+function roomHandyMarkStage(stage) {
+    let r = gameObjects.roomHandyObjs;
+    if (r && (!r.saveStage || r.saveStage < stage)) {
+        r.saveStage = stage;
+    }
+}
+
+function roomHandyGetSaveStage() {
+    let r = gameObjects.roomHandyObjs;
+    return (r && r.saveStage) || ROOM_HANDY_STAGE_NONE;
+}
+
+// Swaps both hand images. The frames are recreated rather than re-framed
+// because that is what fingerPress/fingerUnPress do.
+function roomHandySetHands(leftFrame, rightFrame) {
+    let r = gameObjects.roomHandyObjs;
+    if (r.leftHand) r.leftHand.destroy();
+    if (r.rightHand) r.rightHand.destroy();
+    r.leftHand = globalScene.add.image(-285, 360, "roomHandy", leftFrame);
+    r.rightHand = globalScene.add.image(290, 360, "roomHandy", rightFrame);
+    r.roomContainer.add(r.leftHand);
+    r.roomContainer.add(r.rightHand);
+}
+
+// Puts the room straight into the end state of `stage`.
+//
+// STATE ONLY — no tweens, sounds, static, flashes or gameDelay chains. The live
+// path plays those itself and then calls roomHandyMarkStage; this function is
+// the half of each completion that a reloaded game needs to look right.
+function roomHandySetSaveStage(stage) {
+    let r = gameObjects.roomHandyObjs;
+    if (!r || !stage) return;
+    r.saveStage = stage;
+
+    // Every completed state parks the finger button and its guide arrow.
+    if (r.fingerButton) r.fingerButton.setPos(0, -9999);
+    if (gameObjects.guideArrowFat) gameObjects.guideArrowFat.alpha = 0;
+
+    if (stage === ROOM_HANDY_STAGE_COUNTED) {
+        // fingerPress stops advancing at 7 outside the horror phase, then falls
+        // through to the completion branch with handleFingerSound(8), which
+        // leaves both hands on their fifth frame.
+        r.fingerState = 7;
+        roomHandySetHands("lefthand5", "righthand5");
+        updateHandyExpression(8);
+        return;
+    }
+
+    if (stage === ROOM_HANDY_STAGE_CLEANED) {
+        // fingerUnPress counts back down to -1, landing both hands on frame 1
+        // and resetting the expression to case 1.
+        r.fingerState = 0;
+        roomHandySetHands("lefthand1", "righthand1");
+        updateHandyExpression(1);
+        if (r.cleanupButton) r.cleanupButton.setPos(0, -9999);
+        return;
+    }
+
+    // ROOM_HANDY_STAGE_FINISHED. In the horror phase the count runs the full
+    // length of listOfButtonPos; fingerPress advances while
+    // `length > fingerState + 1`, so it ends one short of the length. It must
+    // stay a valid index — the room's exhibitMove subscriber does an unguarded
+    // listOfButtonPos[fingerState] on every entry.
+    r.roomComplete = true;
+    r.fingerState = r.listOfButtonPos.length - 1;
+    // handleFingerSound is called with fingerState + 1, so the last frames the
+    // live path paints are case 19's righthand12 and case 12's lefthand9.
+    roomHandySetHands("lefthand9", "righthand12");
+    if (r.dollPicture) r.dollPicture.setFrame("handy5");
+    if (r.cleanupButton) r.cleanupButton.setPos(0, -9999);
+    // The tail of updateHandyExpression(19), without its static and delays.
+    if (r.dollBody) r.dollBody.setVisible(false);
+    setHandyDollImage("dollDefeated");
+    removeFromUpdateFuncList(shakeHandyDoll);
 }
