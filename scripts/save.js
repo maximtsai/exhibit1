@@ -53,8 +53,10 @@ var SAVE_ROOM_CLEANED = 2; // dark/horror-phase completion finished
 
 // Stage reached per room index, accumulated at runtime. The primary signal is
 // `keyAppeared`: a room spawns its key exactly when its puzzle is solved, which
-// is the one completion event every room shares. The phase flags at spawn time
-// say which stage it was — NOT the key colour, which does not track phase
+// is the one completion event every room shares. Note that observing it only
+// RECORDS the stage — it does not trigger a write; the value is picked up by
+// whatever save happens next. The phase flags at spawn time say which stage it
+// was — NOT the key colour, which does not track phase
 // (Mr. Handy's normal-phase completion spawns a red key, roomhandy.js:267,
 // while Mr. Floaty's spawns a yellow one, roompump.js:237).
 var saveRoomStage = {};
@@ -291,6 +293,7 @@ function saveClear() {
 }
 
 function scheduleSave() {
+    console.log("game saved")
     if (saveRestoring || saveDebounceTimer) return;
     saveDebounceTimer = setTimeout(function () {
         saveDebounceTimer = null;
@@ -304,19 +307,22 @@ function initSaveSystem() {
     saveStartPrefetch();
     if (typeof messageBus !== "undefined" && messageBus) {
         messageBus.subscribe("exhibitMove", scheduleSave);
+        // Records only — deliberately does NOT schedule a save. A key often
+        // spawns in the middle of its room's completion cinematic, so writing
+        // here caught the room mid-flourish. The bookkeeping below still runs,
+        // so whenever the next save does happen (room change, saveCheckpoint,
+        // page hide) it already knows about the key and the stage.
         messageBus.subscribe("keyAppeared", function (ev) {
-            if (ev && ev.roomIndex !== undefined) {
-                saveKeyRegistry[ev.roomIndex] = { x: ev.x, y: ev.y, red: !!ev.red };
-                // A key spawns exactly when a room's puzzle is solved; the phase
-                // it spawned in is which of the two completions this was.
-                var stage = (typeof gameVars !== "undefined" && (gameVars.darkPoint || gameVars.horrorPoint))
-                    ? SAVE_ROOM_CLEANED
-                    : SAVE_ROOM_DONE;
-                if (!saveRoomStage[ev.roomIndex] || saveRoomStage[ev.roomIndex] < stage) {
-                    saveRoomStage[ev.roomIndex] = stage;
-                }
+            if (!ev || ev.roomIndex === undefined) return;
+            saveKeyRegistry[ev.roomIndex] = { x: ev.x, y: ev.y, red: !!ev.red };
+            // A key spawns exactly when a room's puzzle is solved; the phase
+            // it spawned in is which of the two completions this was.
+            var stage = (typeof gameVars !== "undefined" && (gameVars.darkPoint || gameVars.horrorPoint))
+                ? SAVE_ROOM_CLEANED
+                : SAVE_ROOM_DONE;
+            if (!saveRoomStage[ev.roomIndex] || saveRoomStage[ev.roomIndex] < stage) {
+                saveRoomStage[ev.roomIndex] = stage;
             }
-            scheduleSave();
         });
         messageBus.subscribe("keyClicked", function (ev) {
             if (ev && ev.roomIndex !== undefined) delete saveKeyRegistry[ev.roomIndex];
@@ -329,13 +335,15 @@ function initSaveSystem() {
         messageBus.subscribe("temporarilyNormal", scheduleSave);
         messageBus.subscribe("saveCheckpoint", scheduleSave);
     }
-    if (typeof window !== "undefined") {
-        window.addEventListener("beforeunload", saveNow);
-        window.addEventListener("pagehide", saveNow);
-        document.addEventListener("visibilitychange", function () {
-            if (document.visibilityState === "hidden") saveNow();
-        });
-    }
+    // NO unload-time saving. Refreshing the page must not write a save, so
+    // there are deliberately no beforeunload / pagehide / visibilitychange
+    // handlers here. A refresh returns the player to their last checkpoint
+    // rather than to whatever transient state the page happened to be in.
+    //
+    // visibilitychange cannot be kept as a "backgrounded" hook either: browsers
+    // fire it with state "hidden" on the way into an unload, ahead of pagehide,
+    // so there is no way to tell a refresh apart from a tab switch at that
+    // point. Keeping it would silently reintroduce saving on refresh.
 }
 
 // ---------------------------------------------------------------- restore ---

@@ -501,8 +501,8 @@ function setupInstructionsStand(e) {
 	}, {
 		atlas: "buttons",
 		ref: "stand_normal",
-		x: 367,
-		y: 945
+		x: 341,
+		y: 963
 	}, {
 		atlas: "buttons",
 		ref: "stand_hover",
