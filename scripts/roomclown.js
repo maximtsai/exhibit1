@@ -198,6 +198,7 @@ function nosePress3(e, o) {
         let a = globalScene.add.image(0, 600, "buttons", "key_red");
         o.add(a);
         gameVars.clownRedKeyUp = true;
+        // messageBus.publish("saveCheckpoint"); // reactivate to save on clown3's red key spawn
         let l = new Button(globalScene, {
             container: o,
             normal: {
@@ -333,7 +334,7 @@ function nosePress3(e, o) {
                         showStaticLite(3, 3)
                     }, 300), gameDelay(() => {
                         gameObjects.roomClown3.nose.setPos(35, gameVars.halfHeight - 155), playSound("click1")
-                    }, 400), gameObjects.roomClown3.clickedOnce = !0
+                    }, 400), gameObjects.roomClown3.clickedOnce = !0 /* , messageBus.publish("saveCheckpoint") // reactivate to save on clown3's bait key spawn */
                 }, 40)
             }, 50)
         }, 700)

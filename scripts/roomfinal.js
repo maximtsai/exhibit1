@@ -248,6 +248,7 @@ function runEpilogue(background) {
 																				undefined,
 																				() => {
 																					const restartGame = () => {
+																						saveClear();
 																						if (globalScene && globalScene.sound) {
 																							globalScene.sound.stopAll();
 																						}

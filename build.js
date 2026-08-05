@@ -29,6 +29,7 @@ const jsFiles = [
     'scripts/roomjack.js',
     'scripts/roomclown.js',
     'scripts/roomfinal.js',
+    'scripts/save.js',
     'helpermain.js',
     'main.js'
 ];

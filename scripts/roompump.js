@@ -137,7 +137,12 @@ function setupRoomPump(e, o, a) {
     }), t = messageBus.subscribe("startDarkSequence", e => {
         gameObjects.roomPumpObjs.cleanupBtn.setPos(gameObjects.roomPumpObjs.floaty.x, gameObjects.roomPumpObjs.floaty.y), gameObjects.roomPumpObjs.frames.alpha = 1, t.unsubscribe()
     }), s = messageBus.subscribe("startHorrorSequence", e => {
-        removeFromUpdateFuncList(frameKidUpdate), gameObjects.roomPumpObjs.frameKid.isDestroyed || gameObjects.roomPumpObjs.frameKid.destroy(), gameObjects.roomPumpObjs.pumpBtn.reappear(), gameObjects.roomPumpObjs.pumpBtn.setPos(-240, 500), gameObjects.roomPumpObjs.canPump = !0, s.unsubscribe()
+        // frameKid is only created by the exhibitMove subscriber above, and only
+        // if the player enters this room while darkPoint is set. Reaching the
+        // horror sequence without that having happened left it undefined and
+        // threw here, aborting the rest of this handler and leaving the pump
+        // permanently unusable.
+        removeFromUpdateFuncList(frameKidUpdate), gameObjects.roomPumpObjs.frameKid && !gameObjects.roomPumpObjs.frameKid.isDestroyed && gameObjects.roomPumpObjs.frameKid.destroy(), gameObjects.roomPumpObjs.pumpBtn.reappear(), gameObjects.roomPumpObjs.pumpBtn.setPos(-240, 500), gameObjects.roomPumpObjs.canPump = !0, s.unsubscribe()
     })
 }
 

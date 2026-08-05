@@ -571,7 +571,7 @@ function createKey(e, t, a, s, o = !0, c) {
 	keyPosY = t;
 	keyRoomIdx = a;
 	if (typeof messageBus !== "undefined" && messageBus) {
-		messageBus.publish("keyAppeared", { x: e, y: t, roomIndex: a });
+		messageBus.publish("keyAppeared", { x: e, y: t, roomIndex: a, red: o });
 	}
 
 	return playSound("keyfound"), (n = new Button(globalScene, s, () => {
@@ -579,7 +579,7 @@ function createKey(e, t, a, s, o = !0, c) {
 		keyPosY = null;
 		keyRoomIdx = null;
 		if (typeof messageBus !== "undefined" && messageBus) {
-			messageBus.publish("keyClicked");
+			messageBus.publish("keyClicked", { roomIndex: a });
 		}
 		n.destroy(), o ? playSound("keyget") : playSound("keygetred"), tempFreeze(500), gameObjects.exhibit.setCantMoveIdx(a, !1), gameDelay(() => {
 			enableMoveButtons(true), c && c()

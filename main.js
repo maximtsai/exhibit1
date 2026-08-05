@@ -538,6 +538,7 @@ function onLoadComplete(a) {
                     scaleX: 240,
                     scaleY: 160
                 });
+                if (typeof maybeShowSaveWipeUI === "function") maybeShowSaveWipeUI(a);
             }
         }, {
             alpha: 1,
@@ -646,6 +647,7 @@ function onLoadAnimComplete(a) {
 }
 
 function startGame(a) {
+    if (typeof destroySaveWipeUI === "function") destroySaveWipeUI();
     gameVars.gameplayBegan = false;
     if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
     gameObjects.loadingMusic = a.sound.add("loadingMusic"), gameObjects.loadingMusic.play(), gameObjects.startGameButton.destroy(), gameVars.gameStarted = !0, gameObjects.scene = a, setupGame(a), gameObjectsTemp.blackTeeth = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 50, "menu", "teethBlack"), gameObjectsTemp.blackTeeth.scaleX = 1.6, gameObjectsTemp.blackTeeth.scaleY = 1.6, gameObjectsTemp.blackTeethAnim = a.tweens.chain({
@@ -1222,6 +1224,7 @@ function setupGame(a) {
             fill: "white"
         }
     }), gameObjects.infoText.setOrigin(.5, .5), gameObjects.infoText.setShadow(0, 0, void 0, 6, !0, !0), gameObjects.infoText.setStroke("#000000", 6), gameObjects.infoText.alpha = 0
+    initSaveSystem(), applySaveStateIfNeeded()
 }
 
 function update(w, s) {
