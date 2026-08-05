@@ -134,6 +134,9 @@ function setupRoomPump(e, o, a) {
                 ease: "Sine.easeInOut"
             }]
         })))
+    }), registerRoomSaveState(o, {
+        getStage: roomPumpGetSaveStage,
+        setStage: roomPumpSetSaveStage
     }), t = messageBus.subscribe("startDarkSequence", e => {
         gameObjects.roomPumpObjs.cleanupBtn.setPos(gameObjects.roomPumpObjs.floaty.x, gameObjects.roomPumpObjs.floaty.y), gameObjects.roomPumpObjs.frames.alpha = 1, t.unsubscribe()
     }), s = messageBus.subscribe("startHorrorSequence", e => {
@@ -232,13 +235,13 @@ function updateFloatyPumpState(e) {
                         }]
                     }), gameDelay(() => {
                         removeFromUpdateFuncList(roomPumpUpdate)
-                    }, 1e4), gameObjects.roomPumpObjs.roomComplete = !0, gameObjects.roomPumpObjs.frames.destroy(), gameObjects.roomPumpObjs.frames = globalScene.add.image(0, 250, "roomPump", "framesFloaty2"), gameObjects.roomPumpObjs.roomContainer.add(gameObjects.roomPumpObjs.frames)
+                    }, 1e4), gameObjects.roomPumpObjs.roomComplete = !0, roomPumpMarkStage(ROOM_PUMP_STAGE_POPPED), gameObjects.roomPumpObjs.frames.destroy(), gameObjects.roomPumpObjs.frames = globalScene.add.image(0, 250, "roomPump", "framesFloaty2"), gameObjects.roomPumpObjs.roomContainer.add(gameObjects.roomPumpObjs.frames)
                 }
             } else e > 525 ? (setFloatyState(6), gameObjects.roomPumpObjs.floaty.scaleX = .75 + .1 * Math.random() + .1 * o, gameObjects.roomPumpObjs.floaty.scaleY = .75 + .04 * Math.random() + .08 * o) : !gameObjects.roomPumpObjs.showOverblown3 && e > 505 && (gameObjects.roomPumpObjs.showOverblown3 = !0, tweenVolume("pumpamb", 0), gameDelay(() => {
                 gameObjects.sounds.pumpamb.stop()
             }), showAltReality(["floaty1", "floaty2", "floaty3", "floaty2", "floaty4", "floaty1"], 1.02, !0))
         }
-    } else gameObjects.roomPumpObjs.canPump = !1, gameObjects.roomPumpObjs.pumpCheckpoint = 100, gameObjects.roomPumpObjs.pumpBtn.disappear(), setFloatyGoalPos(67.5, o - 215), gameDelay(() => {
+    } else gameObjects.roomPumpObjs.canPump = !1, roomPumpMarkStage(ROOM_PUMP_STAGE_INFLATED), gameObjects.roomPumpObjs.pumpCheckpoint = 100, gameObjects.roomPumpObjs.pumpBtn.disappear(), setFloatyGoalPos(67.5, o - 215), gameDelay(() => {
         createKey(-60, gameVars.halfHeight - 130, gameObjects.roomPumpObjs.roomIndex, gameObjects.roomPumpObjs.roomContainer, !0)
     }, 300);
     let a = Math.min(1, 8 * gameObjects.roomPumpObjs.fan.rotVel - .2);
@@ -263,7 +266,7 @@ function pumpReleased() {
 }
 
 function cleanupPump() {
-    gameObjects.roomPumpObjs.cleanupBtn.destroy(), gameObjects.roomPumpObjs.pumpCheckpoint = 0, gameObjects.exhibit.needCleanup = !1, gameDelay(() => {
+    gameObjects.roomPumpObjs.cleanupBtn.destroy(), gameObjects.roomPumpObjs.pumpCheckpoint = 0, gameObjects.exhibit.needCleanup = !1, roomPumpMarkStage(ROOM_PUMP_STAGE_DEFLATED), messageBus.publish("saveCheckpoint"), gameDelay(() => {
         playSound("deepbell5"), updateInfoTextSoft("Room cleaned up.", 2250)
     }, 500)
 }
@@ -297,4 +300,130 @@ function frameKidUpdate() {
         a = Math.abs(e) + Math.abs(o),
         m = Math.max(0, Math.min(1, .005 * (a - 150)));
     gameObjects.roomPumpObjs.frameKid.alpha = .9985 * gameObjects.roomPumpObjs.frameKid.alpha + .0015 * m, gameObjects.roomPumpObjs.frameKid.x = gameObjects.roomPumpObjs.frameKid.origX + 3 * Math.random() - 1.5, gameObjects.roomPumpObjs.frameKid.y = gameObjects.roomPumpObjs.frameKid.origY + 3 * Math.random() - 1.5, gameObjects.roomPumpObjs.frameKid.alpha < .95 && (removeFromUpdateFuncList(frameKidUpdate), gameObjects.roomPumpObjs.frameKid.destroy(), gameObjects.roomPumpObjs.frameKid.isDestroyed = !0)
+}
+
+// ============================================================== save state ===
+//
+// Mr. Floaty is completed three times: inflated until he floats (normal),
+// deflated again (dark cleanup), then overinflated until he pops (horror).
+//
+// Two ordering hazards, both caused by restore republishing the phase topics
+// BEFORE it applies room state:
+//
+//  1. startDarkSequence parks cleanupBtn — the "click Mr. Floaty to deflate
+//     him" hotspot — at floaty.x/floaty.y. At that point Floaty is still on his
+//     pedestal, so the hotspot was left down there while this function then
+//     lifted Floaty into the air, and clicking him did nothing. cleanupBtn is
+//     therefore re-parked at the END of this function, once Floaty has moved.
+//  2. startHorrorSequence re-arms pumpBtn (reappear + canPump), which a
+//     restorer that unconditionally disarms the pump would undo.
+//
+// Same rule as roomfaucet.js: only disarm a control when this room's work for
+// the phase the player is CURRENTLY in has already been done.
+
+var ROOM_PUMP_STAGE_NONE = 0;
+var ROOM_PUMP_STAGE_INFLATED = 1; // normal phase: pumped up, yellow key given
+var ROOM_PUMP_STAGE_DEFLATED = 2; // dark phase: deflated again
+var ROOM_PUMP_STAGE_POPPED = 3;   // horror phase: popped, red key given
+
+function roomPumpMarkStage(stage) {
+    let r = gameObjects.roomPumpObjs;
+    if (r && (!r.saveStage || r.saveStage < stage)) {
+        r.saveStage = stage;
+    }
+}
+
+function roomPumpGetSaveStage() {
+    let r = gameObjects.roomPumpObjs;
+    return (r && r.saveStage) || ROOM_PUMP_STAGE_NONE;
+}
+
+function roomPumpPhaseSatisfied(stage) {
+    if (gameVars.horrorPoint) return stage >= ROOM_PUMP_STAGE_POPPED;
+    if (gameVars.darkPoint) return stage >= ROOM_PUMP_STAGE_DEFLATED;
+    return stage >= ROOM_PUMP_STAGE_INFLATED;
+}
+
+// roomPumpUpdate only lerps toward the goals, so a restored room would visibly
+// drift into place when walked into. Snap Floaty onto them instead.
+function roomPumpSnapFloatyToGoals() {
+    let r = gameObjects.roomPumpObjs;
+    if (!r.floaty) return;
+    r.floaty.x = r.floatyGoalPosX;
+    r.floaty.y = r.floatyGoalPosY;
+    r.floaty.scaleX = r.floatyGoalScaleX;
+    r.floaty.scaleY = r.floatyGoalScaleY;
+}
+
+// Puts the room straight into the end state of `stage`.
+//
+// STATE ONLY — no tweens, sounds, static or gameDelay chains.
+function roomPumpSetSaveStage(stage) {
+    let r = gameObjects.roomPumpObjs;
+    if (!r || !stage) return;
+    r.saveStage = stage;
+
+    if (stage >= ROOM_PUMP_STAGE_POPPED) {
+        // Tail of the horror pop in updateFloatyPumpState. Floaty's sprites are
+        // destroyed here, so nothing below may touch him — return early.
+        r.roomComplete = !0;
+        r.canPump = !1;
+        for (let i = 0; i < r.floatySprites.length; i++) {
+            if (saveAlive(r.floatySprites[i])) r.floatySprites[i].destroy();
+        }
+        if (saveAlive(r.pumpBtn)) r.pumpBtn.destroy();
+        if (saveAlive(r.hose)) r.hose.destroy();
+        if (saveAlive(r.cleanupBtn)) r.cleanupBtn.destroy();
+        pumpReleased();
+        if (saveAlive(r.frames)) r.frames.destroy();
+        r.frames = globalScene.add.image(0, 250, "roomPump", "framesFloaty2");
+        r.roomContainer.add(r.frames);
+        removeFromUpdateFuncList(roomPumpUpdate);
+        return;
+    }
+
+    if (stage === ROOM_PUMP_STAGE_DEFLATED) {
+        // cleanupPump: the checkpoint drops to 0 and Floaty sinks back down.
+        r.canPump = !1;
+        r.pumpAmt = 0;
+        r.pumpCheckpoint = 0;
+        updateFloatyPumpState(0);
+        roomPumpSnapFloatyToGoals();
+    } else {
+        // ROOM_PUMP_STAGE_INFLATED — the tail of the normal-phase branch in
+        // updateFloatyPumpState (roompump.js:236).
+        //
+        // Deliberately NOT replaying that branch's setFloatyGoalPos(67.5, o-215):
+        // roomPumpUpdate calls updateFloatyPumpState every frame, which
+        // recomputes the goal as o-210 and wins. o-215 is a one-frame value
+        // Floaty never rests at, and parking the cleanup hotspot there left it
+        // 5px off him. Let the room compute its own settled goal.
+        r.pumpAmt = 100;
+        r.pumpCheckpoint = 100;
+        updateFloatyPumpState(100);
+        roomPumpSnapFloatyToGoals();
+    }
+
+    // Arm the control this phase actually uses, now that Floaty is in place.
+    let satisfied = roomPumpPhaseSatisfied(stage);
+    if (gameVars.horrorPoint) {
+        // The horror phase pumps him again; startHorrorSequence already
+        // re-armed the pump, so leave it alone unless the work is done.
+        if (satisfied) {
+            r.canPump = !1;
+            if (saveAlive(r.pumpBtn)) r.pumpBtn.disappear();
+        }
+    } else if (gameVars.darkPoint) {
+        // The dark phase is a single click on Floaty himself, never pumping.
+        r.canPump = !1;
+        if (satisfied) {
+            if (saveAlive(r.cleanupBtn)) r.cleanupBtn.destroy();
+        } else if (saveAlive(r.cleanupBtn)) {
+            // Re-park the hotspot on Floaty AFTER he has been moved above.
+            r.cleanupBtn.setPos(r.floaty.x, r.floaty.y);
+        }
+    } else {
+        r.canPump = !1;
+        if (saveAlive(r.pumpBtn)) r.pumpBtn.disappear();
+    }
 }

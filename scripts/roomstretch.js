@@ -100,12 +100,15 @@ function setupRoomStretch(e, t, o) {
         } else gameDelay(() => {
             gameObjects.roomStretchObjs.shouldUpdate = !1
         }, 700)
+    }), registerRoomSaveState(t, {
+        getStage: roomStretchGetSaveStage,
+        setStage: roomStretchSetSaveStage
     }), r = messageBus.subscribe("startDarkSequence", e => {
         r.unsubscribe(), gameObjects.roomStretchObjs.frame1.alpha = 1, gameObjects.roomStretchObjs.frame2.alpha = 1, gameObjects.roomStretchObjs.frame3.alpha = 1, gameObjects.roomStretchObjs.cleanupButton.setPos(gameObjects.roomStretchObjs.touchspot.x, gameObjects.roomStretchObjs.touchspot.y)
     }), a = messageBus.subscribe("startHorrorSequence", e => {
         gameObjects.roomStretchObjs.doDarkCleanup = !1, gameObjects.roomStretchObjs.roomUnlocked = !1, a.unsubscribe(), gameObjects.roomStretchObjs.handButton.setState("normal")
     }), m = messageBus.subscribe("startTrueStretchHorror", e => {
-        gameObjects.roomStretchObjs.doDarkCleanup = !1, gameObjects.roomStretchObjs.roomUnlocked = !1, setStretchDollPos(-295, gameVars.height - 161), gameObjects.roomStretchObjs.touchspot.x = 355, gameObjects.roomStretchObjs.touchspot.y = 185, gameObjects.roomStretchObjs.armseg1.x = gameObjects.roomStretchObjs.dollPosX + 35.5, m.unsubscribe(), gameObjects.roomStretchObjs.doHorrorSection = !0, gameObjects.roomStretchObjs.frame1.destroy(), gameObjects.roomStretchObjs.frame1x.alpha = 1, pullbackStreamers()
+        roomStretchMarkStage(ROOM_STRETCH_STAGE_HORROR_READY), gameObjects.roomStretchObjs.doDarkCleanup = !1, gameObjects.roomStretchObjs.roomUnlocked = !1, setStretchDollPos(-295, gameVars.height - 161), gameObjects.roomStretchObjs.touchspot.x = 355, gameObjects.roomStretchObjs.touchspot.y = 185, gameObjects.roomStretchObjs.armseg1.x = gameObjects.roomStretchObjs.dollPosX + 35.5, m.unsubscribe(), gameObjects.roomStretchObjs.doHorrorSection = !0, gameObjects.roomStretchObjs.frame1.destroy(), gameObjects.roomStretchObjs.frame1x.alpha = 1, pullbackStreamers()
     })
 }
 
@@ -182,7 +185,7 @@ function roomStretchUpdate(e) {
         if (Math.abs(i) + Math.abs(u) < 20) {
             if (!gameObjects.roomStretchObjs.roomUnlocked) {
                 if (gameObjects.roomStretchObjs.roomUnlocked = !0, gameObjects.roomStretchObjs.doHorrorSection) {
-                    gameObjects.roomStretchObjs.roomCompleted = !0, gameDelay(() => {
+                    gameObjects.roomStretchObjs.roomCompleted = !0, roomStretchMarkStage(ROOM_STRETCH_STAGE_COMPLETED), gameDelay(() => {
                         // Both showAltReality("stretch*") call sites live inside
                         // roomStretchUpdate, so once it stops running nothing can
                         // reference these six full-screen JPEGs again (~26MB VRAM).
@@ -191,7 +194,7 @@ function roomStretchUpdate(e) {
                     let e = globalScene.add.image(gameObjects.roomStretchObjs.touchspot.x, gameObjects.roomStretchObjs.touchspot.y, "roomStretch", "hand");
                     gameObjects.roomStretchObjs.roomContainer.add(e), gameObjects.roomStretchObjs.armseg1.x = e.x - 25, gameObjects.roomStretchObjs.armseg1.y = e.y + 7, gameObjects.roomStretchObjs.handButton.setState("disable")
                 } else {
-                    gameVars.horrorPoint || gameObjects.roomStretchObjs.handButton.setState("disable"), setStretchDollImage("dollHappy", !0);
+                    roomStretchMarkStage(ROOM_STRETCH_STAGE_UNLOCKED), gameVars.horrorPoint || gameObjects.roomStretchObjs.handButton.setState("disable"), setStretchDollImage("dollHappy", !0);
                     let e = globalScene.add.image(gameObjects.roomStretchObjs.dollPosX - 65, gameObjects.roomStretchObjs.dollPosY - 125, "roomStretch", "exclamation");
                     gameObjects.roomStretchObjs.roomContainer.add(e), e.scaleX = .5, e.scaleY = .5, globalScene.tweens.chain({
                         targets: e,
@@ -272,7 +275,7 @@ function roomStretchUpdate(e) {
 }
 
 function stretchCleanup() {
-    gameObjects.roomStretchObjs.doDarkCleanup = !0, gameObjects.roomStretchObjs.cleanupButton.destroy(), gameObjects.exhibit.needCleanup = !1, gameDelay(() => {
+    gameObjects.roomStretchObjs.doDarkCleanup = !0, gameObjects.roomStretchObjs.cleanupButton.destroy(), gameObjects.exhibit.needCleanup = !1, roomStretchMarkStage(ROOM_STRETCH_STAGE_CLEANED), messageBus.publish("saveCheckpoint"), gameDelay(() => {
         playSound("deepbell2"), updateInfoTextSoft("Room cleaned up.", 2250)
     }, 400)
 }
@@ -331,4 +334,109 @@ function pullbackStreamers() {
     addToUpdateFuncList(updateStreamers), gameDelay(() => {
         removeFromUpdateFuncList(updateStreamers)
     }, 2e4)
+}
+// ============================================================== save state ===
+//
+// Ms. Stretch has FOUR beats, not three like the other rooms — the horror phase
+// is split in two. Pulling her arm in the horror phase first triggers a lure
+// cinematic that publishes startTrueStretchHorror, which moves the doll and the
+// touchspot and swaps the frames; only then can the arm actually be torn off.
+// Restoring straight to "completed" without that intermediate step would leave
+// the doll and touchspot at their pre-horror positions.
+//
+// roomUnlocked is NOT cumulative progress: startHorrorSequence and
+// startTrueStretchHorror both reset it to false, because it means "has the arm
+// been pulled far enough during THIS phase". The old legacy restorer used it as
+// a stage-1 signal, which is why it needed a separate saveStage.
+//
+// Two ordering hazards, both from restore republishing phase topics before it
+// applies room state — the same pair seen in roompump.js:
+//
+//  1. startDarkSequence parks cleanupButton at the touchspot. startTrueStretch-
+//     Horror later MOVES the touchspot, so the hotspot is re-parked at the end
+//     of this function once everything is in place.
+//  2. startHorrorSequence re-arms handButton (setState "normal"), which a
+//     restorer that unconditionally disables it would undo.
+
+var ROOM_STRETCH_STAGE_NONE = 0;
+var ROOM_STRETCH_STAGE_UNLOCKED = 1;     // normal phase: arm pulled, key given
+var ROOM_STRETCH_STAGE_CLEANED = 2;      // dark phase: room cleaned up
+var ROOM_STRETCH_STAGE_HORROR_READY = 3; // horror lure done, true horror set up
+var ROOM_STRETCH_STAGE_COMPLETED = 4;    // horror phase: arm torn off
+
+function roomStretchMarkStage(stage) {
+    let r = gameObjects.roomStretchObjs;
+    if (r && (!r.saveStage || r.saveStage < stage)) {
+        r.saveStage = stage;
+    }
+}
+
+function roomStretchGetSaveStage() {
+    let r = gameObjects.roomStretchObjs;
+    return (r && r.saveStage) || ROOM_STRETCH_STAGE_NONE;
+}
+
+function roomStretchPhaseSatisfied(stage) {
+    if (gameVars.horrorPoint) return stage >= ROOM_STRETCH_STAGE_COMPLETED;
+    if (gameVars.darkPoint) return stage >= ROOM_STRETCH_STAGE_CLEANED;
+    return stage >= ROOM_STRETCH_STAGE_UNLOCKED;
+}
+
+// Puts the room straight into the end state of `stage`.
+//
+// STATE ONLY — no tweens, sounds, static or gameDelay chains.
+function roomStretchSetSaveStage(stage) {
+    let r = gameObjects.roomStretchObjs;
+    if (!r || !stage) return;
+    r.saveStage = stage;
+
+    if (stage >= ROOM_STRETCH_STAGE_CLEANED) {
+        r.doDarkCleanup = !0;
+        if (saveAlive(r.cleanupButton)) r.cleanupButton.destroy();
+    }
+
+    if (stage >= ROOM_STRETCH_STAGE_HORROR_READY) {
+        // Re-run the room's own horror setup rather than copying it: the
+        // subscriber unsubscribes itself, so this fires exactly once.
+        messageBus.publish("startTrueStretchHorror");
+    }
+
+    if (stage >= ROOM_STRETCH_STAGE_COMPLETED) {
+        // Tail of the arm-tearing branch in roomStretchUpdate (line 190).
+        r.roomCompleted = !0;
+        r.roomUnlocked = !0;
+        if (saveAlive(r.frame2)) r.frame2.destroy();
+        r.frame2x.alpha = 1;
+        r.hand.alpha = 0;
+        r.hand.x = r.dollPosX + 25;
+        r.hand.y = 500;
+        let h = globalScene.add.image(r.touchspot.x, r.touchspot.y, "roomStretch", "hand");
+        r.roomContainer.add(h);
+        r.armseg1.x = h.x - 25;
+        r.armseg1.y = h.y + 7;
+        setStretchDollImage("dollDefeated");
+        if (saveAlive(r.handButton)) r.handButton.setState("disable");
+        removeFromUpdateFuncList(roomStretchUpdate);
+        return;
+    }
+
+    if (stage === ROOM_STRETCH_STAGE_UNLOCKED && !gameVars.darkPoint && !gameVars.horrorPoint) {
+        // Normal-phase completion: she is pleased and the arm is left alone.
+        r.roomUnlocked = !0;
+        setStretchDollImage("dollHappy", !0);
+    }
+
+    // Arm the control this phase actually uses. Never unconditionally disable
+    // handButton — startHorrorSequence deliberately re-armed it.
+    let satisfied = roomStretchPhaseSatisfied(stage);
+    if (satisfied) {
+        if (saveAlive(r.handButton)) r.handButton.setState("disable");
+    } else if (gameVars.darkPoint && !gameVars.horrorPoint) {
+        // Dark phase: the cleanup hotspot, re-parked now the touchspot is final.
+        if (saveAlive(r.cleanupButton)) {
+            r.cleanupButton.setPos(r.touchspot.x, r.touchspot.y);
+        }
+    } else if (saveAlive(r.handButton)) {
+        r.handButton.setState("normal");
+    }
 }

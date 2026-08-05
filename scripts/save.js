@@ -44,27 +44,9 @@ var saveGameVarsFields = [
     "walkSlow", "baseSway", "hintCount", "manualMuted", "bloodHandActive"
 ];
 
-// Room completion stages. Every puzzle room is completed TWICE: once in the
-// normal phase (Floaty inflates and floats up) and again after the lights go
-// out (Floaty is overinflated until he pops). Rooms absent from the map are
-// restored fresh, exactly as setupGame left them.
-var SAVE_ROOM_DONE = 1;    // normal-phase puzzle finished
-var SAVE_ROOM_CLEANED = 2; // dark/horror-phase completion finished
-
-// Stage reached per room index, accumulated at runtime. The primary signal is
-// `keyAppeared`: a room spawns its key exactly when its puzzle is solved, which
-// is the one completion event every room shares. Note that observing it only
-// RECORDS the stage — it does not trigger a write; the value is picked up by
-// whatever save happens next. The phase flags at spawn time say which stage it
-// was — NOT the key colour, which does not track phase
-// (Mr. Handy's normal-phase completion spawns a red key, roomhandy.js:267,
-// while Mr. Floaty's spawns a yellow one, roompump.js:237).
-var saveRoomStage = {};
-
 // Rooms that own their own save state, keyed by room index. A provider is
 // {getStage, setStage}: getStage returns a value this file never interprets and
-// setStage is handed that same value back on restore. Registered rooms bypass
-// the legacy tables below entirely.
+// setStage is handed that same value back on restore.
 //
 // The value may be any JSON-serialisable thing the room finds useful — an
 // integer stage is the common case (roomhandy.js), but a room needing more can
@@ -76,12 +58,7 @@ var saveRoomStage = {};
 // applySaveStateIfNeeded at the end of setupGame. Registering at file top level
 // would not work — save.js is concatenated after the room files (build.js), so
 // only the hoisted function declaration is available that early, not this map.
-//
-// MIGRATION: roomhandy.js, roomjack.js, roomclown.js and roomfaucet.js are
-// converted. Rooms 2 (pump) and 6 (stretch) still use saveCollectRoomStages /
-// saveRoomStage1Restorers / saveRoomStage2Restorers, which duplicate each
-// room's completion visuals. Convert them one at a time; when the last one
-// lands, all of that can be deleted.
+
 var saveRoomStateProviders = {};
 
 function registerRoomSaveState(roomIndex, provider) {
@@ -231,34 +208,12 @@ function collectSaveState() {
 // The single place that decides how far each room has got. Starts from the
 // key-spawn history, then corroborates against the rooms' own completion flags
 // so a room is never recorded as less finished than it actually is.
+// Asks every room how far it has got. This file never interprets the values.
 function saveCollectRoomStages() {
     var stages = {};
-    var setStage = function (idx, s) {
-        if (!stages[idx] || stages[idx] < s) stages[idx] = s;
-    };
-    for (var idx in saveRoomStage) {
-        // Rooms with a provider report themselves at the bottom of this
-        // function. Their value is opaque and may not even be a number, so it
-        // must never reach setStage's numeric comparison.
-        if (saveRoomStateProviders[idx]) continue;
-        setStage(idx, saveRoomStage[idx]);
-    }
-
-    var g = gameObjects;
-    var dark = typeof gameVars !== "undefined" && (gameVars.darkPoint || gameVars.horrorPoint);
-
-    // Stage 1 — the normal-phase completion flag each room sets.
-    if (g.roomStretchObjs && g.roomStretchObjs.roomUnlocked) setStage(6, SAVE_ROOM_DONE);
-
-    // Stage 2 — the dark/horror-phase completion.
-    if (g.roomPumpObjs && g.roomPumpObjs.roomComplete) setStage(2, SAVE_ROOM_CLEANED);
-    if (g.roomStretchObjs && g.roomStretchObjs.roomCompleted) setStage(6, SAVE_ROOM_CLEANED);
-
-    // Rooms that own their state report it themselves and win outright — their
-    // stage numbering is their own and must not be merged with the ladder above.
-    for (var idx2 in saveRoomStateProviders) {
-        stages[idx2] = saveRoomStateProviders[idx2].getStage();
-        if (!stages[idx2]) delete stages[idx2];
+    for (var idx in saveRoomStateProviders) {
+        var stage = saveRoomStateProviders[idx].getStage();
+        if (stage) stages[idx] = stage;
     }
     return stages;
 }
@@ -273,7 +228,6 @@ function saveNow() {
 
 function saveClear() {
     saveKeyRegistry = {};
-    saveRoomStage = {};
     saveRemoteValue = null;
     delete saveStorageFallback[SAVE_STORAGE_KEY];
     try { localStorage.removeItem(SAVE_STORAGE_KEY); } catch (e) { /* ignore */ }
@@ -306,20 +260,14 @@ function initSaveSystem() {
         messageBus.subscribe("exhibitMove", scheduleSave);
         // Records only — deliberately does NOT schedule a save. A key often
         // spawns in the middle of its room's completion cinematic, so writing
-        // here caught the room mid-flourish. The bookkeeping below still runs,
-        // so whenever the next save does happen (room change, saveCheckpoint,
-        // page hide) it already knows about the key and the stage.
+        // here caught the room mid-flourish. Whenever the next save does happen
+        // (room change, saveCheckpoint) it already knows about the key.
+        //
+        // Only the key's position is tracked. Which stage a room has reached is
+        // the room's own business, reported through its save provider.
         messageBus.subscribe("keyAppeared", function (ev) {
             if (!ev || ev.roomIndex === undefined) return;
             saveKeyRegistry[ev.roomIndex] = { x: ev.x, y: ev.y, red: !!ev.red };
-            // A key spawns exactly when a room's puzzle is solved; the phase
-            // it spawned in is which of the two completions this was.
-            var stage = (typeof gameVars !== "undefined" && (gameVars.darkPoint || gameVars.horrorPoint))
-                ? SAVE_ROOM_CLEANED
-                : SAVE_ROOM_DONE;
-            if (!saveRoomStage[ev.roomIndex] || saveRoomStage[ev.roomIndex] < stage) {
-                saveRoomStage[ev.roomIndex] = stage;
-            }
         });
         messageBus.subscribe("keyClicked", function (ev) {
             if (ev && ev.roomIndex !== undefined) delete saveKeyRegistry[ev.roomIndex];
@@ -403,11 +351,8 @@ function applySaveState(save) {
         }
 
         // 4. Finished rooms. Anything not listed stays exactly as setupGame
-        //    built it, which is the fresh state. The registry is seeded from
-        //    the save too, so the next saveNow does not forget a stage whose
-        //    keyAppeared fired in the previous session.
-        saveRoomStage = {};
-        for (var r in rooms) saveRoomStage[r] = rooms[r];
+        //    built it, which is the fresh state. Each room's setStage also
+        //    records the stage back onto the room, so the next save reports it.
         saveApplyFinishedRooms(rooms);
 
         // 5. Keys that spawned but were never picked up.
@@ -501,32 +446,13 @@ function makeKeyButton(roomIdx, x, y, red, container) {
 
 // --------------------------------------------------------- finished rooms ---
 //
-// One function per room, each forcing that room straight to its completed
-// visual state. These mirror the tail of the room's own completion path with
-// the animation stripped out.
-//
-// TODO: these blocks are duplicated from each room's inline completion code.
-// The durable fix is to extract a completeRoomX(instant) in each room file and
-// have both the live path and this one call it, so there is a single copy.
-
-// Stage 1: the normal-phase completion. The clown rooms are one-shot and have
-// no dark-phase variant, so they only ever appear here.
-var saveRoomStage1Restorers = {
-    2: saveDoneRoomPump,
-    // 3 (Mr. Washy) owns its own save state — see roomfaucet.js.
-    // 4, 7, 14 (the clown rooms) own their own save state — see roomclown.js.
-    // 5 (Mr. Handy) owns its own save state — see roomhandy.js.
-    6: saveDoneRoomStretch
-};
-
-// Stage 2: the dark/horror-phase completion, applied on top of stage 1.
-var saveRoomStage2Restorers = {
-    2: saveCleanedRoomPump,
-    6: saveCleanedRoomStretch
-};
+// Every room now owns its own save state and registers a provider from inside
+// its setupRoom* function. This file no longer knows anything about any room's
+// internals — it stores whatever getStage returns and hands it back to
+// setStage. See roomhandy.js for the simplest example (an integer stage) and
+// roomjack.js for a room that needs more (an object).
 
 function saveApplyFinishedRooms(rooms) {
-    // Rooms that own their state get their own number handed straight back.
     for (var idx in saveRoomStateProviders) {
         if (!rooms[idx]) continue;
         try {
@@ -535,90 +461,6 @@ function saveApplyFinishedRooms(rooms) {
             console.warn("save: room " + idx + " failed to restore stage " + rooms[idx], e);
         }
     }
-    saveApplyRoomStage(rooms, saveRoomStage1Restorers, SAVE_ROOM_DONE);
-    saveApplyRoomStage(rooms, saveRoomStage2Restorers, SAVE_ROOM_CLEANED);
-}
-
-function saveApplyRoomStage(rooms, restorers, stage) {
-    for (var idx in restorers) {
-        if (saveRoomStateProviders[idx]) continue; // room owns its own restore
-        if (!rooms[idx] || rooms[idx] < stage) continue;
-        try {
-            restorers[idx]();
-        } catch (e) {
-            console.warn("save: failed to restore room " + idx + " at stage " + stage, e);
-        }
-    }
-}
-
-// Mr. Floaty inflated and floating at the top of his tether. Mirrors the tail
-// of roomPumpUpdate's normal-phase branch (roompump.js:236).
-function saveDoneRoomPump() {
-    var r = gameObjects.roomPumpObjs;
-    if (!r) return;
-    r.canPump = false;
-    r.pumpAmt = 100;
-    r.pumpCheckpoint = 100;
-    if (saveAlive(r.pumpBtn)) r.pumpBtn.disappear();
-    updateFloatyPumpState(100);
-    setFloatyGoalPos(67.5, gameVars.halfHeight + 175 - 215);
-    // Snap to the goals; roomPumpUpdate only lerps toward them, so without this
-    // Floaty visibly drifts up from the pedestal when the player walks in.
-    r.floaty.x = r.floatyGoalPosX;
-    r.floaty.y = r.floatyGoalPosY;
-    r.floaty.scaleX = r.floatyGoalScaleX;
-    r.floaty.scaleY = r.floatyGoalScaleY;
-}
-
-function saveCleanedRoomPump() {
-    var r = gameObjects.roomPumpObjs;
-    if (!r) return;
-    r.roomComplete = true;
-    r.canPump = false;
-    for (var i = 0; i < r.floatySprites.length; i++) {
-        if (saveAlive(r.floatySprites[i])) r.floatySprites[i].destroy();
-    }
-    if (saveAlive(r.pumpBtn)) r.pumpBtn.destroy();
-    if (saveAlive(r.hose)) r.hose.destroy();
-    pumpReleased();
-    if (saveAlive(r.frames)) r.frames.destroy();
-    r.frames = globalScene.add.image(0, 250, "roomPump", "framesFloaty2");
-    r.roomContainer.add(r.frames);
-    removeFromUpdateFuncList(roomPumpUpdate);
-}
-
-
-
-
-// Ms. Stretch's arm pulled out far enough to unlock the room, but not yet the
-// horror-phase finish: the doll is pleased and the hand button is idle.
-function saveDoneRoomStretch() {
-    var r = gameObjects.roomStretchObjs;
-    if (!r) return;
-    r.roomUnlocked = true;
-    if (!(typeof gameVars !== "undefined" && gameVars.horrorPoint) && saveAlive(r.handButton)) {
-        r.handButton.setState("disable");
-    }
-    setStretchDollImage("dollHappy", true);
-}
-
-function saveCleanedRoomStretch() {
-    var r = gameObjects.roomStretchObjs;
-    if (!r) return;
-    r.roomCompleted = true;
-    r.roomUnlocked = true;
-    if (saveAlive(r.handButton)) r.handButton.setState("disable");
-    r.hand.alpha = 0;
-    r.hand.x = r.dollPosX + 25;
-    r.hand.y = 500;
-    var h = globalScene.add.image(r.touchspot.x, r.touchspot.y, "roomStretch", "hand");
-    r.roomContainer.add(h);
-    r.armseg1.x = h.x - 25;
-    r.armseg1.y = h.y + 7;
-    if (saveAlive(r.frame2)) r.frame2.destroy();
-    r.frame2x.alpha = 1;
-    setStretchDollImage("dollDefeated");
-    removeFromUpdateFuncList(roomStretchUpdate);
 }
 
 
