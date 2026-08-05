@@ -60,9 +60,15 @@ var SAVE_ROOM_CLEANED = 2; // dark/horror-phase completion finished
 var saveRoomStage = {};
 
 // Rooms that own their own save state, keyed by room index. A provider is
-// {getStage, setStage}: getStage returns an integer this file never interprets,
-// setStage is handed that integer back on restore. Registered rooms bypass the
-// legacy tables below entirely.
+// {getStage, setStage}: getStage returns a value this file never interprets and
+// setStage is handed that same value back on restore. Registered rooms bypass
+// the legacy tables below entirely.
+//
+// The value may be any JSON-serialisable thing the room finds useful — an
+// integer stage is the common case (roomhandy.js), but a room needing more can
+// return an object (roomjack.js returns {stage, spin} so the crank keeps its
+// angle). Return a falsy value to mean "no progress"; it is omitted from the
+// save. Nothing here compares or does arithmetic on it.
 //
 // Rooms register from inside their setupRoom* function, which runs before
 // applySaveStateIfNeeded at the end of setupGame. Registering at file top level
@@ -227,7 +233,13 @@ function saveCollectRoomStages() {
     var setStage = function (idx, s) {
         if (!stages[idx] || stages[idx] < s) stages[idx] = s;
     };
-    for (var idx in saveRoomStage) setStage(idx, saveRoomStage[idx]);
+    for (var idx in saveRoomStage) {
+        // Rooms with a provider report themselves at the bottom of this
+        // function. Their value is opaque and may not even be a number, so it
+        // must never reach setStage's numeric comparison.
+        if (saveRoomStateProviders[idx]) continue;
+        setStage(idx, saveRoomStage[idx]);
+    }
 
     var g = gameObjects;
     var dark = typeof gameVars !== "undefined" && (gameVars.darkPoint || gameVars.horrorPoint);
@@ -754,19 +766,19 @@ function showWipeConfirm(a) {
     });
 
     var outline = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "whitePixel");
-    outline.scaleX = 458;
-    outline.scaleY = 208;
+    outline.scaleX = 368;
+    outline.scaleY = 158;
     c.add(outline);
 
     var panel = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel");
-    panel.scaleX = 450;
-    panel.scaleY = 200;
+    panel.scaleX = 360;
+    panel.scaleY = 150;
     panel.alpha = .95;
     c.add(panel);
 
-    var title = a.add.text(gameVars.halfWidth, gameVars.halfHeight - 40, "WIPE SAVED GAME?", {
+    var title = a.add.text(gameVars.halfWidth, gameVars.halfHeight - 25, "WIPE SAVED GAME?", {
         fontFamily: "Times New Roman",
-        fontSize: 34,
+        fontSize: 26,
         color: "#ffffff",
         align: "center"
     });
@@ -778,15 +790,15 @@ function showWipeConfirm(a) {
     }, {
         atlas: "loadingSS",
         ref: "transparent_pixel",
-        x: gameVars.halfWidth + 200,
-        y: gameVars.halfHeight - 75,
-        scaleX: 40,
-        scaleY: 40
+        x: gameVars.halfWidth + 164,
+        y: gameVars.halfHeight - 59,
+        scaleX: 30,
+        scaleY: 30
     });
 
-    var closeText = a.add.text(gameVars.halfWidth + 200, gameVars.halfHeight - 75, "X", {
+    var closeText = a.add.text(gameVars.halfWidth + 164, gameVars.halfHeight - 59, "X", {
         fontFamily: "Times New Roman",
-        fontSize: 26,
+        fontSize: 22,
         color: "#dddddd",
         align: "center"
     });
@@ -822,15 +834,15 @@ function showWipeConfirm(a) {
     }, {
         atlas: "loadingSS",
         ref: "transparent_pixel",
-        x: gameVars.halfWidth - 110,
-        y: gameVars.halfHeight + 40,
-        scaleX: 110,
-        scaleY: 48
+        x: gameVars.halfWidth - 85,
+        y: gameVars.halfHeight + 30,
+        scaleX: 90,
+        scaleY: 40
     });
 
-    var yesText = a.add.text(gameVars.halfWidth - 110, gameVars.halfHeight + 40, "YES", {
+    var yesText = a.add.text(gameVars.halfWidth - 85, gameVars.halfHeight + 30, "YES", {
         fontFamily: "Times New Roman",
-        fontSize: 28,
+        fontSize: 24,
         color: "#dddddd",
         align: "center"
     });
@@ -854,15 +866,15 @@ function showWipeConfirm(a) {
     }, {
         atlas: "loadingSS",
         ref: "transparent_pixel",
-        x: gameVars.halfWidth + 110,
-        y: gameVars.halfHeight + 40,
-        scaleX: 110,
-        scaleY: 48
+        x: gameVars.halfWidth + 85,
+        y: gameVars.halfHeight + 30,
+        scaleX: 90,
+        scaleY: 40
     });
 
-    var noText = a.add.text(gameVars.halfWidth + 110, gameVars.halfHeight + 40, "NO", {
+    var noText = a.add.text(gameVars.halfWidth + 85, gameVars.halfHeight + 30, "NO", {
         fontFamily: "Times New Roman",
-        fontSize: 28,
+        fontSize: 24,
         color: "#dddddd",
         align: "center"
     });

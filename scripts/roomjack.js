@@ -38,7 +38,10 @@ function setupRoomJack(e, a, o) {
         },
         isDraggable: !0,
         onDrop: resetSpinnerButton
-    }), addToUpdateFuncList(roomJackUpdate), resetSpinnerButton(), messageBus.subscribe("exhibitMove", (e, o) => {
+    }), addToUpdateFuncList(roomJackUpdate), resetSpinnerButton(), registerRoomSaveState(a, {
+        getStage: roomJackGetSaveState,
+        setStage: roomJackSetSaveState
+    }), messageBus.subscribe("exhibitMove", (e, o) => {
         e === a ? (tweenVolume("gladiator0", 0), tweenVolume("gladiator1", .9), tweenVolume("gladiator2", .1), tweenVolume("gladiatorx", .1), gameVars.darkPoint && (gameObjects.roomJackObjs.eyeOffsetX = 4, gameDelay(() => {
             removeFromUpdateFuncList(shakeJackHead), gameObjects.roomJackObjs.eyeOffsetX = 0, gameObjects.roomJackObjs.dollHead.rotation = 0, gameObjects.roomJackObjs.dollHeadSmile.visible = !1
         }, 1300)), addGuideArrowToContainer(gameObjects.roomJackObjs.roomContainer), updateGuideArrow(0, -9999), gameObjects.roomJackObjs.shouldUpdate = !0, gameObjects.roomJackObjs.lightsReady && (gameObjects.moveLeftBtn.setOnMouseUpFunc(() => {
@@ -96,9 +99,9 @@ function roomJackUpdate(e) {
                 b = 0;
             gameObjects.roomJackObjs.isAutopilot ? (b = r, gameObjects.roomJackObjs.spinnerButton.getIsDragged() && m < .01 && (b -= Math.min(.5 * r, Math.abs(.003 * m)))) : m > .01 && !gameVars.darkPoint ? b = Math.min(r, .02 * m) : gameVars.darkPoint && m < .01 && (b = Math.max(-r, .02 * m)), gameObjects.roomJackObjs.slowRotation && (b *= .45), Math.abs(b) > 1e-5 && (gameObjects.roomJackObjs.spinner.rotVel += b * e), gameObjects.roomJackObjs.spinner.rotation += gameObjects.roomJackObjs.spinner.rotVel, gameObjects.roomJackObjs.totalDistRotated += gameObjects.roomJackObjs.spinner.rotVel, gameVars.darkPoint ? checkMusicSequenceDark(gameObjects.roomJackObjs.spinner.rotVel) : gameVars.horrorPoint ? checkMusicSequenceHorror(gameObjects.roomJackObjs.spinner.rotVel, e) : checkMusicSequenceNormal(gameObjects.roomJackObjs.spinner.rotVel)
         }
-        gameObjects.roomJackObjs.spinnerButton.getIsDragged() && gameObjects.roomJackObjs.canSpin && updateGuideArrowJack(), gameObjects.roomJackObjs.spinner.rotVel *= .5, gameObjects.roomJackObjs.animateLid && (gameObjects.roomJackObjs.lid.rotation += gameObjects.roomJackObjs.lid.rotVel, gameObjects.roomJackObjs.lid.rotVel *= .831, gameObjects.roomJackObjs.lid.rotVel <= .01 && (gameObjects.roomJackObjs.animateLid = !1)), "jump" === gameObjects.roomJackObjs.jackJumpState && (gameObjects.roomJackObjs.lid.rotation += gameObjects.roomJackObjs.lid.rotVel, gameObjects.roomJackObjs.lid.rotVel *= .831, gameObjects.roomJackObjs.lid.rotation > 3 && (gameObjects.roomJackObjs.jackJumpState = "finished", gameVars.horrorPoint || gameDelay(() => {
+        gameObjects.roomJackObjs.spinnerButton.getIsDragged() && gameObjects.roomJackObjs.canSpin && updateGuideArrowJack(), gameObjects.roomJackObjs.spinner.rotVel *= .5, gameObjects.roomJackObjs.animateLid && (gameObjects.roomJackObjs.lid.rotation += gameObjects.roomJackObjs.lid.rotVel, gameObjects.roomJackObjs.lid.rotVel *= .831, gameObjects.roomJackObjs.lid.rotVel <= .01 && (gameObjects.roomJackObjs.animateLid = !1)), "jump" === gameObjects.roomJackObjs.jackJumpState && (gameObjects.roomJackObjs.lid.rotation += gameObjects.roomJackObjs.lid.rotVel, gameObjects.roomJackObjs.lid.rotVel *= .831, gameObjects.roomJackObjs.lid.rotation > 3 && (gameObjects.roomJackObjs.jackJumpState = "finished", gameVars.horrorPoint || (roomJackMarkStage(ROOM_JACK_STAGE_POPPED), gameDelay(() => {
             createKey(gameObjects.roomJackObjs.box.x, gameObjects.roomJackObjs.box.y - 60, gameObjects.roomJackObjs.roomIndex, gameObjects.roomJackObjs.roomContainer, !0)
-        }, 250))), gameObjects.roomJackObjs.dollHead.x = gameObjects.roomJackObjs.dollCreepy.x, gameObjects.roomJackObjs.dollHead.y = gameObjects.roomJackObjs.dollCreepy.y - gameObjects.roomJackObjs.halfHeightDiffDoll, gameObjects.roomJackObjs.dollHead.scaleX = gameObjects.roomJackObjs.dollCreepy.scaleX, gameObjects.roomJackObjs.dollEyes.x = gameObjects.roomJackObjs.dollCreepy.x + gameObjects.roomJackObjs.eyeOffsetX, gameObjects.roomJackObjs.dollEyes.y = gameObjects.roomJackObjs.dollCreepy.y - gameObjects.roomJackObjs.halfHeightDiffDoll + gameObjects.roomJackObjs.eyeOffsetY, gameObjects.roomJackObjs.dollEyes.scaleX = gameObjects.roomJackObjs.dollCreepy.scaleX, gameObjects.roomJackObjs.dollHeadUnder.x = gameObjects.roomJackObjs.dollHead.x, gameObjects.roomJackObjs.dollHeadUnder.y = gameObjects.roomJackObjs.dollHead.y, gameObjects.roomJackObjs.dollHeadUnder.scaleX = gameObjects.roomJackObjs.dollHead.scaleX, updateJackArmsLeft(e), gameObjects.roomJackObjs.useAltArmMovement ? updateJackArmsRightAuto() : updateJackArmsRight()
+        }, 250)))), gameObjects.roomJackObjs.dollHead.x = gameObjects.roomJackObjs.dollCreepy.x, gameObjects.roomJackObjs.dollHead.y = gameObjects.roomJackObjs.dollCreepy.y - gameObjects.roomJackObjs.halfHeightDiffDoll, gameObjects.roomJackObjs.dollHead.scaleX = gameObjects.roomJackObjs.dollCreepy.scaleX, gameObjects.roomJackObjs.dollEyes.x = gameObjects.roomJackObjs.dollCreepy.x + gameObjects.roomJackObjs.eyeOffsetX, gameObjects.roomJackObjs.dollEyes.y = gameObjects.roomJackObjs.dollCreepy.y - gameObjects.roomJackObjs.halfHeightDiffDoll + gameObjects.roomJackObjs.eyeOffsetY, gameObjects.roomJackObjs.dollEyes.scaleX = gameObjects.roomJackObjs.dollCreepy.scaleX, gameObjects.roomJackObjs.dollHeadUnder.x = gameObjects.roomJackObjs.dollHead.x, gameObjects.roomJackObjs.dollHeadUnder.y = gameObjects.roomJackObjs.dollHead.y, gameObjects.roomJackObjs.dollHeadUnder.scaleX = gameObjects.roomJackObjs.dollHead.scaleX, updateJackArmsLeft(e), gameObjects.roomJackObjs.useAltArmMovement ? updateJackArmsRightAuto() : updateJackArmsRight()
     }
 }
 
@@ -178,7 +181,7 @@ function checkMusicSequenceDark(e) {
         playSound("lidslam"), gameDelay(() => {
             zoomTemp(1.028), gameObjects.roomJackObjs.dollCreepy.y = 2010, gameObjects.roomJackObjs.lid.rotation = 0
         }, 170)
-    }, 70), gameObjects.roomJackObjs.playedSlam = !0)), gameObjects.roomJackObjs.dollCreepy.y = Math.min(2010, gameObjects.roomJackObjs.dollCreepy.y - 5 * e), gameObjects.roomJackObjs.lid.rotation = Math.max(0, gameObjects.roomJackObjs.lid.rotation + .2 * e), gameObjects.roomJackObjs.lid.rotation <= .01 && (gameObjects.roomJackObjs.lid.rotation = 0, gameObjects.exhibit.needCleanup = !1, gameObjects.roomJackObjs.canSpin = !1, resetGuideArrowJack(), gameDelay(() => {
+    }, 70), gameObjects.roomJackObjs.playedSlam = !0)), gameObjects.roomJackObjs.dollCreepy.y = Math.min(2010, gameObjects.roomJackObjs.dollCreepy.y - 5 * e), gameObjects.roomJackObjs.lid.rotation = Math.max(0, gameObjects.roomJackObjs.lid.rotation + .2 * e), gameObjects.roomJackObjs.lid.rotation <= .01 && (gameObjects.roomJackObjs.lid.rotation = 0, gameObjects.exhibit.needCleanup = !1, gameObjects.roomJackObjs.canSpin = !1, roomJackMarkStage(ROOM_JACK_STAGE_CLOSED), messageBus.publish("saveCheckpoint"), resetGuideArrowJack(), gameDelay(() => {
         playSound("deepbell1"), updateInfoTextSoft("Room cleaned up.", 2500)
     }, 400))
 }
@@ -1313,4 +1316,125 @@ function shakeHeadFlashTwo(e = 1) {
     gameObjects.roomJackObjs.dollHeadFlash2.rotation = .05 * (Math.random() - .5) - a;
     let o = .001 + gameObjects.roomJackObjs.dollHeadFlash2.scaleX * gameObjects.roomJackObjs.dollHeadFlash2.scaleX * .006;
     gameObjects.roomJackObjs.dollHeadFlash2.scaleX += o * e, gameObjects.roomJackObjs.dollHeadFlash2.scaleY += o * e
+}
+
+// ============================================================== save state ===
+//
+// Jack owns his own progress, same contract as roomhandy.js: save.js stores
+// whatever roomJackGetSaveState returns and hands it straight back to
+// roomJackSetSaveState on restore, without interpreting it. Jack needs more
+// than a bare stage number — the crank keeps whatever angle the player left it
+// at — so the value is a small object rather than an integer.
+//
+// The horror finale is deliberately absent. It is one uninterruptible sequence
+// and save.js refuses to write a save once it starts (saveInFinale), so there
+// is no such thing as a save taken part-way through it.
+
+var ROOM_JACK_STAGE_NONE = 0;
+var ROOM_JACK_STAGE_POPPED = 1; // normal phase: music finished, Jack sprang out
+var ROOM_JACK_STAGE_CLOSED = 2; // dark phase: handle unturned, Jack shut back in
+
+// Called by the live gameplay path at each milestone so the stage is recorded
+// rather than re-derived from lid angles later. Monotonic: never goes back.
+function roomJackMarkStage(stage) {
+    let r = gameObjects.roomJackObjs;
+    if (r && (!r.saveStage || r.saveStage < stage)) {
+        r.saveStage = stage;
+    }
+}
+
+function roomJackGetSaveState() {
+    let r = gameObjects.roomJackObjs;
+    if (!r || !r.saveStage) return null;
+    return {
+        stage: r.saveStage,
+        // Cosmetic, but the crank sitting back at zero next to an open box is
+        // exactly what makes a restored room look wrong.
+        spin: r.spinner ? r.spinner.rotation : 0
+    };
+}
+
+// Puts the room straight into the end state of `state.stage`.
+//
+// STATE ONLY — no tweens, sounds, static or gameDelay chains. animatePopUp and
+// the dark-phase slam play those live; this is the half a reloaded game needs.
+//
+// Runs after save.js has republished startDarkSequence / startHorrorSequence,
+// so anything those subscribers own (canSpin, noteCount — they reset the puzzle
+// for the next phase) is deliberately left alone unless we are still in the
+// normal phase.
+function roomJackSetSaveState(state) {
+    let r = gameObjects.roomJackObjs;
+    if (!r || !state || !state.stage) return;
+    r.saveStage = state.stage;
+
+    let normalPhase = !gameVars.darkPoint && !gameVars.horrorPoint;
+
+    // The crank, and the drag handle that rides on it.
+    if (state.spin !== undefined) {
+        r.spinner.rotation = state.spin;
+        r.spinner.rotVel = 0;
+    }
+    if (saveAlive(r.spinnerButton)) resetSpinnerButton();
+
+    // saveAlive (save.js) rather than a bare isDestroyed check: only Buttons
+    // carry that flag, Phaser images just drop their scene reference. The horror
+    // sequence destroys spinnerButton and dollHeadUnder, so both can be gone.
+    //
+    // The pop-up animation is over either way: make sure its per-frame helper is
+    // not left running and its two transition sprites stay hidden.
+    removeFromUpdateFuncList(updatePopUp);
+    r.headPopup1.visible = !1;
+    r.headPopup2.visible = !1;
+    r.animateLid = !1;
+    r.lid.rotVel = 0;
+    r.jackJumpState = "finished";
+    resetGuideArrowJack();
+
+    if (state.stage === ROOM_JACK_STAGE_POPPED) {
+        // End state of animatePopUp plus the lid swing in roomJackUpdate, which
+        // flips to "finished" the moment rotation passes 3 (rotVel starts at
+        // .51 and decays by .831, converging just above it).
+        r.lid.rotation = 3.02;
+        r.dollCreepy.y = r.dollCreepy.origYPos - 260;
+        r.dollCreepy.scaleX = 1;
+        r.dollCreepy.visible = !0;
+        r.dollHead.visible = !0;
+        r.dollEyes.visible = !0;
+        if (saveAlive(r.dollHeadUnder)) r.dollHeadUnder.visible = !1;
+        if (normalPhase) {
+            r.canSpin = !1;
+            r.noteCount = r.musicDataNormal.length;
+            r.rotateMusicAccumulate = 0;
+            r.slowRotation = !1;
+        }
+    } else {
+        // ROOM_JACK_STAGE_CLOSED — the tail of checkMusicSequenceDark: the lid
+        // is shut, Jack has sunk back to his resting depth and the eyeless head
+        // is showing again.
+        r.lid.rotation = 0;
+        r.dollCreepy.y = r.dollCreepy.origYPos;
+        r.dollCreepy.scaleX = .4;
+        r.dollCreepy.visible = !0;
+        r.dollHead.visible = !1;
+        r.dollEyes.visible = !1;
+        if (saveAlive(r.dollHeadUnder)) r.dollHeadUnder.visible = !0;
+        r.playedSlam = !0;
+        r.canSpin = !1;
+    }
+
+    // roomJackUpdate re-derives these from dollCreepy every frame, but only
+    // while the player is in the room. Sync them now so the room also looks
+    // right if it is restored from a distance and walked into later.
+    r.dollHead.x = r.dollCreepy.x;
+    r.dollHead.y = r.dollCreepy.y - r.halfHeightDiffDoll;
+    r.dollHead.scaleX = r.dollCreepy.scaleX;
+    r.dollEyes.x = r.dollCreepy.x + r.eyeOffsetX;
+    r.dollEyes.y = r.dollHead.y + r.eyeOffsetY;
+    r.dollEyes.scaleX = r.dollCreepy.scaleX;
+    if (saveAlive(r.dollHeadUnder)) {
+        r.dollHeadUnder.x = r.dollHead.x;
+        r.dollHeadUnder.y = r.dollHead.y;
+        r.dollHeadUnder.scaleX = r.dollHead.scaleX;
+    }
 }
