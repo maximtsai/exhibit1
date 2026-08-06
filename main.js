@@ -1429,6 +1429,9 @@ function tempFreeze(a = 1e3) {
 }
 
 function initOneTimeListeners() {
+    // hint.js used to register these at file scope, which a message-bus reset
+    // could not restore. Registered here so they survive restartGame.
+    if (typeof initHintRoomListeners === "function") initHintRoomListeners();
     let a;
     a = messageBus.subscribe("startDarkSequence", b => {
         a.unsubscribe(), gameObjects.entrance.entryLights1.alpha = 0, gameObjects.entrance.entryLights2.alpha = 0, removeFromUpdateFuncList(flipEntryLights), gameObjects.entrance.welcomeBtn.setState("disable");

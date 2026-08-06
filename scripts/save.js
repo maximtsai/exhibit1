@@ -242,6 +242,15 @@ function saveNow() {
 }
 
 function saveClear() {
+    // Cancel any debounced write still in flight. restartGame calls this and
+    // then restarts the scene, so a surviving timer would fire afterwards and
+    // write a save of the brand-new run — putting a save back moments after the
+    // player asked for it to be wiped, and contradicting "starting the game
+    // does not save".
+    if (saveDebounceTimer) {
+        clearTimeout(saveDebounceTimer);
+        saveDebounceTimer = null;
+    }
     saveKeyRegistry = {};
     saveRemoteValue = null;
     delete saveStorageFallback[SAVE_STORAGE_KEY];

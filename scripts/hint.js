@@ -952,7 +952,13 @@ function updateHintButtonForRoom(roomIndex) {
     setHintButtonEnabled(!disabled);
 }
 
-if (typeof messageBus !== "undefined" && messageBus) {
+// Called from initOneTimeListeners (main.js) rather than subscribing at file
+// scope. restartGame clears the message bus, and a Phaser scene restart does
+// not re-evaluate this file — a top-level subscription here would be dropped by
+// that clear and never come back, silently freezing the hint button on
+// whatever room the player restarted from.
+function initHintRoomListeners() {
+    if (typeof messageBus === "undefined" || !messageBus) return;
     messageBus.subscribe("exhibitMove", (newRoomIndex) => {
         updateHintButtonForRoom(newRoomIndex);
     });

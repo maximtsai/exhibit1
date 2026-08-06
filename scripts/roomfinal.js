@@ -319,6 +319,25 @@ function runEpilogue(background) {
 																						assetRetry.failedReqs = {};
 																						assetRetry.pending = 0;
 
+																						// The message bus is built once at script-eval time and a
+																						// scene restart does not re-evaluate the scripts, so every
+																						// subscription that never unsubscribed would survive into
+																						// the replay and run a second time alongside the fresh one.
+																						// Mr. Jack's speedUp/speedDown are the clearest casualty:
+																						// they compound, so his finale ran faster on every replay.
+																						//
+																						// Everything re-subscribes from setupGame (rooms, the Exhibit
+																						// constructor, initOneTimeListeners), so clearing here is
+																						// safe — but only because nothing subscribes at file scope
+																						// any more. Keep it that way.
+																						if (typeof messageBus !== "undefined" && messageBus && messageBus.reset) {
+																							messageBus.reset();
+																						}
+																						// Lets initSaveSystem re-subscribe against the cleared bus.
+																						// Without this it returns early and the save system ends up
+																						// with no listeners at all.
+																						if (typeof initSaveSystem === "function") initSaveSystem.done = false;
+
 																						// No gameplayStart() here - this returns the player to the
 																						// loading/menu screen. startGame() raises it when they actually
 																						// begin playing again.

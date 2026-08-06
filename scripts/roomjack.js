@@ -1428,9 +1428,9 @@ function roomJackSetSaveState(state) {
     //
     // The horror finale is never saved (saveInFinale), so arriving in the
     // horror phase always means there is still spinning to do.
-    let spinDone = gameVars.horrorPoint ? !1
-        : gameVars.darkPoint ? state.stage >= ROOM_JACK_STAGE_CLOSED
-        : state.stage >= ROOM_JACK_STAGE_POPPED;
+    let spinDone = gameVars.horrorPoint ? !1 :
+        gameVars.darkPoint ? state.stage >= ROOM_JACK_STAGE_CLOSED :
+        state.stage >= ROOM_JACK_STAGE_POPPED;
     r.canSpin = !spinDone;
 
     // roomJackUpdate re-derives these from dollCreepy every frame, but only
