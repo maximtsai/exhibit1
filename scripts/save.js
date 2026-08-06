@@ -472,6 +472,15 @@ function logCurrentGameMode(prefix) {
 // finishedDarkPoint left every horror save stuck in step 1: door still live,
 // and the right arrow refusing to move.
 function saveRestoreMoveButtonHandlers(story) {
+    // Nothing is left behind the player once the horror phase has begun, and a
+    // restored game has no way to replay whatever closed the way back. Turn the
+    // left arrow into a refusal rather than letting it walk into rooms the
+    // horror phase has moved past.
+    if (story.horrorPoint) {
+        gameObjects.moveLeftBtn.setOnMouseUpFunc(function () {
+            updateInfoText("There's nothing left back there", 4500);
+        });
+    }
     if (story.doorFailed) {
         gameObjects.moveRightBtn.setOnMouseUpFunc(
             gameObjects.exhibit.moveRight.bind(gameObjects.exhibit));

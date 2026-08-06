@@ -115,35 +115,24 @@ function setupRoomFlower5(scene, roomIndex, roomContainer) {
     let subscription2;
     subscription2 = messageBus.subscribe('exhibitMove', (index) => {
         if (index === roomIndex) {
-            if (typeof gameVarsTemp !== "undefined") {
-                gameVarsTemp.keepJackVisible = true;
-            }
-            gameObjects.roomJackObjs.lightsReady = true;
             subscription2.unsubscribe();
-            gameObjects.roomJackObjs.lights = scene.add.image(0, gameVars.halfHeight, 'roomJack', 'lights2');
-            gameObjects.roomJackObjs.lights.scaleX = 2.1;
-            gameObjects.roomJackObjs.lights.scaleY = 2.1;
-            gameObjects.roomJackObjs.roomContainer.add(gameObjects.roomJackObjs.lights);
-            gameObjects.roomJackObjs.lights.alpha = 0.6;
+            roomFlower5ArmJackLights();
 
-            gameVarsTemp.startDarkFlicker = false;
-            gameObjects.generalDarkness.alpha = 0;
-            gameObjects.generalDarkness.scaleX = 0;
-            gameObjects.generalDarkness.scaleY = 0;
-
+            // Cinematic half: the lights swell up out of a burst of static.
+            // roomFlower5ArmJackLights has already left them at their settled
+            // values, so wind them back and tween to it.
+            let lights = gameObjects.roomJackObjs.lights;
+            lights.alpha = 0.6;
+            lights.scaleX = 2.1;
+            lights.scaleY = 2.1;
             if (typeof showStaticLite === "function") {
                 showStaticLite(6, 12, 2.5, 0.4);
             }
             if (typeof showStaticRand === "function") {
                 showStaticRand(2);
             }
-
-            if (typeof messageBus !== "undefined" && messageBus) {
-                messageBus.publish("switchToSet2Buttons");
-            }
-
             globalScene.tweens.add({
-                targets: gameObjects.roomJackObjs.lights,
+                targets: lights,
                 alpha: 0.7,
                 scaleX: 2,
                 scaleY: 2,
@@ -151,4 +140,66 @@ function setupRoomFlower5(scene, roomIndex, roomContainer) {
             });
         }
     });
+
+    registerRoomSaveState(roomIndex, {
+        getStage: roomFlower5GetSaveStage,
+        setStage: roomFlower5SetSaveStage
+    });
+}
+
+// ======================================== save state (last flower room) ======
+//
+// Mr. Jack's lights do not belong to Mr. Jack: they are created here, the first
+// time the player reaches the last flower room, and added to his container.
+// Nothing in roomjack.js ever makes them.
+//
+// That matters after a reload, because his horror sequences dereference them
+// freely — resetJackLights() reads lights.x/y/alpha, and several beats do
+// `lights.alpha *= 2`. With this subscriber unfired, roomJackObjs.lights is
+// undefined and the lights2 visual simply never appears.
+
+var ROOM_FLOWER5_STAGE_NONE = 0;
+var ROOM_FLOWER5_STAGE_ENTERED = 1; // player has reached the last flower room
+
+function roomFlower5GetSaveStage() {
+    return (gameObjects.roomJackObjs && gameObjects.roomJackObjs.lightsReady)
+        ? ROOM_FLOWER5_STAGE_ENTERED
+        : ROOM_FLOWER5_STAGE_NONE;
+}
+
+function roomFlower5SetSaveStage(stage) {
+    if (stage) roomFlower5ArmJackLights();
+}
+
+// The durable half of arriving at the last flower room: Jack's lights exist
+// from here on, his room stays visible from down the corridor, and the corridor
+// darkness is gone for good. No static, no fade — the live path adds those.
+//
+// Idempotent: safe if the lights already exist.
+function roomFlower5ArmJackLights() {
+    if (typeof gameVarsTemp !== "undefined") {
+        gameVarsTemp.keepJackVisible = true;
+        gameVarsTemp.startDarkFlicker = false;
+    }
+    let j = gameObjects.roomJackObjs;
+    if (!j) return;
+    j.lightsReady = true;
+    if (!saveAlive(j.lights)) {
+        j.lights = globalScene.add.image(0, gameVars.halfHeight, 'roomJack', 'lights2');
+        j.roomContainer.add(j.lights);
+    }
+    // Settled values, i.e. the far end of the live fade-in.
+    j.lights.scaleX = 2;
+    j.lights.scaleY = 2;
+    j.lights.alpha = 0.7;
+
+    if (gameObjects.generalDarkness) {
+        gameObjects.generalDarkness.alpha = 0;
+        gameObjects.generalDarkness.scaleX = 0;
+        gameObjects.generalDarkness.scaleY = 0;
+    }
+    // Swaps the hint/mute button art; idempotent, so safe to republish.
+    if (typeof messageBus !== "undefined" && messageBus) {
+        messageBus.publish("switchToSet2Buttons");
+    }
 }
