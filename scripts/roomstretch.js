@@ -425,8 +425,15 @@ function roomStretchSetSaveStage(stage) {
         return;
     }
 
-    if (stage === ROOM_STRETCH_STAGE_UNLOCKED && !gameVars.darkPoint && !gameVars.horrorPoint) {
-        // Normal-phase completion: she is pleased and the arm is left alone.
+    if (stage >= ROOM_STRETCH_STAGE_UNLOCKED && !gameVars.horrorPoint) {
+        // roomUnlocked carries through the dark phase — startDarkSequence does
+        // not reset it, only startHorrorSequence and startTrueStretchHorror do.
+        //
+        // It is load-bearing, not cosmetic: while it is true and the room is
+        // neither cleaned nor completed, roomStretchUpdate pins the hand to the
+        // touchspot every frame (roomstretch.js:123). That is what keeps the
+        // hand stuck on the pad. Guarding this on !darkPoint left it false on a
+        // dark-phase restore, so the hand fell off the pad instead.
         r.roomUnlocked = !0;
         setStretchDollImage("dollHappy", !0);
     }

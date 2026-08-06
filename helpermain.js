@@ -80,14 +80,17 @@ function onStandClick(e) {
 	gameVars.canCloseStand = !1, disableMoveButtons();
 	let t = "stand_display",
 		a = gameVars.horrorPoint && !gameVarsTemp.seenHorrorStand;
-	a ? (t = "stand_display_4", gameVarsTemp.seenHorrorStand = !0) : gameVarsTemp.standSeenOnce || (t = "stand_display_3"), gameObjects.standDisplay = new Button(e, gameObjects.gameCtnr1, () => {
+	// stand_display_3 is the first-time instructions card. It has no business
+	// appearing once the horror phase has begun, so the horror phase falls back
+	// to the plain display instead.
+	a ? (t = "stand_display_4", gameVarsTemp.seenHorrorStand = !0) : gameVars.horrorPoint || gameVarsTemp.standSeenOnce || (t = "stand_display_3"), gameObjects.standDisplay = new Button(e, gameObjects.gameCtnr1, () => {
 		onStandDisplayClick(e)
 	}, {
 		atlas: "buttons",
 		ref: t,
 		x: 0,
 		y: gameVars.halfHeight
-	}), a ? (gameObjects.standDisplay.setAlpha(1), gameObjects.standDisplay.setScale(1), gameObjectsTemp.voidGlow = e.add.image(0, gameVars.halfHeight, "buttons", "stand_void_glow"), gameObjectsTemp.voidGlow.alpha = .95, gameObjects.gameCtnr1.add(gameObjectsTemp.voidGlow), addToUpdateFuncList(animateVoidGlow), playSound("void", undefined, 0.7), gameObjects.museumStand.setState("disable"), gameObjects.standArrow.destroy(), gameObjects.entrance.entryLights1.alpha = 0, gameObjects.entrance.entryLights2.alpha = 0, removeFromUpdateFuncList(flipEntryLights), gameObjects.standDisplay.tweenScale({
+	}), a ? (gameObjects.standDisplay.setAlpha(1), gameObjects.standDisplay.setScale(1), gameObjectsTemp.voidGlow = e.add.image(0, gameVars.halfHeight, "buttons", "stand_void_glow"), gameObjectsTemp.voidGlow.alpha = .95, gameObjects.gameCtnr1.add(gameObjectsTemp.voidGlow), addToUpdateFuncList(animateVoidGlow), playSound("void", undefined, 0.7), gameObjects.museumStand.setState("disable"), gameObjects.standArrow && gameObjects.standArrow.destroy(), gameObjects.entrance.entryLights1.alpha = 0, gameObjects.entrance.entryLights2.alpha = 0, removeFromUpdateFuncList(flipEntryLights), gameObjects.standDisplay.tweenScale({
 		scaleX: 1.15,
 		scaleY: 1.22,
 		alpha: 1,

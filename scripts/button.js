@@ -752,17 +752,19 @@ class Button {
         if (this.bgSprite && this.scene && this.scene.tweens) {
             let targets = [this.bgSprite];
             if (this.text) targets.push(this.text);
-            if (typeof gameVarsTemp !== "undefined") {
-                gameVarsTemp.updateTextAnim = this.scene.tweens.chain({
-                    targets: targets,
-                    tweens: [e]
-                });
-            } else {
-                this.scene.tweens.chain({
-                    targets: targets,
-                    tweens: [e]
-                });
-            }
+            // Kept on the button, NOT in gameVarsTemp.updateTextAnim.
+            //
+            // That global slot belongs to the info text: updateInfoText and
+            // updateInfoTextSoft (helpermain.js) both .stop() whatever is in it
+            // before starting their own. Parking a button's tween there meant
+            // any info-text message cancelled it mid-flight, and a stopped
+            // Phaser chain never fires onComplete — so tweens that fade a
+            // button out and destroy it in onComplete left it frozen on screen,
+            // still swallowing every click.
+            this.currentTween = this.scene.tweens.chain({
+                targets: targets,
+                tweens: [e]
+            });
         }
     }
 

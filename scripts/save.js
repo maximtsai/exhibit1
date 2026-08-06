@@ -200,6 +200,11 @@ function collectSaveState() {
     // gameVarsTemp rather than gameVars, so the loop above does not pick it up.
     if (typeof gameVarsTemp !== "undefined" && gameVarsTemp) {
         save.story.doorFailed = !!gameVarsTemp.doorFailed;
+        // Viewing the horror instructions card is one-shot: it disables the
+        // stand for the rest of the run. Without this the stand came back
+        // clickable after a reload and replayed the beat.
+        save.story.seenHorrorStand = !!gameVarsTemp.seenHorrorStand;
+        save.story.standSeenOnce = !!gameVarsTemp.standSeenOnce;
     }
 
     save.rooms = saveCollectRoomStages();
@@ -284,7 +289,10 @@ function initSaveSystem() {
             scheduleSave();
         });
         messageBus.subscribe("powerTurnedOn", scheduleSave);
-        messageBus.subscribe("startDarkSequence", scheduleSave);
+        // startDarkSequence is deliberately NOT a save trigger: it fires in the
+        // middle of the lights-out cinematic, so writing there caught the game
+        // mid-transition. darkPoint is picked up by the next save instead —
+        // the player's first room change after the lights go out.
         messageBus.subscribe("startHorrorSequence", scheduleSave);
         messageBus.subscribe("startTrueStretchHorror", scheduleSave);
         messageBus.subscribe("temporarilyNormal", scheduleSave);
@@ -341,6 +349,8 @@ function applySaveState(save) {
         }
         if (typeof gameVarsTemp !== "undefined" && gameVarsTemp) {
             gameVarsTemp.doorFailed = !!story.doorFailed;
+            gameVarsTemp.seenHorrorStand = !!story.seenHorrorStand;
+            gameVarsTemp.standSeenOnce = !!story.standSeenOnce;
         }
 
         // 2. Door locks. The saved array is authoritative: resetListOfCantMove's
@@ -369,6 +379,13 @@ function applySaveState(save) {
             // By the horror phase the music box has long since been stopped, so
             // a restored game must not bring it back turning and playing.
             if (typeof silenceMusicBox === "function") silenceMusicBox();
+            // The horror card is one-shot and leaves the stand disabled with its
+            // pointing arrow gone. Applied after the publish above, because
+            // startHorrorSequence is what recreates that arrow.
+            if (story.seenHorrorStand) {
+                if (saveAlive(gameObjects.museumStand)) gameObjects.museumStand.setState("disable");
+                if (saveAlive(gameObjects.standArrow)) gameObjects.standArrow.destroy();
+            }
         }
         if (story.finishedDarkPoint) {
             messageBus.publish("powerTurnedOn");
