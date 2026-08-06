@@ -29,8 +29,11 @@
 // takes no key and loadData() returns a Promise. Restore has to be synchronous,
 // so the remote blob is prefetched at page load and read from cache.
 
-var SAVE_VERSION = 2;
-var SAVE_STORAGE_KEY = "exhibit1_save_v2";
+// v3 added story.doorFailed, which splits the horror phase into its two halves.
+// A v2 save has no way to express that, so it is discarded rather than restored
+// into the wrong half.
+var SAVE_VERSION = 3;
+var SAVE_STORAGE_KEY = "exhibit1_save_v3";
 var saveStorageFallback = {};
 var saveDebounceTimer = null;
 var saveKeyRegistry = {};
@@ -192,6 +195,13 @@ function collectSaveState() {
         }
     }
 
+    // The horror phase has two halves and this flag is the only thing that
+    // separates them — see saveRestoreMoveButtonHandlers. It lives on
+    // gameVarsTemp rather than gameVars, so the loop above does not pick it up.
+    if (typeof gameVarsTemp !== "undefined" && gameVarsTemp) {
+        save.story.doorFailed = !!gameVarsTemp.doorFailed;
+    }
+
     save.rooms = saveCollectRoomStages();
 
     for (var k in saveKeyRegistry) {
@@ -324,6 +334,13 @@ function applySaveState(save) {
                 var f = saveGameVarsFields[i];
                 if (story[f] !== undefined) gameVars[f] = story[f];
             }
+            if (story.horrorPoint || gameVars.horrorPoint) {
+                story.finishedDarkPoint = true;
+                gameVars.finishedDarkPoint = true;
+            }
+        }
+        if (typeof gameVarsTemp !== "undefined" && gameVarsTemp) {
+            gameVarsTemp.doorFailed = !!story.doorFailed;
         }
 
         // 2. Door locks. The saved array is authoritative: resetListOfCantMove's
@@ -342,7 +359,13 @@ function applySaveState(save) {
         //    reconstructs the per-room phase visuals exactly once.
         if (story.darkPoint && !story.finishedDarkPoint) initDarkSequence(globalScene);
         if (story.horrorPoint) {
-            messageBus.publish("startHorrorSequence");
+            // startHorrorSequence is published live by the door-failure tail
+            // (helpermain.js:346), NOT by the power switch that sets
+            // horrorPoint. A save taken between the two must not fire it early,
+            // or the rooms flip into horror mode before the door cinematic. The
+            // door click still publishes it normally afterwards — the room
+            // subscribers only unsubscribe once they have actually run.
+            if (story.doorFailed) messageBus.publish("startHorrorSequence");
             // By the horror phase the music box has long since been stopped, so
             // a restored game must not bring it back turning and playing.
             if (typeof silenceMusicBox === "function") silenceMusicBox();
@@ -353,6 +376,9 @@ function applySaveState(save) {
             gameObjects.candleDark.alpha = 0;
             gameObjects.candleBright.alpha = 0;
             gameObjects.flashDim.alpha = 0;
+        }
+        if (story.darkPoint || story.horrorPoint || story.finishedDarkPoint) {
+            if (typeof setClownWelcomePicFrame5 === "function") setClownWelcomePicFrame5();
         }
 
         // 4. Finished rooms. Anything not listed stays exactly as setupGame
@@ -397,15 +423,43 @@ function applySaveState(save) {
             enableMoveButtons();
         }
         saveRestoreMoveButtonHandlers(story);
+        logCurrentGameMode("Loaded from save");
     } catch (err) {
         console.warn("applySaveState failed:", err);
     }
     saveRestoring = false;
 }
 
+function logCurrentGameMode(prefix) {
+    var p = prefix || "Game loaded in";
+    var mode = "normal";
+    if (typeof gameVars !== "undefined" && gameVars) {
+        if (gameVars.horrorPoint) mode = "horrorPoint";
+        else if (gameVars.finishedDarkPoint) mode = "finishedDarkPoint";
+        else if (gameVars.darkPoint) mode = "darkPoint";
+    }
+    console.log("[Game Mode] " + p + ": " + mode);
+}
+
 // The right-hand move button is re-bound at story beats rather than per room.
+// The horror phase is reached in two steps, and they bind the right-hand move
+// button to opposite things:
+//
+//  1. onTurnOnPower (helpermain.js:548) sets horrorPoint and rebinds the button
+//     to the "you should EXIT" nudge, herding the player toward the door.
+//  2. Clicking the door runs the failure cinematic, whose tail
+//     (helpermain.js:346) sets doorFailed, disables the door and rebinds the
+//     button back to real movement so the horror rooms can be played.
+//
+// doorFailed is the only thing that tells those two apart. Restoring only on
+// finishedDarkPoint left every horror save stuck in step 1: door still live,
+// and the right arrow refusing to move.
 function saveRestoreMoveButtonHandlers(story) {
-    if (story.finishedDarkPoint) {
+    if (story.doorFailed) {
+        gameObjects.moveRightBtn.setOnMouseUpFunc(
+            gameObjects.exhibit.moveRight.bind(gameObjects.exhibit));
+        if (saveAlive(gameObjects.exitDoor)) gameObjects.exitDoor.setState("disable");
+    } else if (story.finishedDarkPoint) {
         gameObjects.moveRightBtn.setOnMouseUpFunc(function () {
             updateInfoText("You have stayed long enough. You should EXIT. ", 4500);
         });

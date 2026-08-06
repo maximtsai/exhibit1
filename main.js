@@ -811,6 +811,7 @@ function beginGameplay(a) {
     }
     gameVars.gameplayBegan = true;
     loadDeferredAudio(a);
+    if (typeof logCurrentGameMode === "function") logCurrentGameMode("Game started");
     let background = document.getElementById('background');
     background.style.opacity = '1';
     let leftborder = document.getElementById('leftborder');
@@ -1510,10 +1511,7 @@ function initOneTimeListeners() {
         }), gameDelay(() => {
             tweenVolume("gladiatorx", .9)
         }, 5e3);
-        let c = gameObjects.clownWelcomePic.x,
-            d = gameObjects.clownWelcomePic.y,
-            a = gameObjects.clownWelcomePic.scaleX;
-        gameObjects.clownWelcomePic.destroy(), gameObjects.clownWelcomePic = globalScene.add.image(c, d, "menu", "framesEnter5"), gameObjects.clownWelcomePic.scaleX = a, gameObjects.clownWelcomePic.scaleY = a, gameObjects.clownWelcomePic.cantChange = !0, gameObjects.gameCtnr1.add(gameObjects.clownWelcomePic)
+        setClownWelcomePicFrame5();
     })
 }
 

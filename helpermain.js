@@ -489,10 +489,29 @@ function setupGameplayButtons(e) {
 		alpha: .001
 	}), gameObjects.undoCreditsButton.disappear()
 	gameDelay(() => {
-		gameObjects.clownWelcomePic.setFrame('framesEnter1');
-		playSound('click4', undefined, 0.25)
+		if (gameObjects.clownWelcomePic && !gameObjects.clownWelcomePic.cantChange) {
+			gameObjects.clownWelcomePic.setFrame('framesEnter1');
+			playSound('click4', undefined, 0.25)
+		}
 	}, 3900)
 
+}
+
+function setClownWelcomePicFrame5() {
+	if (!gameObjects || !gameObjects.clownWelcomePic) return;
+	let c = gameObjects.clownWelcomePic.x,
+		d = gameObjects.clownWelcomePic.y,
+		a = gameObjects.clownWelcomePic.scaleX;
+	if (typeof saveAlive === "function" ? saveAlive(gameObjects.clownWelcomePic) : gameObjects.clownWelcomePic.scene) {
+		gameObjects.clownWelcomePic.destroy();
+	}
+	gameObjects.clownWelcomePic = globalScene.add.image(c, d, "menu", "framesEnter5");
+	gameObjects.clownWelcomePic.scaleX = a;
+	gameObjects.clownWelcomePic.scaleY = a;
+	gameObjects.clownWelcomePic.cantChange = true;
+	if (gameObjects.gameCtnr1) {
+		gameObjects.gameCtnr1.add(gameObjects.clownWelcomePic);
+	}
 }
 
 function setupInstructionsStand(e) {
@@ -538,7 +557,8 @@ function onTurnOnPower() {
 function initDarkSequence(e) {
 	addDarkToExhibit(), enableMoveLeftButton(), gameVars.baseSway = .03, enableFlashlight(!0), gameVars.darkPoint = !0, messageBus.publish("startDarkSequence"), gameObjects.moveRightBtn.setOnMouseUpFunc(() => {
 		updateInfoText("It's too dark to go forward. \n<- Head left to EXIT.", 5e3)
-	})
+	});
+	setClownWelcomePicFrame5();
 }
 
 function enableFlashlight(e) {
