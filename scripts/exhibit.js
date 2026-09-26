@@ -1,20 +1,16 @@
+// The row of exhibit rooms. Each room index has a background, an optional foreground
+// and a button container; moving left/right slides them across the screen.
 class Exhibit {
-    constructor(scene, bgContainer, shadowContainer, foregroundContainer, btnContainer, darkContainer) {
+    constructor(scene, bgContainer, foregroundContainer, btnContainer) {
         this.scene = scene;
         this.listOfBGs = [];
-        this.listOfShadows = [];
         this.listOfForegrounds = [];
         this.listOfBtnCtnrs = [];
-        this.listOfDarks = [];
+        // listOfBGs must stay first: it drives the end-of-move callback
         this.listOfLists = [
             this.listOfBGs,
-            this.listOfShadows,
             this.listOfForegrounds,
-            this.listOfBtnCtnrs,
-            this.listOfDarks
-        ]
-        this.listOfCantMove = [
-            false, false
+            this.listOfBtnCtnrs
         ];
         this.resetListOfCantMove();
         this.currentScene = 1;
@@ -22,10 +18,8 @@ class Exhibit {
         this.centerImage = null;
         this.rightImage = null;
         this.bgContainer = bgContainer;
-        this.shadowContainer = shadowContainer;
         this.foregroundContainer = foregroundContainer;
         this.btnContainer = btnContainer;
-        this.darkContainer = darkContainer;
         this.isMoving = false;
 
         this.peekAmt = 80;
@@ -37,47 +31,42 @@ class Exhibit {
         messageBus.subscribe('exhibitMoveComplete', (index) => {
             gameVars.lateUpdateCurrentScene = index;
         });
-
     }
 
     initPos(pos) {
         this.currentScene = pos;
         for (let i = 0; i < this.listOfLists.length; i++) {
             let currList = this.listOfLists[i];
-            //this.leftImage = currList[this.currentScene - 1];
             if (currList[this.currentScene]) {
                 this.centerImage = currList[this.currentScene];
                 this.centerImage.x = gameVars.halfWidth;
             }
-            //this.rightImage = currList[this.currentScene + 1];
         }
     }
 
+    // Next index in `step` direction that has a room, or -1 if there is none
+    findNextScene(step) {
+        for (let i = this.currentScene + step; i >= 0 && i < this.listOfBGs.length; i += step) {
+            if (this.listOfBGs[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     moveLeft() {
-        // TEMPORARY HACK
         gameVarsTemp.hasMoved = true;
         if (this.needCleanup) {
-            if (gameVarsTemp.needSecondClue) {
-                if (this.currentScene === 13) {
-                    updateInfoTextSoft('Unturn the handle', 2000);
-                } else if (this.currentScene === 6) {
-                    updateInfoTextSoft('Unstretch her hand', 2000);
-                } else if (this.currentScene === 5) {
-                    updateInfoTextSoft('Uncount the fingers', 2000);
-                } else if (this.currentScene === 3) {
-                    updateInfoTextSoft('Turn off the tap', 2000);
-                } else if (this.currentScene === 2) {
-                    updateInfoTextSoft('Deflate him', 2000);
-                } else {
-                    updateInfoTextSoft('Clean up the room first.', 2250);
-                }
+            // First attempt gets the generic line, later ones the room-specific hint
+            let hint = TEXT.cleanupHints[this.currentScene];
+            if (gameVarsTemp.needSecondClue && hint) {
+                updateInfoTextSoft(hint, 2000);
             } else {
-                updateInfoTextSoft('Clean up the room first.', 2250);
+                updateInfoTextSoft(TEXT.cleanUpFirst, 2250);
                 setTimeout(() => {
                     gameVarsTemp.needSecondClue = true;
                 }, 1000)
             }
-
             return;
         }
         if (gameVars.darkPoint && this.currentScene >= 3) {
@@ -85,61 +74,47 @@ class Exhibit {
         }
 
         // Player moves to the left, thus moving all images to the right
-        if (this.currentScene > 0 && !this.isMoving) {
-            disableMoveButtons();
-            this.isMoving = true;
-            let oldScene = this.currentScene;
-            this.currentScene--;
-
-            while (!this.listOfBGs[this.currentScene]) {
-                // keep shifting until we get the right one
-                this.currentScene--;
-                if (this.currentScene < 0) {
-                    return;
-                }
-            }
-            messageBus.publish('exhibitMove', this.currentScene, oldScene);
-            messageBus.publish('exhibitMoveLeft', this.currentScene, oldScene);
-
-            gameObjects.exhibCntr.swayAccX = -0.8;
-            for (let i = 0; i <this.listOfLists.length; i++) {
-                let currentList = this.listOfLists[i];
-                this.shiftListLeft(currentList, this.currentScene, oldScene, i === 0);
-            }
-            gameObjects.flashDim.brightVal = 0.1;
+        let newScene = this.findNextScene(-1);
+        if (newScene < 0 || this.isMoving) {
+            return;
         }
+        disableMoveButtons();
+        this.isMoving = true;
+        let oldScene = this.currentScene;
+        this.currentScene = newScene;
+        messageBus.publish('exhibitMove', this.currentScene, oldScene);
+        messageBus.publish('exhibitMoveLeft', this.currentScene, oldScene);
+
+        gameObjects.exhibCntr.swayAccX = -0.8;
+        for (let i = 0; i < this.listOfLists.length; i++) {
+            this.shiftListLeft(this.listOfLists[i], this.currentScene, oldScene, i === 0);
+        }
+        gameObjects.flashDim.brightVal = 0.1;
     }
 
     shiftListLeft(list, newSceneNum, oldSceneNum, isMain) {
-
         let animateSpeed = gameVars.walkSlow ? 3300 : 1500;
-        // right image just teleports to where it's supposed to be.
-        // this.leftImage = list[this.currentScene - 1];
-        // this.leftImage.x = this.rightSpot;
 
-        this.centerImage = list[newSceneNum]; // on the left
+        // new room comes in from the left
+        this.centerImage = list[newSceneNum];
         if (this.centerImage) {
             this.centerImage.x = this.leftSpot;
-            // center image goes right
             this.shiftAnimCenter = this.scene.tweens.timeline({
                 targets: this.centerImage,
-                tweens: [
-                    {
-                        ease: "Cubic.easeInOut",
-                        x: this.centerSpot,
-                        duration: animateSpeed
-                    }
-                ]
+                tweens: [{
+                    ease: "Cubic.easeInOut",
+                    x: this.centerSpot,
+                    duration: animateSpeed
+                }]
             });
         }
-        this.rightImage = list[oldSceneNum]; // at the center
+        // current room leaves to the right
+        this.rightImage = list[oldSceneNum];
         if (this.rightImage) {
             this.rightImage.x = this.centerSpot;
-            // left image goes center
             this.shiftAnimRight = this.scene.tweens.timeline({
                 targets: this.rightImage,
-                tweens: [
-                {
+                tweens: [{
                     ease: "Cubic.easeInOut",
                     x: this.rightSpot,
                     duration: animateSpeed,
@@ -152,21 +127,18 @@ class Exhibit {
                             messageBus.publish('exhibitMoveComplete', this.currentScene);
 
                             if (this.listOfCantMove[newSceneNum]) {
+                                // at furthest left, can't move
                                 if (newSceneNum !== 0) {
-                                    // at furthest left, can't move
                                     enableMoveLeftButton();
                                 }
+                            } else if (newSceneNum === 0) {
+                                enableMoveRightButton();
                             } else {
-                                if (newSceneNum === 0) {
-                                    enableMoveRightButton();
-                                } else {
-                                    enableMoveButtons();                                
-                                }
+                                enableMoveButtons();
                             }
                         }
                     }
-                }
-                ]
+                }]
             });
         }
     }
@@ -174,64 +146,50 @@ class Exhibit {
     moveRight(fast) {
         gameVarsTemp.hasMoved = true;
         // Player moves to the right, thus moving all images to the left
-        if (this.currentScene < this.listOfBGs.length - 1 && !this.isMoving) {
-            disableMoveButtons();
-            this.isMoving = true;
-            let oldScene = this.currentScene;
-            this.currentScene++;
-            while (!this.listOfBGs[this.currentScene]) {
-                // keep shifting until we get the right one
-                this.currentScene++;
-                if (this.currentScene >= this.listOfBGs.length) {
-                    return;
-                }
-            }
-
-            messageBus.publish('exhibitMove', this.currentScene, oldScene);
-            messageBus.publish('exhibitMoveRight', this.currentScene, oldScene);
-
-            gameObjects.exhibCntr.swayAccX = 0.8;
-            for (let i = 0; i <this.listOfLists.length; i++) {
-                let currentList = this.listOfLists[i];
-                this.shiftListRight(currentList, this.currentScene, oldScene, i === 0, fast);
-            }
-            gameObjects.flashDim.brightVal = 0.1;
+        let newScene = this.findNextScene(1);
+        if (newScene < 0 || this.isMoving) {
+            return;
         }
+        disableMoveButtons();
+        this.isMoving = true;
+        let oldScene = this.currentScene;
+        this.currentScene = newScene;
+        messageBus.publish('exhibitMove', this.currentScene, oldScene);
+        messageBus.publish('exhibitMoveRight', this.currentScene, oldScene);
+
+        gameObjects.exhibCntr.swayAccX = 0.8;
+        for (let i = 0; i < this.listOfLists.length; i++) {
+            this.shiftListRight(this.listOfLists[i], this.currentScene, oldScene, i === 0, fast);
+        }
+        gameObjects.flashDim.brightVal = 0.1;
     }
 
     shiftListRight(list, newSceneNum, oldSceneNum, isMain, fast) {
         let animateSpeed = gameVars.walkSlow ? 3500 : 1500;
-
         if (fast) {
             animateSpeed = 1;
         }
-        // right image just teleports to where it's supposed to be.
-        // this.leftImage = list[this.currentScene - 1];
-        // this.leftImage.x = this.rightSpot;
 
-        this.centerImage = list[newSceneNum]; // on the right
+        // new room comes in from the right
+        this.centerImage = list[newSceneNum];
         if (this.centerImage) {
             this.centerImage.x = this.rightSpot;
-            // center image goes right
             this.shiftAnimCenter = this.scene.tweens.timeline({
                 targets: this.centerImage,
-                tweens: [
-                    {
-                        ease: "Cubic.easeInOut",
-                        x: this.centerSpot,
-                        duration: animateSpeed
-                    }
-                ]
+                tweens: [{
+                    ease: "Cubic.easeInOut",
+                    x: this.centerSpot,
+                    duration: animateSpeed
+                }]
             });
         }
-        this.leftImage = list[oldSceneNum]; // at the center
+        // current room leaves to the left
+        this.leftImage = list[oldSceneNum];
         if (this.leftImage) {
             this.leftImage.x = this.centerSpot;
-            // left image goes center
             this.shiftAnimRight = this.scene.tweens.timeline({
                 targets: this.leftImage,
-                tweens: [
-                {
+                tweens: [{
                     ease: "Cubic.easeInOut",
                     x: this.leftSpot,
                     duration: animateSpeed,
@@ -250,8 +208,7 @@ class Exhibit {
                             }
                         }
                     }
-                }
-                ]
+                }]
             });
         }
     }
@@ -265,19 +222,6 @@ class Exhibit {
         this.listOfBGs[x] = newImage;
         if (x === this.currentScene) {
             this.listOfBGs[x].x = this.centerSpot;
-        }
-
-    }
-
-    setShadowAtIndex(x, ref) {
-        let newImage = this.scene.add.sprite(-9999, gameVars.halfHeight, ref);
-        this.shadowContainer.add(newImage);
-        if (this.listOfShadows[x]) {
-            this.listOfShadows[x].destroy();
-        }
-        this.listOfShadows[x] = newImage;
-        if (x === this.currentScene) {
-            this.listOfShadows[x].x = this.centerSpot;
         }
     }
 
@@ -298,59 +242,27 @@ class Exhibit {
     addBtnCtnrToIndex(x, btnCtnr) {
         btnCtnr.x = -9999;
         this.btnContainer.add(btnCtnr);
-        if (this.listOfBtnCtnrs[x]) {
-            if (this.currentScene === x) {
-                // move aside the old button container
-                this.listOfBtnCtnrs[x].x = -9999;
-            }
+        if (this.listOfBtnCtnrs[x] && this.currentScene === x) {
+            // move aside the old button container
+            this.listOfBtnCtnrs[x].x = -9999;
         }
         this.listOfBtnCtnrs[x] = btnCtnr;
     }
 
-    removeBtnCtnrFromIndex(x) {
-        this.listOfBtnCtnrs[x] = [];
-    }
-
-    setDarkAtIndex(x, ref){
-        // let newImage = this.scene.add.sprite(-9999, gameVars.halfHeight, ref);
-        // newImage.mask = this.mask;
-        // this.darkContainer.add(newImage);
-        // if (this.listOfDarks[x]) {
-        //     this.listOfDarks[x].destroy();
-        // }
-        // this.listOfDarks[x] = newImage;
-        // if (x === this.currentScene) {
-        //     this.listOfDarks[x].x = this.centerSpot;
-        // }
-    }
-
-    removeDarkAtIndex(x) {
-        if (this.listOfDarks[x]) {
-            this.listOfDarks[x].destroy();
-        }
-    }
-
     removeIndex(x) {
         this.listOfBGs[x] = null;
-        this.listOfShadows[x] = null;
         this.listOfForegrounds[x] = null;
         this.listOfBtnCtnrs[x] = null;
-        this.listOfDarks[x] = null;
     }
 
-    // initially just false, false
+    // Rooms that block moving right until they're solved (indexes match ROOMS in helpermain.js).
+    // Solving a room calls setCantMoveIdx(index, false).
     resetListOfCantMove() {
         this.listOfCantMove = [
             false, false,
-            true, true, true, true, true, true, 
+            true, true, true, true, true, true,
             false, false, false, false, false, true, true, true, true
         ];
-
-        // this.listOfCantMove = [
-        //     false, false,
-        //     false, false, false, false, false,
-        //     false, false, false, false, false, false, false, false, false, false
-        // ];
     }
 
     setCantMoveIdx(idx, val = false) {
@@ -359,9 +271,5 @@ class Exhibit {
 
     getCurrentScene() {
         return this.currentScene;
-    }
-
-    update() {
-
     }
 }
