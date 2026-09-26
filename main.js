@@ -4,9 +4,7 @@ function testMobile() {
 }
 
 let isMobile = testMobile();
-console.log("Test");
 var currentResize;
-if (window.GameSDK && typeof window.GameSDK.init === 'function') window.GameSDK.init();
 
 let pixelWidth = 1210;
 let pixelHeight = 920;
@@ -79,126 +77,11 @@ let config = {
 let game;
 setTimeout(() => { game = new Phaser.Game(config) }, 20)
 
-let earlyAudio = [
-    ["loadingMusic", "audio/loadingmusic.mp3"],
-    ["click1", "audio/click1.mp3"],
-    ["click2", "audio/click2.mp3"],
-    ["click3", "audio/click3.mp3"],
-    ["click4", "audio/click4.mp3"],
-    ["airpump", "audio/airpump.mp3"],
-    ["keyfound", "audio/keyfound.mp3"],
-    ["keyget", "audio/keyget.mp3"],
-    ["fan1", "audio/fan1.mp3"],
-    ["fan2", "audio/fan2.mp3"],
-    ["gladiator0", "audio/gladiator0.mp3"],
-    ["gladiator1", "audio/gladiator1.mp3"],
-    ["gladiator2", "audio/gladiator2.mp3"],
-    ["gladiatorx", "audio/gladiatorx.mp3"],
-    ["pumpamb", "audio/pumpamb.mp3"]
-];
-let deferredAudio = [
-    ["a7", "audio/notes/a7.mp3"],
-    ["b7", "audio/notes/b7.mp3"],
-    ["c7", "audio/notes/c7.mp3"],
-    ["c7b", "audio/notes/c7b.mp3"],
-    ["d7", "audio/notes/d7.mp3"],
-    ["e7", "audio/notes/e7.mp3"],
-    ["e7b", "audio/notes/e7b.mp3"],
-    ["f7", "audio/notes/f7.mp3"],
-    ["f7b", "audio/notes/f7b.mp3"],
-    ["g6", "audio/notes/g6.mp3"],
-    ["g6s", "audio/notes/g6s.mp3"],
-    ["g7", "audio/notes/g7.mp3"],
-    ["c8", "audio/notes/c8.mp3"],
-    ["clownlaugh1", "audio/clownlaugh1.mp3"],
-    ["clownlaugh2", "audio/clownlaugh2.mp3"],
-    ["clownlaughfinal", "audio/clownlaughfinal.mp3"],
-    ["clownhorn", "audio/clown_horn.mp3"],
-    ["creepysfx", "audio/creepysfx.mp3"],
-    ["void", "audio/void.mp3"],
-    ["flickeron", "audio/flickeron.mp3"],
-    ["muffle1", "audio/muffle1.mp3"],
-    ["muffle2", "audio/muffle2.mp3"],
-    ["muffle3", "audio/muffle3.mp3"],
-    ["muffle4", "audio/muffle4.mp3"],
-    ["muffle5", "audio/muffle5.mp3"],
-    ["muffle6", "audio/muffle6.mp3"],
-    ["muffle7", "audio/muffle7.mp3"],
-    ["muffle8", "audio/muffle8.mp3"],
-    ["sing1", "audio/sing1.mp3"],
-    ["rubber1", "audio/rubber1.mp3"],
-    ["rubber2", "audio/rubber2.mp3"],
-    ["rubber3", "audio/rubber3.mp3"],
-    ["rubber4", "audio/rubber4.mp3"],
-    ["rubber5", "audio/rubber5.mp3"],
-    ["rubber6", "audio/rubber6.mp3"],
-    ["rubber7", "audio/rubber7.mp3"],
-    ["rubber8", "audio/rubber8.mp3"],
-    ["tear1", "audio/tear1.mp3"],
-    ["tear2", "audio/tear2.mp3"],
-    ["tear3", "audio/tear3.mp3"],
-    ["tear4", "audio/tear4.mp3"],
-    ["tear5", "audio/tear5.mp3"],
-    ["tear6", "audio/tear6.mp3"],
-    ["glassbreak", "audio/glassbreak.mp3"],
-    ["horrortrack1", "audio/horrortrack1.mp3"],
-    ["groundthud2", "audio/groundthud2.mp3"],
-    ["emerge1", "audio/emerge1.mp3"],
-    ["emerge2", "audio/emerge2.mp3"],
-    ["squeak1", "audio/squeak1.mp3"],
-    ["squeak2", "audio/squeak2.mp3"],
-    ["squeak3", "audio/squeak3.mp3"],
-    ["doorslam", "audio/doorslam.mp3"],
-    ["dooropen", "audio/dooropen.mp3"],
-    ["dooropen2", "audio/dooropen2.mp3"],
-    ["squeakopen", "audio/squeakopen.mp3"],
-    ["lidslam", "audio/lidslam.mp3"],
-    ["metalgrind1", "audio/metalgrind1.mp3"],
-    ["metalgrind2", "audio/metalgrind2.mp3"],
-    ["metalgrind3", "audio/metalgrind3.mp3"],
-    ["metalgrind4", "audio/metalgrind4.mp3"],
-    ["metalsqueak1", "audio/metalsqueak1.mp3"],
-    ["metalsqueak2", "audio/metalsqueak2.mp3"],
-    ["keygetred", "audio/keygetred.mp3"],
-    ["deepbell1", "audio/deepbell1.mp3"],
-    ["deepbell2", "audio/deepbell2.mp3"],
-    ["deepbell3", "audio/deepbell3.mp3"],
-    ["deepbell4", "audio/deepbell4.mp3"],
-    ["deepbell5", "audio/deepbell5.mp3"],
-    ["nyaha", "audio/nyaha.mp3"],
-    ["splurt", "audio/splurt.mp3"],
-    ["watergurgle", "audio/watergurgle.mp3"],
-    ["stopmusic", "audio/stopmusic.mp3"],
-    ["shout1", "audio/shout1.mp3"],
-    ["shout2", "audio/shout2.mp3"],
-    ["shout3", "audio/shout3.mp3"],
-    ["shout4", "audio/shout4.mp3"],
-    ["shout5", "audio/shout5.mp3"]
-];
-let deferredAtlases = [
-    ["roomClown2", "sprites/clown/clown2.json"],
-    ["flashScreens", "sprites/flashscreens/flashscreens.json"],
-    ["staticScreens", "sprites/staticscreens/staticscreens.json"],
-    ["staticLite", "sprites/staticscreens/staticlite.json"]
-];
-let deferredImages = [
-    ["theEnd", "sprites/altreality/the_end.webp"],
-    ["stretch1", "sprites/altreality/stretch1.jpg"],
-    ["stretch2", "sprites/altreality/stretch2.jpg"],
-    ["stretch3", "sprites/altreality/stretch3.jpg"],
-    ["stretch4", "sprites/altreality/stretch4.jpg"],
-    ["stretch5", "sprites/altreality/stretch5.jpg"],
-    ["stretch6", "sprites/altreality/stretch6.jpg"],
-    ["floaty1", "sprites/altreality/floaty1.jpg"],
-    ["floaty2", "sprites/altreality/floaty2.jpg"],
-    ["floaty3", "sprites/altreality/floaty3.jpg"],
-    ["floaty4", "sprites/altreality/floaty4.jpg"],
-    ["balloon1", "sprites/altreality/balloon1.jpg"],
-    ["balloon2", "sprites/altreality/balloon2.jpg"],
-    ["balloon3", "sprites/altreality/balloon3.jpg"],
-    ["balloon4", "sprites/altreality/balloon4.jpg"],
-    ["balloon5", "sprites/altreality/balloon5.jpg"]
-];
+// Asset lists live in scripts/config.js. Each entry is [key, path].
+let earlyAudio = Object.entries(AUDIO);
+let deferredAudio = Object.entries(DEFERRED_AUDIO);
+let deferredAtlases = Object.entries(DEFERRED_ATLASES);
+let deferredImages = Object.entries(DEFERRED_IMAGES);
 let deferredAudioLoaded = !1;
 
 const MAX_ASSET_RETRIES = 3;
@@ -330,16 +213,16 @@ function hideLoadingFailureUI() {
 
 function showLoadingFailureUI(scene) {
     if (gameObjectsTemp.loadingFailureText) return;
-    setLoadingTextSafe("LOADING INTERRUPTED");
-    gameObjectsTemp.loadingFailureText = scene.add.text(gameVars.halfWidth, gameVars.height - 210, "Network connection issue. Tap below to retry:", {
-        fontFamily: "Times New Roman",
+    setLoadingTextSafe(THEME.loadFailedText);
+    gameObjectsTemp.loadingFailureText = scene.add.text(gameVars.halfWidth, gameVars.height - 210, THEME.loadFailedHint, {
+        fontFamily: THEME.font,
         fontSize: 20,
         color: "#ff9999",
         align: "center"
     }).setOrigin(0.5).setDepth(10);
 
-    gameObjectsTemp.retryBtn = scene.add.text(gameVars.halfWidth, gameVars.height - 160, "[ TAP TO RETRY LOADING ]", {
-        fontFamily: "Times New Roman",
+    gameObjectsTemp.retryBtn = scene.add.text(gameVars.halfWidth, gameVars.height - 160, THEME.retryButtonText, {
+        fontFamily: THEME.font,
         fontSize: 26,
         color: "#ffffff",
         align: "center"
@@ -350,7 +233,7 @@ function showLoadingFailureUI(scene) {
 
     gameObjectsTemp.retryBtn.on("pointerdown", () => {
         hideLoadingFailureUI();
-        setLoadingTextSafe("RETRYING LOAD...");
+        setLoadingTextSafe(THEME.retryingText);
         // Re-queue the recorded failures. Clearing the bookkeeping and calling
         // start() on its own runs the loader on an empty queue, which completes
         // instantly and boots the game with the assets still missing.
@@ -398,101 +281,117 @@ function preload() {
     let gameDiv = document.getElementById('preload-notice');
     if (gameDiv) gameDiv.innerHTML = "";
     handleBorders();
-    if (window.GameSDK && typeof window.GameSDK.loadingStart === 'function') window.GameSDK.loadingStart();
-    game.canvas, phaserGame = this, selfMe = this, gameObjects.exhibCntr = this.add.container(0, 0), gameObjects.exhibCntr.goalOffsetX = 0, gameObjects.exhibCntr.goalOffsetY = 0, gameObjects.exhibCntr.offsetX = 0, gameObjects.exhibCntr.offsetY = 0, gameObjects.exhibCntr.offsetAccX = 0, gameObjects.exhibCntr.offsetAccY = 0, gameObjects.exhibCntr.swayX = 0, gameObjects.exhibCntr.swayY = 0, gameObjects.exhibCntr.swayAccX = 0, gameObjects.exhibCntr.swayAccY = 0, gameObjects.exhibCntr.swayAmt = 0, gameObjects.shadowCntr = this.add.container(0, 0), gameObjects.portraitCntr = this.add.container(0, 0), gameObjects.btnCntr = this.add.container(0, 0), gameObjects.hueCntr = this.add.container(0, 0), gameObjects.mainDarkCntr = this.add.container(0, 0), gameObjects.topBtnCntr = this.add.container(0, 0), gameObjects.loadingCntr = this.add.container(0, 0), gameObjects.loadingCntr.goalOffsetX = 0, gameObjects.loadingCntr.goalOffsetY = 0, gameObjects.loadingCntr.offsetX = 0, gameObjects.loadingCntr.offsetY = 0, gameObjects.loadingCntr.offsetAccX = 0, gameObjects.loadingCntr.offsetAccY = 0, gameObjects.loadingCntr.shakeAccX = 0, gameObjects.loadingCntr.shakeAccY = 0, gameObjects.loadingCntr.swayX = 0, gameObjects.loadingCntr.swayY = 0, gameObjects.loadingCntr.swayAccX = 0, gameObjects.loadingCntr.swayAccY = 0, gameObjects.loadingCntr.swayAmt = 0, this.load.image("whitePixel", "sprites/white_pixel.png"), this.load.image("blackPixel", "sprites/black_pixel.png"), this.load.image("darkBluePixel", "sprites/dark_blue_pixel.png"), this.load.image("hand", "sprites/mouse.png"), this.load.image("handPoint", "sprites/mouse_point.png"),
-        this.load.image("funbox", "sprites/funbox.png"), this.load.image("funlid", "sprites/funlid.png"), this.load.image("popup", "sprites/popup.png"),
-        this.load.image("headphones", "sprites/headphones.png")
+    phaserGame = this;
+    selfMe = this;
+    gameObjects.exhibCntr = makeSwayContainer(this);
+    gameObjects.shadowCntr = this.add.container(0, 0);
+    gameObjects.portraitCntr = this.add.container(0, 0);
+    gameObjects.btnCntr = this.add.container(0, 0);
+    gameObjects.hueCntr = this.add.container(0, 0);
+    gameObjects.mainDarkCntr = this.add.container(0, 0);
+    gameObjects.topBtnCntr = this.add.container(0, 0);
+    gameObjects.loadingCntr = makeSwayContainer(this);
+    gameObjects.loadingCntr.shakeAccX = 0;
+    gameObjects.loadingCntr.shakeAccY = 0;
+    for (let key in PRELOAD_IMAGES) {
+        this.load.image(key, PRELOAD_IMAGES[key]);
+    }
 }
 
-// YouTube requires firstFrameReady only once a real loading/splash screen has
-// been drawn — not on a blank preload frame. Wait for POST_RENDER after the
-// LOADING UI exists (see onPreloadComplete).
-let firstFrameSignalled = false;
-
-function signalFirstFrameWhenRendered(scene) {
-    if (firstFrameSignalled) return;
-    if (!window.GameSDK || typeof window.GameSDK.firstFrameReady !== 'function') return;
-    if (!scene.game || !scene.game.events) return;
-    scene.game.events.once(Phaser.Core.Events.POST_RENDER, () => {
-        if (firstFrameSignalled) return;
-        firstFrameSignalled = true;
-        window.GameSDK.firstFrameReady();
-    });
+// Container that drifts with the mouse and sways (see handleViewShift)
+function makeSwayContainer(scene) {
+    let cntr = scene.add.container(0, 0);
+    cntr.goalOffsetX = 0;
+    cntr.goalOffsetY = 0;
+    cntr.offsetX = 0;
+    cntr.offsetY = 0;
+    cntr.offsetAccX = 0;
+    cntr.offsetAccY = 0;
+    cntr.swayX = 0;
+    cntr.swayY = 0;
+    cntr.swayAccX = 0;
+    cntr.swayAccY = 0;
+    cntr.swayAmt = 0;
+    return cntr;
 }
 
 function create() {
-    // setupHostAudioReconciliation() runs before the scene boots, so its first
-    // reconcile can only set the flag - phaserGame.sound does not exist yet. Push
-    // the host's state into Phaser now that it does, or a host that starts muted
-    // would still be audible through the direct .play() calls that bypass
-    // playSound(). The old 1s poll was papering over this.
-    applyHostAudioState();
-    onPreloadComplete(this)
+    // Push the saved mute state into Phaser now that phaserGame.sound exists, or
+    // a muted player would still hear the direct .play() calls that bypass playSound().
+    applyMuteState();
+    onPreloadComplete(this);
 }
 
-function onPreloadComplete(a) {
-    setupHand(a), globalScene = a, gameObjectsTemp.loadingBg = a.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel"), gameObjectsTemp.loadingBg.scaleX = 1e3, gameObjectsTemp.loadingBg.scaleY = 1e3, gameObjects.loadingCntr.add(gameObjectsTemp.loadingBg), gameObjectsTemp.loadingText = a.add.text(gameVars.halfWidth, gameVars.halfHeight + 155, "LOADING", {
-        fontFamily: "Times New Roman",
-        fontSize: 38,
-        color: "#ffffff",
+function addLoadingText(scene, x, y, text, fontSize, color = "#ffffff") {
+    let t = scene.add.text(x, y, text, {
+        fontFamily: THEME.font,
+        fontSize: fontSize,
+        color: color,
         align: "center"
-    }), gameObjectsTemp.loadingText.setOrigin(.5, .5), gameObjectsTemp.loadingText.setDepth(1), gameObjectsTemp.loadingBarBacking = a.add.image(gameVars.halfWidth, gameVars.height - 260, "whitePixel"), gameObjectsTemp.loadingBarBacking.alpha = .25, gameObjectsTemp.loadingBarBacking.scaleY = 4, gameObjectsTemp.loadingBarBacking.scaleX = 200, gameObjectsTemp.loadingBarBacking.setDepth(1), gameObjectsTemp.loadingBar = a.add.image(gameVars.halfWidth, gameVars.height - 260, "whitePixel"), gameObjectsTemp.loadingBar.scaleY = 4, gameObjectsTemp.loadingBar.setDepth(1), gameObjectsTemp.warningText = a.add.text(gameVars.halfWidth, gameVars.height - 188, "Warning: Contains spooky and intense scenes", {
-        fontFamily: "Times New Roman",
-        fontSize: 22,
-        color: "#ffffff",
-        align: "center"
-    }), gameObjectsTemp.exhibitText = a.add.text(gameVars.halfWidth, 140, "EXHIBIT OF SORROWS", {
-        fontFamily: "Times New Roman",
-        fontSize: 36,
-        color: "#777777",
-        align: "center"
-    }), gameObjectsTemp.exhibitText.setOrigin(.5, .5), gameObjectsTemp.exhibitText.setDepth(1), gameObjectsTemp.warningText.setOrigin(.5, .5), gameObjectsTemp.warningText.setDepth(1),
-        gameObjectsTemp.popup = a.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup"),
-        gameObjectsTemp.funbox = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox"),
-        gameObjectsTemp.funlid = a.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid"),
-        gameObjectsTemp.headphones = a.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones"), gameObjectsTemp.headphoneText = a.add.text(gameVars.halfWidth, gameVars.height - 85, "For best experience, play with headphones", {
-            fontFamily: "Times New Roman",
-            fontSize: 22,
-            color: "#ffffff",
-            align: "center"
-        }), gameObjectsTemp.headphoneText.setOrigin(.5, .5), gameObjectsTemp.headphoneText.setDepth(1),
-
-        // Loading UI is on screen now — signal first frame after it actually paints.
-        signalFirstFrameWhenRendered(a),
-
-        setupLoaderRetryHandlers(a, () => {
-            if (!gameVars.gameStarted) {
-                showLoadingFailureUI(a);
-            }
-        }),
-
-        a.load.on("progress", function (a) {
-            gameVarsTemp.loadAmt = a
-        }), a.load.on("complete", () => {
-            onLoaderBatchComplete(a)
-        }), a.load.image("handPointBlood", "sprites/mouse_point_blood.png"), a.load.multiatlas("menu", "sprites/menu/menu.json"), a.load.multiatlas("loadingSS", "sprites/loading/loadingSS.json"), a.load.multiatlas("bgs", "sprites/backgrounds/backgrounds.json"), a.load.multiatlas("roomPump", "sprites/roompump/roompump.json"), a.load.multiatlas("roomFaucet", "sprites/roomfaucet/roomfaucet.json"), a.load.multiatlas("roomHandy", "sprites/roomhandy/roomhandy.json"), a.load.multiatlas("roomStretch", "sprites/roomstretch/roomstretch.json"), a.load.multiatlas("roomJack", "sprites/roomjack/roomjack.json"),
-        a.load.multiatlas("roomClown", "sprites/clown/clown.json"),
-        a.load.multiatlas("buttons", "sprites/buttons/buttons.json"), a.load.multiatlas("misc", "sprites/misc/misc.json"), (function () { for (let ae = 0; ae < earlyAudio.length; ae++) a.load.audio(earlyAudio[ae][0], earlyAudio[ae][1]) })(),
-        a.load.image("candleBright", "sprites/candleBright.png"), a.load.image("shinelight", "sprites/shinelight.png"), a.load.image("generalDim", "sprites/generalDim.png"), a.load.image("candleDark", "sprites/candleDark.webp"), a.load.image("redlight", "sprites/redlight.png"), a.load.start()
+    });
+    t.setOrigin(0.5, 0.5);
+    t.setDepth(1);
+    return t;
 }
 
-let gameLoadedOnce = false;
+function onPreloadComplete(scene) {
+    setupHand(scene);
+    globalScene = scene;
+    gameObjectsTemp.loadingBg = scene.add.image(gameVars.halfWidth, gameVars.halfHeight, "blackPixel");
+    gameObjectsTemp.loadingBg.scaleX = 1000;
+    gameObjectsTemp.loadingBg.scaleY = 1000;
+    gameObjects.loadingCntr.add(gameObjectsTemp.loadingBg);
+    gameObjectsTemp.loadingText = addLoadingText(scene, gameVars.halfWidth, gameVars.halfHeight + 155, THEME.loadingText, 38);
+    gameObjectsTemp.loadingBarBacking = scene.add.image(gameVars.halfWidth, gameVars.height - 260, "whitePixel");
+    gameObjectsTemp.loadingBarBacking.alpha = 0.25;
+    gameObjectsTemp.loadingBarBacking.scaleY = 4;
+    gameObjectsTemp.loadingBarBacking.scaleX = 200;
+    gameObjectsTemp.loadingBarBacking.setDepth(1);
+    gameObjectsTemp.loadingBar = scene.add.image(gameVars.halfWidth, gameVars.height - 260, "whitePixel");
+    gameObjectsTemp.loadingBar.scaleY = 4;
+    gameObjectsTemp.loadingBar.setDepth(1);
+    gameObjectsTemp.warningText = addLoadingText(scene, gameVars.halfWidth, gameVars.height - 188, THEME.warningText, 22);
+    gameObjectsTemp.exhibitText = addLoadingText(scene, gameVars.halfWidth, 140, THEME.title, 36, "#777777");
+    gameObjectsTemp.popup = scene.add.image(gameVars.halfWidth, gameVars.halfHeight + 1, "popup");
+    gameObjectsTemp.funbox = scene.add.image(gameVars.halfWidth, gameVars.halfHeight - 25, "funbox");
+    gameObjectsTemp.funlid = scene.add.image(gameVars.halfWidth + 95, gameVars.halfHeight - 90, "funlid");
+    gameObjectsTemp.headphones = scene.add.image(gameVars.halfWidth, gameVars.height - 135, "headphones");
+    gameObjectsTemp.headphoneText = addLoadingText(scene, gameVars.halfWidth, gameVars.height - 85, THEME.headphoneText, 22);
+
+    setupLoaderRetryHandlers(scene, () => {
+        if (!gameVars.gameStarted) {
+            showLoadingFailureUI(scene);
+        }
+    });
+    scene.load.on("progress", function (amt) {
+        gameVarsTemp.loadAmt = amt;
+    });
+    scene.load.on("complete", () => {
+        onLoaderBatchComplete(scene);
+    });
+    for (let key in ATLASES) {
+        scene.load.multiatlas(key, ATLASES[key]);
+    }
+    for (let key in IMAGES) {
+        scene.load.image(key, IMAGES[key]);
+    }
+    for (let key in AUDIO) {
+        scene.load.audio(key, AUDIO[key]);
+    }
+    scene.load.start();
+}
+
 function onLoadComplete(a) {
     if (deferredAudioLoaded) {
         return;
     }
     const currentHref = document.location.href;
-    const isValidDomain = currentHref.includes('itch') ||
-        currentHref.includes('localhost') ||
-        currentHref.includes('127.0.0.1') ||
-        currentHref.includes('youtube') ||
-        currentHref.includes('google') ||
-        (window.GameSDK && typeof window.GameSDK.getEnvironment === 'function' && window.GameSDK.getEnvironment() === 'youtube');
+    const isValidDomain = SITE_LOCK.allowed.some(site => currentHref.includes(site));
     if (!isValidDomain) {
         // Stops execution of rest of game
         let gameDiv = document.getElementById('preload-notice');
         let invalidSite = currentHref.substring(0, 25);
-        if (gameDiv) gameDiv.innerHTML = invalidSite + "...\nis an invalid site.\n\n" + "Try the game on itch.io!";
+        if (gameDiv) gameDiv.innerText = invalidSite + "...\n" + SITE_LOCK.message;
         return;
     }
 
@@ -540,17 +439,7 @@ function onLoadComplete(a) {
             }
         }, {
             alpha: 1,
-            duration: 400,
-            onComplete() {
-                // gameReady only once the start menu is visible and interactive —
-                // not while the asset-loading screen is still the only thing shown.
-                if (!gameLoadedOnce) {
-                    gameLoadedOnce = true;
-                    if (window.GameSDK && typeof window.GameSDK.loadingStop === 'function') {
-                        window.GameSDK.loadingStop();
-                    }
-                }
-            }
+            duration: 400
         }]
     })
 }
@@ -644,7 +533,6 @@ function onLoadAnimComplete(a) {
 function startGame(a) {
     if (typeof destroySaveWipeUI === "function") destroySaveWipeUI();
     gameVars.gameplayBegan = false;
-    if (window.GameSDK && typeof window.GameSDK.gameplayStart === 'function') window.GameSDK.gameplayStart();
     gameObjects.loadingMusic = a.sound.add("loadingMusic"), gameObjects.loadingMusic.play(), gameObjects.startGameButton.destroy(), gameVars.gameStarted = !0, gameObjects.scene = a, setupGame(a), gameObjectsTemp.blackTeeth = a.add.image(gameVars.halfWidth, gameVars.halfHeight - 50, "menu", "teethBlack"), gameObjectsTemp.blackTeeth.scaleX = 1.6, gameObjectsTemp.blackTeeth.scaleY = 1.6, gameObjectsTemp.blackTeethAnim = a.tweens.chain({
         targets: [gameObjectsTemp.blackTeeth],
         tweens: [{
@@ -918,7 +806,7 @@ function beginGameplay(a) {
         // faded to. Leaving them alone means the mix is simply still correct
         // when the sound comes back, and in-flight fades keep running silently
         // rather than being frozen part-way.
-        applyHostAudioState();
+        applyMuteState();
     }, {
         atlas: "buttons",
         ref: gameVars.manualMuted ? "sfx_muted_normal" : "sfx_normal",
@@ -1042,35 +930,10 @@ function initializeSounds(a) {
     }
 }
 
-let hostAudioEnabled = true;
-
-function isHostAudioEnabled() {
-    if (!window.GameSDK || typeof window.GameSDK.isAudioEnabled !== 'function') return true;
-    try {
-        return window.GameSDK.isAudioEnabled() !== false;
-    } catch (e) {
-        return true;
-    }
-}
-
-// True while a platform ad is on screen. Kept separate from hostAudioEnabled so
-// the two can't clobber each other - an ad can end while the host still has
-// audio disabled, and the host can re-enable audio mid-ad.
-let adAudioSuspended = false;
-
-function applyHostAudioState(forced) {
-    const enabled = typeof forced === 'boolean' ? forced : isHostAudioEnabled();
-    hostAudioEnabled = enabled;
-
-    // Three independent reasons to be silent, folded into one decision so they
-    // cannot overwrite each other:
-    //   - the host disabled audio (YouTube)
-    //   - an ad is on screen (a YouTube interstitial overlays the game rather
-    //     than replacing it, so the game must fall silent even though the host
-    //     still reports audio as enabled)
-    //   - the player pressed the in-game mute button
-    // This is the ONLY place that writes Phaser's global mute.
-    const audible = enabled && !adAudioSuspended && !gameVars.manualMuted;
+// Applies the in-game mute button's state. This is the ONLY place that writes
+// Phaser's global mute.
+function applyMuteState() {
+    const audible = !gameVars.manualMuted;
 
     if (typeof phaserGame !== 'undefined' && phaserGame && phaserGame.sound) {
         // Keep Phaser's own flag in step (it emits GLOBAL_MUTE off this setter)...
@@ -1096,42 +959,7 @@ function applyHostAudioState(forced) {
     }
 }
 
-// Called by the SDK bridge around every ad. Mutes the whole game rather than the
-// handful of music tracks an individual call site happens to know about - the
-// ambient loops (watergurgle, pumpamb, fan1/fan2) are started with direct
-// .play() calls and were audible under the ad.
-function setAdAudioSuspended(suspended) {
-    adAudioSuspended = !!suspended;
-    applyHostAudioState();
-}
-
-function setupHostAudioReconciliation() {
-    if (window.GameSDK && typeof window.GameSDK.onAudioEnabledChange === 'function') {
-        window.GameSDK.onAudioEnabledChange((enabled) => applyHostAudioState(enabled !== false));
-    }
-    if (window.GameSDK && typeof window.GameSDK.onPause === 'function') {
-        window.GameSDK.onPause(() => {
-            applyHostAudioState(false);
-            if (typeof phaserGame !== 'undefined' && phaserGame && phaserGame.scene) {
-                phaserGame.scene.pause('default');
-            }
-        });
-    }
-    if (window.GameSDK && typeof window.GameSDK.onResume === 'function') {
-        window.GameSDK.onResume(() => {
-            applyHostAudioState();
-            if (typeof phaserGame !== 'undefined' && phaserGame && phaserGame.scene) {
-                phaserGame.scene.resume('default');
-            }
-        });
-    }
-    // Do not use Page Visibility — YouTube Playables requires pause/resume and
-    // audio only via ytgame.system.onPause / onResume / onAudioEnabledChange.
-    applyHostAudioState();
-}
-
 function playSound(d, a, e = 1) {
-    if (!hostAudioEnabled) return null;
     let b = "";
     void 0 !== a && (b = Math.floor(Math.random() * a) + 1);
     let c = d + b;
@@ -1141,7 +969,7 @@ function playSound(d, a, e = 1) {
     }
     gameObjects.sounds[c].play();
     // Always the true volume. Muting is handled once, globally, by
-    // applyHostAudioState - writing 0 here would strand this sound silent after
+    // applyMuteState - writing 0 here would strand this sound silent after
     // the player unmutes, because nothing re-sets a looping sound's volume.
     gameObjects.sounds[c].volume = e * gameVars.masterAudio * gameVars.soundMult;
     return gameObjects.sounds[c];
@@ -1173,14 +1001,12 @@ function tweenVolume(a, b, c = 1500) {
 }
 
 function playSoundOnce(a, b, c = 1) {
-    if (!hostAudioEnabled) return null;
     if (!gameObjects.sounds[a]) {
         console.warn("playSoundOnce: sound not registered: " + a);
         return null;
     }
     let targetVol = c * gameVars.masterAudio * gameVars.soundMult;
     oneTimeScares[a] || (oneTimeScares[a] = !0, b ? gameDelay(() => {
-        if (!hostAudioEnabled) return;
         gameObjects.sounds[a].volume = targetVol, gameObjects.sounds[a].play()
     }, b) : (gameObjects.sounds[a].volume = targetVol, gameObjects.sounds[a].play()))
 }
@@ -1611,10 +1437,3 @@ window.addEventListener('pointerdown', () => {
         globalScene.sound.context.resume().catch(() => { });
     }
 });
-
-// Runs last, after every `let` in this file has been initialised. It touches
-// hostAudioEnabled and phaserGame, and reading a `let` binding before its
-// declaration has been evaluated throws - including through `typeof`, which only
-// guards *undeclared* names. Called from the top of the file it aborted the whole
-// script, leaving the game half-constructed.
-setupHostAudioReconciliation();

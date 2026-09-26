@@ -12,7 +12,7 @@ const distDir = path.join(srcDir, 'dist');
 // the room scripts are compiled straight from source, so a bundle can never be
 // out of date with them.
 const jsFiles = [
-    'sdk-bridge.js',
+    'scripts/config.js',
     'scripts/messageBus.js',
     'scripts/button.js',
     'scripts/hint.js',

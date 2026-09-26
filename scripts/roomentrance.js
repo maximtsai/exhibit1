@@ -9,58 +9,10 @@ function setupRoomEntrance(e, t, a) {
         }
 
         if (gameVars.horrorPoint && !gameObjects.entrance.showedHorrorText) {
-            gameObjects.entrance.showedHorrorText = !0, showInfoTextLoop([{
-                text: "Exhibit of Smiles! :)\n   <=- EXIT    EXHIBITS =->",
-                time: 750
-            }, {
-                text: "Exhibit of S̶m̵i̷l̸e̵s̵!! :)\n   <-= EXIT    EXHIBITS -=>",
-                time: 100
-            }, {
-                text: "Exhibit of S̶m̵i̷l̸e̵s̵!! :)\n <=- NOEXIT    EXHIBITS =->",
-                time: 25
-            }, {
-                text: "Exhibit of S̴o̵r̷r̷o̵w̴s̵!̶ :̵(\n   <=- EXIT    EXHIBITS =->",
-                time: 25
-            }, {
-                text: "Exhibit of S̷̢͛m̷͕͒i̷̜̍l̵͓̏e̵̳̿s̵͈͒!̸͎̄ ̶̩͑:̶̛̣(̶͚͂",
-                time: 25
-            }, {
-                text: "Exhibit of Smiles! :)\n   <=- EXIT    EXHIBITS =>",
-                time: 100
-            }, {
-                text: "Exhibit of S̵o̶r̸r̷o̸w̸s̵!̴:|\n   <== EXIT    EXHIBITS =>",
-                time: 50
-            }, {
-                text: "Exhibit of Sorrows   \n ",
-                time: 1750
-            }])
+            gameObjects.entrance.showedHorrorText = !0, showInfoTextLoop(TEXT.lobby.welcomeGlitch.slice())
         } else if (gameVars.horrorPoint) {
-            showInfoTextLoop([{
-                text: "Exhibit of S̶m̵i̷l̸e̵s̵!! :)",
-                time: 100
-            }, {
-                text: "Exhibit of Smiles! :)",
-                time: 200
-            }, {
-                text: "Exhibit of S̴o̵r̷r̷o̵w̴s̵!̶ :̵(",
-                time: 50
-            }, {
-                text: "Exhibit of Smiles! :)",
-                time: 100
-            }, {
-                text: "Exhibit of S̵o̶r̸r̷o̸w̸s̵!̴:|",
-                time: 100
-            }, {
-                text: "Exhibit of Sorrows   ",
-                time: 300
-            }, {
-                text: "Exhibit of S̷̢͛m̷͕͒i̷̜̍l̵͓̏e̵̿s̵͈͒!̸͎̄",
-                time: 50
-            }, {
-                text: " ",
-                time: 550
-            }])
-        } else gameVarsTemp.brokeMusicBox ? updateInfoText("Exhibit of Smiles.\n   <== EXIT    EXHIBITS ==>") : updateInfoText("Exhibit of Smiles! :)\n   <== EXIT    EXHIBITS ==>", 3600)
+            showInfoTextLoop(TEXT.lobby.welcomeGlitchRepeat.slice())
+        } else gameVarsTemp.brokeMusicBox ? updateInfoText(TEXT.lobby.welcomeAfterBrokenBox) : updateInfoText(TEXT.lobby.welcome, 3600)
     }, {
         atlas: "menu",
         ref: "welcomeText",

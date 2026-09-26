@@ -152,13 +152,13 @@ function setupRoomHandy(e, a, o) {
     }, gameObjects.roomHandyObjs.dollArms = e.add.image(0, gameVars.height - 260, "roomHandy", "arms"), o.add(gameObjects.roomHandyObjs.dollArms), gameObjects.roomHandyObjs.dollBody = e.add.image(0, gameVars.height - 260, "roomHandy", "dollBody"), o.add(gameObjects.roomHandyObjs.dollBody),
 gameObjects.roomHandyObjs.dollPicture = e.add.sprite(4, 188, "roomHandy", "handy1").setVisible(false), o.add(gameObjects.roomHandyObjs.dollPicture),
     setHandyDollImage("dollNeutral"), o.add(gameObjects.roomHandyObjs.doll), gameObjects.roomHandyObjs.leftHand = e.add.image(-285, 359, "roomHandy", "lefthand1"), gameObjects.roomHandyObjs.rightHand = e.add.image(290, 359, "roomHandy", "righthand1"), o.add(gameObjects.roomHandyObjs.leftHand), o.add(gameObjects.roomHandyObjs.rightHand), initFingerButton(), gameObjects.roomHandyObjs.placard = new Button(e, o, () => {
-        gameVars.horrorPoint ? gameObjects.roomHandyObjs.roomComplete ? gameObjects.roomHandyObjs.playedOneTimeText ? updateInfoText("Mr.            ") : (gameObjects.roomHandyObjs.playedOneTimeText = !0, updateInfoText("Mr. Handy"), gameDelay(() => {
-            updateInfoText("Mr. H̵a̵n̸d̸ "), gameDelay(() => {
-                updateInfoText("Mr. H̴a̸      "), gameDelay(() => {
-                    updateInfoText("Mr.            ")
+        gameVars.horrorPoint ? gameObjects.roomHandyObjs.roomComplete ? gameObjects.roomHandyObjs.playedOneTimeText ? updateInfoText(TEXT.handy.doneGlitch[2]) : (gameObjects.roomHandyObjs.playedOneTimeText = !0, updateInfoText(TEXT.handy.name), gameDelay(() => {
+            updateInfoText(TEXT.handy.doneGlitch[0]), gameDelay(() => {
+                updateInfoText(TEXT.handy.doneGlitch[1]), gameDelay(() => {
+                    updateInfoText(TEXT.handy.doneGlitch[2])
                 }, 100)
             }, 100)
-        }, 700)) : updateInfoText("Mr. Handy") : gameVars.darkPoint ? updateInfoText("8, 7, 6, 5... ") : updateInfoText("Mr. Handy")
+        }, 700)) : updateInfoText(TEXT.handy.name) : gameVars.darkPoint ? updateInfoText(TEXT.handy.dark) : updateInfoText(TEXT.handy.name)
     }, {
         atlas: "buttons",
         ref: "placard",
@@ -343,7 +343,7 @@ function fingerUnPress() {
     }
     let e = gameObjects.roomHandyObjs.fingerState - 1;
     e >= 0 ? (gameObjects.roomHandyObjs.fingerState = e, gameObjects.roomHandyObjs.cleanupButton.setPos(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 20), updateGuideArrowFat(gameObjects.roomHandyObjs.listOfInverseButtonPos[e].x, gameObjects.roomHandyObjs.listOfInverseButtonPos[e].y - 200, .5 * Math.PI)) : (gameObjects.roomHandyObjs.cleanupButton.setPos(0, -9999), updateGuideArrowFat(0, -9999), gameObjects.exhibit.needCleanup = !1, roomHandyMarkStage(ROOM_HANDY_STAGE_CLEANED), updateHandyExpression(1), gameDelay(() => {
-        playSound("deepbell3"), updateInfoTextSoft("Room cleaned up.", 2250);
+        playSound("deepbell3"), updateInfoTextSoft(TEXT.roomCleaned, 2250);
     }, 100)), handleFingerSound(e + 2);
     let a = 0;
     switch (e) {

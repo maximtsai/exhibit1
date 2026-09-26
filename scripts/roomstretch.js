@@ -77,7 +77,7 @@ function setupRoomStretch(e, t, o) {
         onDrop: () => {}
     }), 
     gameObjects.roomStretchObjs.placard = new Button(e, o, () => {
-        gameVars.horrorPoint ? gameObjects.roomStretchObjs.roomCompleted ? updateInfoText("...") : updateInfoText("Ms. Stretch") : gameVars.darkPoint ? updateInfoText("What is the furthest she could reach?") : updateInfoText("Ms. Stretch")
+        gameVars.horrorPoint ? gameObjects.roomStretchObjs.roomCompleted ? updateInfoText(TEXT.stretch.done) : updateInfoText(TEXT.stretch.name) : gameVars.darkPoint ? updateInfoText(TEXT.stretch.dark) : updateInfoText(TEXT.stretch.name)
     }, {
         atlas: "buttons",
         ref: "placard",
@@ -276,7 +276,7 @@ function roomStretchUpdate(e) {
 
 function stretchCleanup() {
     gameObjects.roomStretchObjs.doDarkCleanup = !0, gameObjects.roomStretchObjs.cleanupButton.destroy(), gameObjects.exhibit.needCleanup = !1, roomStretchMarkStage(ROOM_STRETCH_STAGE_CLEANED), messageBus.publish("saveCheckpoint"), gameDelay(() => {
-        playSound("deepbell2"), updateInfoTextSoft("Room cleaned up.", 2250)
+        playSound("deepbell2"), updateInfoTextSoft(TEXT.roomCleaned, 2250)
     }, 400)
 }
 

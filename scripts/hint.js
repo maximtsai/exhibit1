@@ -1,5 +1,5 @@
 /**
- * @fileoverview Hint system module for managing hint counter, badge display, and rewarded ads.
+ * @fileoverview Hint system module for managing hint counter and badge display.
  */
 
 // NOTE: no top-level access to gameVars/gameObjects/globalScene in this file.
@@ -1005,43 +1005,7 @@ function onHintButtonPressed() {
     let currentHints = (typeof gameVars !== "undefined" && gameVars.hintCount !== undefined) ? gameVars.hintCount : 1;
     if (currentHints >= 1) {
         updateHintCounter(currentHints - 1);
-        showHint();
-    } else {
-        if (typeof window.sdkRewardedBreak === 'function') {
-            window.sdkRewardedBreak(
-                null,
-                () => {
-                    // onFinished only fires on a successful/earned view - sdk-bridge.js
-                    // calls it with no arguments, so there is no reward flag to check here.
-                    // Grant 1 bonus hint for watching the ad.
-                    let currentHints = (typeof gameVars !== "undefined" && gameVars.hintCount !== undefined) ? gameVars.hintCount : 0;
-                    updateHintCounter(currentHints + 1);
-                    showHint();
-                },
-                (err) => {
-                    console.warn("Rewarded ad failed or closed early:", err);
-                    if (typeof updateInfoTextSoft === "function") {
-                        updateInfoTextSoft("AD HINT FAILED", 2500);
-                    }
-                }
-            );
-        } else if (window.GameSDK && typeof window.GameSDK.showAd === 'function') {
-            window.GameSDK.showAd('rewarded', {
-                onFinished: () => {
-                    // Grant 1 bonus hint for watching the ad.
-                    let currentHints = (typeof gameVars !== "undefined" && gameVars.hintCount !== undefined) ? gameVars.hintCount : 0;
-                    updateHintCounter(currentHints + 1);
-                    showHint();
-                },
-                onError: (err) => {
-                    console.warn("Rewarded ad error:", err);
-                    if (typeof updateInfoTextSoft === "function") {
-                        updateInfoTextSoft("AD HINT FAILED", 2500);
-                    }
-                }
-            });
-        } else {
-            showHint();
-        }
     }
+    // Out of free hints: still show one (there are no rewarded ads to earn more).
+    showHint();
 }

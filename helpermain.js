@@ -1,5 +1,5 @@
 // Drop-in for setTimeout that uses Phaser's clock so delays pause with the
-// scene (YouTube onPause). Same signature as setTimeout(fn, ms). Falls back
+// scene. Same signature as setTimeout(fn, ms). Falls back
 // to wall-clock setTimeout if the scene is not up yet.
 function gameDelay(callback, ms) {
 	const scene = (typeof globalScene !== 'undefined' && globalScene && globalScene.time)
@@ -96,7 +96,7 @@ function onStandClick(e) {
 		alpha: 1,
 		duration: 3300,
 		onComplete: () => {
-			gameVars.canCloseStand = !0, onStandDisplayClick(e, !0), gameObjectsTemp.voidGlow.destroy(), removeFromUpdateFuncList(animateVoidGlow), gameObjects.sounds.void.stop(), updateInfoText("==>\n==>\n==>")
+			gameVars.canCloseStand = !0, onStandDisplayClick(e, !0), gameObjectsTemp.voidGlow.destroy(), removeFromUpdateFuncList(animateVoidGlow), gameObjects.sounds.void.stop(), updateInfoText(TEXT.lobby.standHorror)
 		}
 	})) : (gameObjects.standDisplay.setAlpha(.5), gameObjects.standDisplay.setScale(.98), gameObjects.standDisplay.tweenScale({
 		scaleX: 1,
@@ -300,7 +300,7 @@ function onExitClick(e) {
 					ease: "Cubic.easeIn",
 					onComplete: () => {
 						new Button(e, gameObjects.gameCtnr0, () => {
-							updateInfoText("Locked. But now that the lights\nare on, I can head RIGHT ->", 4800)
+							updateInfoText(TEXT.lobby.doorLocked, 4800)
 						}, {
 							ref: "blackPixel",
 							x: -3,
@@ -309,7 +309,7 @@ function onExitClick(e) {
 							scaleY: 330,
 							alpha: .01
 						}), new Button(e, gameObjects.gameCtnr0, () => {
-							updateInfoText("Emergency power is on. It might not last long.", 4500), gameObjectsTemp.emergencyLightsFlag || (gameObjectsTemp.emergencyLightsFlag = !0, gameDelay(() => {
+							updateInfoText(TEXT.lobby.emergencyPower, 4500), gameObjectsTemp.emergencyLightsFlag || (gameObjectsTemp.emergencyLightsFlag = !0, gameDelay(() => {
 								gameObjects.generalDarkness.alpha = .1, gameDelay(() => {
 									gameObjects.generalDarkness.alpha = 0, gameDelay(() => {
 										gameObjects.generalDarkness.alpha = .1, gameDelay(() => {
@@ -359,7 +359,7 @@ function onExitClick(e) {
 		duration: 2950
 	})) : void(gameVarsTemp.doorFailed ? (gameObjects.generalDarkness.alpha = 1, gameObjects.exitDoor.setState("disable"), gameDelay(() => {
 		gameObjects.generalDarkness.alpha = 0
-	}, 50)) : gameVars.darkPoint ? updateInfoText("Turn on the lights first", 3e3) : updateInfoText("You just arrived\nExibits to the right! ->", 3500))
+	}, 50)) : gameVars.darkPoint ? updateInfoText(TEXT.lobby.lightsFirst, 3e3) : updateInfoText(TEXT.lobby.justArrived, 3500))
 }
 
 function setupGameplayButtons(e) {
@@ -401,7 +401,7 @@ function setupGameplayButtons(e) {
 					gameObjectsTemp.cantPressMusicBox = !1
 				}, 450), gameDelay(() => {
 					gameObjects.sounds.gladiator0.stop(), gameObjects.musicBoxNote.alpha = 0, gameObjects.musicBoxNote2.alpha = 0, gameObjects.sounds.gladiator1.stop(), gameObjects.sounds.gladiator2.stop()
-				}, 120), gameObjectsTemp.boxBroken) gameVars.darkPoint ? updateInfoText("The music box is... broken?") : (gameVarsTemp.brokeMusicBox = !0, updateInfoText("The music box won't turn on now."));
+				}, 120), gameObjectsTemp.boxBroken) gameVars.darkPoint ? updateInfoText(TEXT.lobby.musicBoxBroken) : (gameVarsTemp.brokeMusicBox = !0, updateInfoText(TEXT.lobby.musicBoxWontTurnOn));
 			else if (gameObjectsTemp.stoppedMusic)
 			if (playSound("stopmusic"), gameObjects.musicBoxStand.rotation = .012, globalScene.tweens.add({
 					targets: gameObjects.musicBoxStand,
@@ -553,13 +553,13 @@ function onTurnOnPower() {
 			}, 75)
 		}, 250)
 	}, 50), gameObjects.moveRightBtn.setOnMouseUpFunc(() => {
-		updateInfoText("You have stayed long enough. You should EXIT. ", 4500)
-	})) : updateInfoText("The lights are working fine."))
+		updateInfoText(TEXT.lobby.stayedLongEnough, 4500)
+	})) : updateInfoText(TEXT.lobby.lightsFine))
 }
 
 function initDarkSequence(e) {
 	addDarkToExhibit(), enableMoveLeftButton(), gameVars.baseSway = .03, enableFlashlight(!0), gameVars.darkPoint = !0, messageBus.publish("startDarkSequence"), gameObjects.moveRightBtn.setOnMouseUpFunc(() => {
-		updateInfoText("It's too dark to go forward. \n<- Head left to EXIT.", 5e3)
+		updateInfoText(TEXT.lobby.tooDark, 5e3)
 	});
 	setClownWelcomePicFrame5();
 }

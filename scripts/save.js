@@ -25,9 +25,7 @@
 //    new and old scene avoids every "the player came from room X" special case
 //    (e.g. roomjack's fake-eyes scare, which fires on `o === jackIndex`).
 //
-// Storage: GameSDK's blob API is asynchronous and single-slot — saveData(data)
-// takes no key and loadData() returns a Promise. Restore has to be synchronous,
-// so the remote blob is prefetched at page load and read from cache.
+// Storage: localStorage, read synchronously on restore.
 
 // v3 added story.doorFailed, which splits the horror phase into its two halves.
 // A v2 save has no way to express that, so it is discarded rather than restored
@@ -70,12 +68,6 @@ function registerRoomSaveState(roomIndex, provider) {
 
 // ---------------------------------------------------------------- storage ---
 
-// Cache of the remote (GameSDK) blob, filled by saveStartPrefetch. Null means
-// "no remote save"; the prefetch flag distinguishes that from "not asked yet".
-var saveRemoteValue = null;
-var saveRemotePrefetched = false;
-var saveRemotePrefetchStarted = false;
-
 // Is this Button or Phaser GameObject still usable?
 //
 // Buttons set isDestroyed on themselves (button.js:830). Phaser images have no
@@ -89,79 +81,19 @@ function saveAlive(o) {
     return true;
 }
 
-function saveSdkAvailable() {
-    return typeof window !== "undefined" && window.GameSDK && typeof window.GameSDK.loadData === "function";
-}
-
-// Reads the remote blob once at page load so restore can be synchronous.
-//
-// The YouTube adapter resolves window.ytgame lazily and returns Promise(null)
-// while the third-party SDK script is still in flight, so an early empty answer
-// is ambiguous. Retry until ytgame appears or the deadline passes; a real save
-// short-circuits immediately.
-function saveStartPrefetch(deadlineMs) {
-    if (saveRemotePrefetchStarted) return;
-    saveRemotePrefetchStarted = true;
-    if (!saveSdkAvailable()) {
-        saveRemotePrefetched = true;
-        return;
-    }
-    var deadline = Date.now() + (deadlineMs || 8000);
-    var attempt = function () {
-        var p;
-        try {
-            p = window.GameSDK.loadData();
-        } catch (e) {
-            saveRemotePrefetched = true;
-            return;
-        }
-        Promise.resolve(p).then(function (v) {
-            if (typeof v === "string" && v.length > 0) {
-                saveRemoteValue = v;
-                saveRemotePrefetched = true;
-                return;
-            }
-            // Empty answer: only trust it once the host SDK has actually loaded
-            // (or we have waited long enough that it never will).
-            if (window.ytgame || Date.now() >= deadline) {
-                saveRemotePrefetched = true;
-                return;
-            }
-            setTimeout(attempt, 250);
-        }, function () {
-            saveRemotePrefetched = true;
-        });
-    };
-    attempt();
-}
-
+// Saves go to localStorage. saveStorageFallback keeps the save for this session
+// when localStorage is unavailable (e.g. some incognito modes).
 function saveStorageSet(s) {
     saveStorageFallback[SAVE_STORAGE_KEY] = s;
-    saveRemoteValue = s;
     try { localStorage.setItem(SAVE_STORAGE_KEY, s); } catch (e) { /* incognito */ }
-    try {
-        // Single-slot blob API: saveData takes the payload only, no key.
-        if (window.GameSDK && typeof window.GameSDK.saveData === "function") {
-            window.GameSDK.saveData(s);
-        }
-    } catch (e) { /* ignore */ }
 }
 
 function saveStorageGet() {
-    var s = saveRemoteValue;
-    if (s == null) {
-        try { s = localStorage.getItem(SAVE_STORAGE_KEY); } catch (e) { /* ignore */ }
-    }
+    var s = null;
+    try { s = localStorage.getItem(SAVE_STORAGE_KEY); } catch (e) { /* ignore */ }
     if (s == null) s = saveStorageFallback[SAVE_STORAGE_KEY] || null;
     return s || null;
 }
-
-// Kick the remote read off as early as possible — this file is concatenated
-// after sdk-bridge.js, so window.GameSDK already exists, and the asset preload
-// plus the player clicking BEGIN gives it seconds to land. Touches no game
-// globals, so it is safe at load time in the bundle. initSaveSystem calls it
-// again as an idempotent safety net.
-if (typeof window !== "undefined") saveStartPrefetch();
 
 // ------------------------------------------------------------------ save ----
 
@@ -252,19 +184,8 @@ function saveClear() {
         saveDebounceTimer = null;
     }
     saveKeyRegistry = {};
-    saveRemoteValue = null;
     delete saveStorageFallback[SAVE_STORAGE_KEY];
     try { localStorage.removeItem(SAVE_STORAGE_KEY); } catch (e) { /* ignore */ }
-    try {
-        // removeItem only touches the adapter's in-memory key-value store, not
-        // the blob — the blob is cleared by overwriting it with an empty string.
-        if (window.GameSDK && typeof window.GameSDK.saveData === "function") {
-            window.GameSDK.saveData("");
-        }
-        if (window.GameSDK && typeof window.GameSDK.removeItem === "function") {
-            window.GameSDK.removeItem(SAVE_STORAGE_KEY);
-        }
-    } catch (e) { /* ignore */ }
 }
 
 function scheduleSave() {
@@ -279,7 +200,6 @@ function scheduleSave() {
 function initSaveSystem() {
     if (initSaveSystem.done) return;
     initSaveSystem.done = true;
-    saveStartPrefetch();
     if (typeof messageBus !== "undefined" && messageBus) {
         messageBus.subscribe("exhibitMove", scheduleSave);
         // Records only — deliberately does NOT schedule a save. A key often
@@ -321,9 +241,6 @@ function initSaveSystem() {
 // ---------------------------------------------------------------- restore ---
 
 function applySaveStateIfNeeded() {
-    if (!saveRemotePrefetched && saveSdkAvailable()) {
-        console.warn("save: remote blob still loading at restore time; falling back to local storage.");
-    }
     var raw = saveStorageGet();
     if (!raw) return;
     var save = null;
@@ -595,7 +512,7 @@ function maybeShowSaveWipeUI(a) {
     if (typeof gameObjects === "undefined" || !gameObjects || !gameObjects.loadingCntr) return;
     var c = gameObjects.loadingCntr;
     var text = a.add.text(gameVars.halfWidth, gameVars.height - 30, "SAVED GAME DETECTED. CLICK HERE TO WIPE SAVE.", {
-        fontFamily: "Times New Roman",
+        fontFamily: THEME.font,
         fontSize: 22,
         color: "#ffffff",
         align: "center"
@@ -645,7 +562,7 @@ function showWipeConfirm(a) {
     c.add(panel);
 
     var title = a.add.text(gameVars.halfWidth, gameVars.halfHeight - 25, "WIPE SAVED GAME?", {
-        fontFamily: "Times New Roman",
+        fontFamily: THEME.font,
         fontSize: 26,
         color: "#ffffff",
         align: "center"
@@ -665,7 +582,7 @@ function showWipeConfirm(a) {
     });
 
     var closeText = a.add.text(gameVars.halfWidth + 164, gameVars.halfHeight - 59, "X", {
-        fontFamily: "Times New Roman",
+        fontFamily: THEME.font,
         fontSize: 22,
         color: "#dddddd",
         align: "center"
@@ -689,7 +606,7 @@ function showWipeConfirm(a) {
         saveClear();
         destroySaveWipeUI();
         var wiped = a.add.text(gameVars.halfWidth, gameVars.height - 30, "SAVE GAME WIPED", {
-            fontFamily: "Times New Roman",
+            fontFamily: THEME.font,
             fontSize: 22,
             color: "#ffffff",
             align: "center"
@@ -710,7 +627,7 @@ function showWipeConfirm(a) {
     });
 
     var yesText = a.add.text(gameVars.halfWidth - 85, gameVars.halfHeight + 30, "YES", {
-        fontFamily: "Times New Roman",
+        fontFamily: THEME.font,
         fontSize: 24,
         color: "#dddddd",
         align: "center"
@@ -742,7 +659,7 @@ function showWipeConfirm(a) {
     });
 
     var noText = a.add.text(gameVars.halfWidth + 85, gameVars.halfHeight + 30, "NO", {
-        fontFamily: "Times New Roman",
+        fontFamily: THEME.font,
         fontSize: 24,
         color: "#dddddd",
         align: "center"

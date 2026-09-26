@@ -16,7 +16,7 @@ function setupRoomJack(e, a, o) {
         eyeOffsetX: 0,
         eyeOffsetY: 0
     }), setupJackMusicSequence(), gameObjects.roomJackObjs.floor = e.add.image(0, 960, "roomJack", "floor"), gameObjects.roomJackObjs.floor.setOrigin(.5, 1), o.add(gameObjects.roomJackObjs.floor), setupPortraits(o, e), gameObjects.roomJackObjs.streamers = e.add.image(0, -20, "roomJack", "streamers"), gameObjects.roomJackObjs.streamers.scaleX = .88, gameObjects.roomJackObjs.streamers.scaleY = .9, gameObjects.roomJackObjs.streamers.setOrigin(.5, 0), o.add(gameObjects.roomJackObjs.streamers), gameObjects.roomJackObjs.neck1 = e.add.image(-450, -140, "roomJack", "neck"), gameObjects.roomJackObjs.neck2 = e.add.image(0, -150, "roomJack", "neck"), gameObjects.roomJackObjs.neck3 = e.add.image(450, -140, "roomJack", "neck"), gameObjects.roomJackObjs.neck1.scaleX = .9, gameObjects.roomJackObjs.neck1.scaleY = .9, gameObjects.roomJackObjs.neck2.scaleX = -.9, gameObjects.roomJackObjs.neck2.scaleY = .9, gameObjects.roomJackObjs.neck2.rotation = 2, gameObjects.roomJackObjs.neck3.scaleX = .9, gameObjects.roomJackObjs.neck3.scaleY = .9, gameObjects.roomJackObjs.neck2.rotation = 3, gameObjects.roomJackObjs.neck1.visible = !1, gameObjects.roomJackObjs.neck2.visible = !1, gameObjects.roomJackObjs.neck3.visible = !1, o.add(gameObjects.roomJackObjs.neck1), o.add(gameObjects.roomJackObjs.neck2), o.add(gameObjects.roomJackObjs.neck3), setupJackArms(e), gameObjects.roomJackObjs.dollCreepy = e.add.image(-5, 2010, "roomJack", "dollcreepy"), gameObjects.roomJackObjs.dollCreepy.origYPos = 2010, gameObjects.roomJackObjs.dollCreepy.scaleX = .42, o.add(gameObjects.roomJackObjs.dollCreepy), gameObjects.roomJackObjs.dollHeadUnder = e.add.image(-5, 2010, "roomJack", "dollEyeless").setOrigin(.5, 1), gameObjects.roomJackObjs.dollHeadUnder.scaleX = .42, o.add(gameObjects.roomJackObjs.dollHeadUnder), gameObjects.roomJackObjs.headPopup1 = e.add.image(-5, -9999, "roomJack", "popup1"), gameObjects.roomJackObjs.headPopup1.visible = !1, o.add(gameObjects.roomJackObjs.headPopup1), gameObjects.roomJackObjs.pedestal = e.add.image(-10, gameVars.height + 66, "roomJack", "pedestal"), gameObjects.roomJackObjs.pedestal.setOrigin(.5, 1), o.add(gameObjects.roomJackObjs.pedestal), gameObjects.roomJackObjs.dollHeadFlash1 = e.add.image(-6, 585, "roomJack", "jack_flashes_rough_1").setOrigin(.5, 1), gameObjects.roomJackObjs.dollHeadFlash1.visible = !1, o.add(gameObjects.roomJackObjs.dollHeadFlash1), gameObjects.roomJackObjs.dollHeadFlash2 = e.add.image(-6, 585, "roomJack", "jack_flashes_rough_2").setOrigin(.5, 1), gameObjects.roomJackObjs.dollHeadFlash2.visible = !1, o.add(gameObjects.roomJackObjs.dollHeadFlash2), gameObjects.roomJackObjs.box = e.add.image(0, 665, "roomJack", "box"), o.add(gameObjects.roomJackObjs.box), gameObjects.roomJackObjs.lid = e.add.image(93, 575, "roomJack", "lid"), gameObjects.roomJackObjs.lid.rotVel = 0, o.add(gameObjects.roomJackObjs.lid), gameObjects.roomJackObjs.dollEyes = e.add.image(-5, 2010, "roomJack", "dollEyes").setOrigin(.5, 1), gameObjects.roomJackObjs.dollEyes.scaleX = .8, gameObjects.roomJackObjs.dollEyes.visible = !1, o.add(gameObjects.roomJackObjs.dollEyes), gameObjects.roomJackObjs.dollHead = e.add.image(-5, 2010, "roomJack", "dollEyeless").setOrigin(.5, 1), gameObjects.roomJackObjs.dollHead.scaleX = .8, gameObjects.roomJackObjs.dollHead.visible = !1, o.add(gameObjects.roomJackObjs.dollHead), gameObjects.roomJackObjs.halfHeightDiffDoll = .5 * (gameObjects.roomJackObjs.dollCreepy.height - 2 * gameObjects.roomJackObjs.dollHead.height), gameObjects.roomJackObjs.dollHead.y = gameObjects.roomJackObjs.dollCreepy.y - gameObjects.roomJackObjs.halfHeightDiffDoll, gameObjects.roomJackObjs.dollHeadUnder.y = gameObjects.roomJackObjs.dollHead.y, gameObjects.roomJackObjs.dollEyes.y = gameObjects.roomJackObjs.dollHead.y, gameObjects.roomJackObjs.headPopup2 = e.add.image(gameObjects.roomJackObjs.dollHead.x, -9999, "roomJack", "popup2"), gameObjects.roomJackObjs.headPopup2.visible = !1, o.add(gameObjects.roomJackObjs.headPopup2), gameObjects.roomJackObjs.placard = new Button(e, o, () => {
-        gameVars.horrorPoint ? updateInfoText("Turn the handle.") : gameVars.darkPoint && gameObjects.roomJackObjs.canSpin ? updateInfoText("Unturn the handle.") : updateInfoText("Jack in the Box")
+        gameVars.horrorPoint ? updateInfoText(TEXT.jack.horror) : gameVars.darkPoint && gameObjects.roomJackObjs.canSpin ? updateInfoText(TEXT.jack.dark) : updateInfoText(TEXT.jack.name)
     }, {
         atlas: "buttons",
         ref: "placard",
@@ -45,7 +45,7 @@ function setupRoomJack(e, a, o) {
         e === a ? (tweenVolume("gladiator0", 0), tweenVolume("gladiator1", .9), tweenVolume("gladiator2", .1), tweenVolume("gladiatorx", .1), gameVars.darkPoint && (gameObjects.roomJackObjs.eyeOffsetX = 4, gameDelay(() => {
             removeFromUpdateFuncList(shakeJackHead), gameObjects.roomJackObjs.eyeOffsetX = 0, gameObjects.roomJackObjs.dollHead.rotation = 0, gameObjects.roomJackObjs.dollHeadSmile.visible = !1
         }, 1300)), addGuideArrowToContainer(gameObjects.roomJackObjs.roomContainer), updateGuideArrow(0, -9999), gameObjects.roomJackObjs.shouldUpdate = !0, gameObjects.roomJackObjs.lightsReady && (gameObjects.moveLeftBtn.setOnMouseUpFunc(() => {
-            gameObjects.roomJackObjs.eyeOffsetY += 1, gameObjects.moveLeftBtn.setState("disable"), updateInfoText("There is no reason to turn back", 4500), console.log("...")
+            gameObjects.roomJackObjs.eyeOffsetY += 1, gameObjects.moveLeftBtn.setState("disable"), updateInfoText(TEXT.jack.noTurningBack, 4500), console.log("...")
         }), globalScene.tweens.add({
             targets: gameObjects.roomJackObjs.lights,
             alpha: .8,
@@ -182,7 +182,7 @@ function checkMusicSequenceDark(e) {
             zoomTemp(1.028), gameObjects.roomJackObjs.dollCreepy.y = 2010, gameObjects.roomJackObjs.lid.rotation = 0
         }, 170)
     }, 70), gameObjects.roomJackObjs.playedSlam = !0)), gameObjects.roomJackObjs.dollCreepy.y = Math.min(2010, gameObjects.roomJackObjs.dollCreepy.y - 5 * e), gameObjects.roomJackObjs.lid.rotation = Math.max(0, gameObjects.roomJackObjs.lid.rotation + .2 * e), gameObjects.roomJackObjs.lid.rotation <= .01 && (gameObjects.roomJackObjs.lid.rotation = 0, gameObjects.exhibit.needCleanup = !1, gameObjects.roomJackObjs.canSpin = !1, roomJackMarkStage(ROOM_JACK_STAGE_CLOSED), messageBus.publish("saveCheckpoint"), resetGuideArrowJack(), gameDelay(() => {
-        playSound("deepbell1"), updateInfoTextSoft("Room cleaned up.", 2500)
+        playSound("deepbell1"), updateInfoTextSoft(TEXT.roomCleaned, 2500)
     }, 400))
 }
 
@@ -209,7 +209,7 @@ function checkMusicSequenceHorror(e, a = 1) {
             let e = o.duration ? 1 : .25;
             showStaticRand(1, void 0, void 0, e)
         } else o.slowSpin ? gameObjects.roomJackObjs.slowRotation = !0 : o.popupHeadHorror ? (gameObjects.roomJackObjs.placard.setOnMouseUpFunc(() => {
-            showStaticLite(), updateInfoText("TURN THE HANDLE")
+            showStaticLite(), updateInfoText(TEXT.jack.horrorShout)
         }), gameObjects.roomJackObjs.jackJumpState = "jump", gameObjects.roomJackObjs.lid.rotVel = .4, gameObjects.roomJackObjs.dollHeadUnder.destroy(), animatePopUp(), playSound("nyaha"), playSound("squeakopen"), gameDelay(() => {
             showStaticRand(2, void 0, void 0, .15), gameDelay(() => {
                 showStaticRand(1, void 0, void 0, .07)
@@ -1244,7 +1244,7 @@ function jumpOutRightArm() {
 function showTurnHandleLots() {
     gameObjects.roomJackObjs.placard.setOnMouseUpFunc(() => {});
     let e = [{
-        text: "TURN THE HANDLE",
+        text: TEXT.jack.horrorShout,
         time: 1e3
     }, {
         text: "TURN THE HANDLE TURN THE HANDLE",

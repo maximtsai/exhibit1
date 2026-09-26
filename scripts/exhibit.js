@@ -74,21 +74,13 @@ class Exhibit {
         gameVarsTemp.hasMoved = true;
         if (this.needCleanup) {
             if (gameVarsTemp.needSecondClue) {
-                if (this.currentScene === 13) {
-                    updateInfoTextSoft('Unturn the handle', 2000);
-                } else if (this.currentScene === 6) {
-                    updateInfoTextSoft('Unstretch her hand', 2000);
-                } else if (this.currentScene === 5) {
-                    updateInfoTextSoft('Uncount the fingers', 2000);
-                } else if (this.currentScene === 3) {
-                    updateInfoTextSoft('Turn off the tap', 2000);
-                } else if (this.currentScene === 2) {
-                    updateInfoTextSoft('Deflate him', 2000);
+                if (TEXT.cleanupHints[this.currentScene]) {
+                    updateInfoTextSoft(TEXT.cleanupHints[this.currentScene], 2000);
                 } else {
-                    updateInfoTextSoft('Clean up the room first.', 2250);
+                    updateInfoTextSoft(TEXT.cleanUpFirst, 2250);
                 }
             } else {
-                updateInfoTextSoft('Clean up the room first.', 2250);
+                updateInfoTextSoft(TEXT.cleanUpFirst, 2250);
                 gameDelay(() => {
                     gameVarsTemp.needSecondClue = true;
                 }, 1000)
@@ -215,39 +207,6 @@ class Exhibit {
                     enableMoveButtons();
                     return;
                 }
-            }
-
-
-            if ((this.currentScene === 2 && oldScene === 1 && gameVars.horrorPoint) || (oldScene === 1 && !gameVars.darkPoint)) {
-                console.log("call ad");
-                // call ad when at main lobby
-                let itemsToMute = [gameObjects.sounds.gladiator0, gameObjects.sounds.gladiator1, gameObjects.sounds.gladiator2, gameObjects.sounds.gladiatorx];
-                sdkCommercialBreak(() => {
-                    console.log("mute all");
-                    // Mute all our sfx
-                    for (let i = 0; i < itemsToMute.length; i++) {
-                        if (!itemsToMute[i]) {
-                            continue;
-                        }
-                        itemsToMute[i].origVol = itemsToMute[i].volume;
-                        itemsToMute[i].volume = 0;
-                    }
-                    
-                }, () => {
-                    console.log("reenable sound")
-                    // Re Enable sound and then move right. This must run on every
-                    // platform - the old `if (useSDK)` guard referenced a global
-                    // that died with sdkwrapper.js and threw a ReferenceError here.
-                    for (let i = 0; i < itemsToMute.length; i++) {
-                        if (!itemsToMute[i]) {
-                            continue;
-                        }
-                        if (!itemsToMute[i].origVol) {
-                            continue;
-                        }
-                        itemsToMute[i].volume = itemsToMute[i].origVol;
-                    }
-                });
             }
 
             messageBus.publish('exhibitMove', this.currentScene, oldScene);

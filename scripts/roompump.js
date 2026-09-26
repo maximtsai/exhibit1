@@ -53,7 +53,7 @@ function setupRoomPump(e, o, a) {
         scaleX: 1.7,
         scaleY: 1.1
     }), gameObjects.roomPumpObjs.pumpBtn.setOnMouseDownFunc(pumpPressed), gameObjects.roomPumpObjs.extraGlow = e.add.image(-240, 505, "buttons", "glow"), gameObjects.roomPumpObjs.extraGlow.scaleX = 1.95, gameObjects.roomPumpObjs.extraGlow.scaleY = 1.45, gameObjects.roomPumpObjs.extraGlow.alpha = 0, gameObjects.roomPumpObjs.roomContainer.add(gameObjects.roomPumpObjs.extraGlow), gameObjects.roomPumpObjs.placard = new Button(e, a, () => {
-        gameVars.horrorPoint ? gameObjects.roomPumpObjs.roomComplete ? updateInfoText("Pop.") : updateInfoText("Mr. Floaty") : gameVars.darkPoint ? updateInfoText("He liked balloons,\nhow they float, how they pop") : updateInfoText("Mr. Floaty")
+        gameVars.horrorPoint ? gameObjects.roomPumpObjs.roomComplete ? updateInfoText(TEXT.pump.done) : updateInfoText(TEXT.pump.name) : gameVars.darkPoint ? updateInfoText(TEXT.pump.dark) : updateInfoText(TEXT.pump.name)
     }, {
         atlas: "buttons",
         ref: "placard",
@@ -267,7 +267,7 @@ function pumpReleased() {
 
 function cleanupPump() {
     gameObjects.roomPumpObjs.cleanupBtn.destroy(), gameObjects.roomPumpObjs.pumpCheckpoint = 0, gameObjects.exhibit.needCleanup = !1, roomPumpMarkStage(ROOM_PUMP_STAGE_DEFLATED), messageBus.publish("saveCheckpoint"), gameDelay(() => {
-        playSound("deepbell5"), updateInfoTextSoft("Room cleaned up.", 2250)
+        playSound("deepbell5"), updateInfoTextSoft(TEXT.roomCleaned, 2250)
     }, 500)
 }
 
