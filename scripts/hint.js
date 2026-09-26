@@ -433,7 +433,7 @@ function playFadeOutAnimation(context, delayMs = 200, durationMs = 400, onComple
 }
 
 function getFaucetHandleAndPivot() {
-    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
     let halfH = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
 
     let leverX = halfW + 53;
@@ -465,7 +465,7 @@ function handlePumpHint(state) {
     if (tryPlayMoveButtonHint(state)) return;
 
     if (state === "dark") {
-        let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+        let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
         let floatyX = halfW + 135;
         let floatyY = (typeof gameObjects !== "undefined" && gameObjects.roomPumpObjs && gameObjects.roomPumpObjs.floaty)
             ? gameObjects.roomPumpObjs.floaty.y
@@ -476,7 +476,7 @@ function handlePumpHint(state) {
         }
         playPointHintAnimation(floatyX, floatyY, -40, false);
     } else {
-        let fanX = ((typeof gameVars !== "undefined") ? gameVars.halfWidth : 605) - 240;
+        let fanX = ((typeof gameVars !== "undefined") ? gameVars.halfWidth : 610) - 240;
         let fanY = (typeof gameObjects !== "undefined" && gameObjects.roomPumpObjs && gameObjects.roomPumpObjs.button)
             ? gameObjects.roomPumpObjs.button.y
             : 492;
@@ -529,7 +529,7 @@ function playBrokenHintAnimation(targetX, targetY, offsetY = -40) {
 }
 
 function getClownNosePos(roomKey, defaultOffX, defaultOffY) {
-    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
     let halfH = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
 
     let noseX = halfW + defaultOffX;
@@ -543,7 +543,7 @@ function getClownNosePos(roomKey, defaultOffX, defaultOffY) {
 }
 
 function getActiveFingerPos() {
-    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
     let halfH = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
 
     let x = halfW - 420;
@@ -576,7 +576,7 @@ function handleHandyHint(state) {
         let hintButtonY = 51;
         let startX = hintButtonX - 40;
         let startY = hintButtonY + 40;
-        let destX = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+        let destX = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
         let destY = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
         let midX = startX + 0.6 * (destX - startX);
         let midY = startY + 0.6 * (destY - startY);
@@ -596,7 +596,7 @@ function handleHandyHint(state) {
 }
 
 function getStretchHandAndDropPos() {
-    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
 
     let handX = halfW - 120;
     let handY = 630;
@@ -700,7 +700,7 @@ function handleFlowerHint(roomIndex, state) {
 }
 
 function getJackHandleAndPivot() {
-    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
 
     let pivotX = halfW;
     let pivotY = 670;
@@ -731,7 +731,7 @@ function handleJackHint(state) {
     let startX = hintButtonX - 40;
     let startY = hintButtonY + 40;
 
-    let centerX = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let centerX = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
     let centerY = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
     switch (state) {
         case "normal":
@@ -802,7 +802,7 @@ function handleClown3Hint(state) {
     let startX = hintButtonX - 40;
     let startY = hintButtonY + 40;
 
-    let centerX = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let centerX = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
     let centerY = (typeof gameVars !== "undefined") ? gameVars.halfHeight : 460;
 
     switch (state) {
@@ -821,7 +821,7 @@ function handleClown3Hint(state) {
 }
 
 function getLightSwitchPos() {
-    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
     let x = halfW - 395;
     let y = 550;
     if (typeof gameObjects !== "undefined" && gameObjects.powerSwitch) {
@@ -832,7 +832,7 @@ function getLightSwitchPos() {
 }
 
 function getExitDoorPos() {
-    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+    let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
     let x = halfW - 215;
     let y = 507;
     if (typeof gameObjects !== "undefined" && gameObjects.exitDoor) {

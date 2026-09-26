@@ -6,7 +6,8 @@ function testMobile() {
 let isMobile = testMobile();
 var currentResize;
 
-let pixelWidth = 1210;
+// Canvas size. Must match gameVars.width/height below, which all layout is built on.
+let pixelWidth = 1220;
 let pixelHeight = 920;
 let config = {
     type: Phaser.AUTO,
@@ -15,8 +16,8 @@ let config = {
         // falling back to document.body anyway. The canvas is centred by the
         // `canvas { position: absolute; ... }` rule in index.html.
         mode: Phaser.Scale.FIT,
-        width: 1210,
-        height: 920
+        width: pixelWidth,
+        height: pixelHeight
     },
     antialias: !0,
     transparent: true,

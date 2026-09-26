@@ -589,7 +589,7 @@ var keyRoomIdx = null;
 
 function createKey(e, t, a, s, o = !0, c) {
 	let n;
-	let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 605;
+	let halfW = (typeof gameVars !== "undefined") ? gameVars.halfWidth : 610;
 	keyPosX = halfW + e;
 	keyPosY = t;
 	keyRoomIdx = a;
