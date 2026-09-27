@@ -371,6 +371,10 @@ function runEpilogue(background) {
                                                                                         // effects must not reach for images the restart destroyed.
                                                                                         deferredAssetsReady = false;
                                                                                         deferredReadyCallbacks = [];
+                                                                                        if (backgroundRetry.timer) clearTimeout(backgroundRetry.timer);
+                                                                                        backgroundRetry.timer = null;
+                                                                                        backgroundRetry.attempt = 0;
+                                                                                        gameObjectsTemp.assetFailureNotice = null;
                                                                                         gameObjects.staticScreens = undefined;
                                                                                         gameObjects.staticLite = undefined;
 

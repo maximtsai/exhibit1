@@ -64,3 +64,31 @@ in the folder and refresh: `tools/devserver.js` regenerates the frame list
 (`scripts/spritemanifest.js`) on every page load, and `node build.js` does too.
 With another static server, run `node tools/sprite-manifest.js` after adding or
 removing files.
+
+## Checking assets
+
+```
+node tools/check-assets.js
+```
+
+Checks that every file named in `scripts/config.js` exists (with exact letter case,
+which Windows doesn't enforce but most web servers do), every sprite sheet folder
+has PNGs, and every sprite frame, image and sound named in the code exists.
+`node build.js` runs it and stops if anything is missing.
+
+## When assets fail to load
+
+- **Loading screen:** each file is retried 3 times, then "Tap to retry" appears.
+  It also retries by itself when the browser comes back online.
+- **Background assets** (loaded after the game starts): the same quick retries,
+  then stand-ins so the game keeps working: a missing sound is silent, a missing
+  image or sprite frame draws as nothing. They're retried again after 5s, 15s,
+  30s, 1min and 2min, and immediately when the browser comes back online. Only if
+  all of that fails does a small "Some effects didn't load. Retry" notice appear.
+  A sheet with a few missing frames keeps them blank until the page is reloaded.
+- Code that needs background assets waits with `whenDeferredAssetsReady(cb, onTimeout)`
+  (main.js) and gives up after 10 seconds, so nothing in the story waits forever.
+
+To try it: `index.html?debug&room=1&phase=dark&failassets=clown2|clown_horn` makes
+matching downloads fail. `gameDebug.setFailAssets(null)` then
+`window.dispatchEvent(new Event("online"))` simulates the network coming back.

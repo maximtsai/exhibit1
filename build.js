@@ -3,6 +3,7 @@ const path = require('path');
 const vm = require('vm');
 const { execFileSync } = require('child_process');
 const { writeManifest } = require('./tools/sprite-manifest.js');
+const { check: checkAssets } = require('./tools/check-assets.js');
 
 const srcDir = __dirname;
 const distDir = path.join(srcDir, 'dist');
@@ -171,6 +172,14 @@ function build() {
 
     // The sprite list is generated from raw/; refresh it so the bundle matches the files
     if (writeManifest()) console.log('Updated scripts/spritemanifest.js from raw/');
+
+    // Every asset the game names must exist (tools/check-assets.js)
+    const assetCheck = checkAssets();
+    for (const w of assetCheck.warnings) console.warn('Warning: ' + w);
+    if (assetCheck.errors.length) {
+        for (const e of assetCheck.errors) console.error('  ' + e);
+        fail(`${assetCheck.errors.length} missing or misnamed asset(s), listed above.`);
+    }
 
     // 3. Validate script tags in index.html match jsFiles
     const htmlSrc = path.join(srcDir, 'index.html');

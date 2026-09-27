@@ -12,6 +12,9 @@ const THEME = {
     loadFailedHint: "Network connection issue. Tap below to retry:",
     retryButtonText: "[ TAP TO RETRY LOADING ]",
     retryingText: "RETRYING LOAD...",
+    // Shown in a corner if some effects still haven't loaded after retrying
+    assetsMissingText: "Some effects didn't load.",
+    assetsRetryText: "Retry",
 
     credits: [
         "Game by Maxim Tsai",

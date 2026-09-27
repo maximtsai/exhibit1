@@ -9,6 +9,8 @@
 //   nosandbox          let saves read/write the real save (off by default: debug
 //                      sessions keep saves in memory and never touch the real one)
 //   seed=S             make Math.random repeatable (implied by capture)
+//   failassets=REGEX   make asset downloads matching REGEX fail, to test the
+//                      retry / stand-in handling (gameDebug.setFailAssets(null) to stop)
 //   capture=NAME       deterministic screenshot: fixed random seed and fixed 16ms
 //                      frames, runs settle= ms (default 3000) of game time after the
 //                      room is ready, then uploads NAME.png to tools/devserver.js
@@ -89,6 +91,25 @@
     console.warn = function (...args) {
         dbg.warnings.push({ message: describe(args), time: Date.now() });
         return origConsoleWarn.apply(console, args);
+    };
+
+    // ---- simulated load failures ----
+    // ?failassets=REGEX makes every asset download whose URL matches fail (404),
+    // to test the retry and stand-in handling. gameDebug.setFailAssets(null) stops
+    // failing (like the network coming back); follow it with
+    // window.dispatchEvent(new Event("online")) to trigger the immediate retry.
+    let failAssetsPattern = params.get("failassets") ? new RegExp(params.get("failassets")) : null;
+    dbg.setFailAssets = function (pattern) {
+        failAssetsPattern = pattern ? new RegExp(pattern) : null;
+        return String(failAssetsPattern);
+    };
+    const origXhrOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url) {
+        const args = Array.prototype.slice.call(arguments);
+        if (failAssetsPattern && typeof url === "string" && failAssetsPattern.test(url)) {
+            args[1] = "/__simulated_missing__/" + url;
+        }
+        return origXhrOpen.apply(this, args);
     };
 
     // ---- starting save: from a previous goto()/load(), or built from room=/phase= ----

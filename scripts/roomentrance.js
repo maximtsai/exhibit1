@@ -168,6 +168,8 @@ function setupRoomEntrance(scene, roomIndex, roomContainer) {
         if (1 === e && gameVars.darkPoint && !gameVars.clownRun) {
             gameVars.clownRun = true;
             const crawl = () => {
+                // Its sprite sheet can have failed to load for good; skip the scare
+                if (!globalScene.anims.exists("clownCrawl")) return;
                 gameObjects.crawlClown.setVisible(true);
                 gameObjects.crawlClown.play("clownCrawl");
                 playSound("clownhorn", undefined, 0.65);
@@ -180,6 +182,7 @@ function setupRoomEntrance(scene, roomIndex, roomContainer) {
                 // The crawl frames and horn are deferred assets, which a save
                 // restored straight into the dark lobby can beat. Wait for them,
                 // and if the player has left by then, re-arm for the next visit.
+                // If they take too long, give up on the scare for this run.
                 whenDeferredAssetsReady(() => {
                     if (gameObjects.exhibit.getCurrentScene() === 1) {
                         crawl();

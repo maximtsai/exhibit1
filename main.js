@@ -20,6 +20,11 @@ let config = {
     },
     antialias: true,
     transparent: true,
+    // Anything that failed to load is drawn as nothing, rather than Phaser's green
+    // "missing texture" box
+    images: {
+        missing: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+    },
     scene: {
         preload: preload,
         create: create,
@@ -86,17 +91,40 @@ let deferredSpriteSheets = Object.entries(DEFERRED_SPRITE_SHEETS);
 let deferredImages = Object.entries(DEFERRED_IMAGES);
 let deferredAudioLoaded = false;
 
-// True once the deferred assets above have arrived (loadDeferredAudio). A save
-// restores before they load, so anything restore can trigger that needs them
-// should wait with whenDeferredAssetsReady.
+// True once the deferred batch above has finished loading (loadDeferredAudio),
+// including any assets that failed and were given stand-ins. A save restores
+// before that, so anything restore can trigger that needs them should wait with
+// whenDeferredAssetsReady.
 let deferredAssetsReady = false;
 let deferredReadyCallbacks = [];
-function whenDeferredAssetsReady(callback) {
+// Nothing in the story may wait on an asset forever: past this, the waiting
+// effect is skipped (onTimeout) instead.
+const DEFERRED_WAIT_TIMEOUT = 10000;
+function whenDeferredAssetsReady(callback, onTimeout, timeoutMs = DEFERRED_WAIT_TIMEOUT) {
     if (deferredAssetsReady) {
         callback();
         return;
     }
-    deferredReadyCallbacks.push(callback);
+    const entry = {
+        callback: callback,
+        settled: false
+    };
+    deferredReadyCallbacks.push(entry);
+    gameDelay(() => {
+        if (entry.settled) return;
+        entry.settled = true;
+        deferredReadyCallbacks = deferredReadyCallbacks.filter((e) => e !== entry);
+        if (onTimeout) onTimeout();
+    }, timeoutMs);
+}
+function flushDeferredReadyCallbacks() {
+    let entries = deferredReadyCallbacks;
+    deferredReadyCallbacks = [];
+    for (let i = 0; i < entries.length; i++) {
+        if (entries[i].settled) continue;
+        entries[i].settled = true;
+        entries[i].callback();
+    }
 }
 const MAX_ASSET_RETRIES = 3;
 let assetRetry = {
@@ -107,7 +135,8 @@ let assetRetry = {
     // request key -> descriptor, so the retry button can re-queue
     pending: 0,
     // retries scheduled but not yet back through the loader
-    onPermanentFailure: null
+    onPermanentFailure: null,
+    scene: null
 };
 
 // Everything the game loads is a single image or audio file, so the file that
@@ -134,6 +163,12 @@ function requeueAsset(scene, req) {
 function markAssetPermanentlyFailed(req) {
     console.error(`[AssetLoader] permanently failed "${req.key}" (${req.url}) after ${MAX_ASSET_RETRIES} retries`);
     assetRetry.failedReqs[req.key] = req;
+    // After boot, a sheet with some frames missing is built with blank stand-ins
+    // (scripts/spritesheets.js). During boot the loading screen's retry button
+    // gets another go at the frame first.
+    if (bootLoadHandled && isSpriteFrameImageKey(req.key) && assetRetry.scene) {
+        onSpriteFramePermanentlyFailed(assetRetry.scene, req.key);
+    }
     if (assetRetry.onPermanentFailure) {
         assetRetry.onPermanentFailure(req);
     }
@@ -155,6 +190,7 @@ function assetRetryScheduleRequeue(scene, req, delay) {
     }, delay);
 }
 function setupLoaderRetryHandlers(scene, onPermanentFailure) {
+    assetRetry.scene = scene;
     if (onPermanentFailure) {
         assetRetry.onPermanentFailure = onPermanentFailure;
     }
@@ -233,29 +269,43 @@ function showLoadingFailureUI(scene) {
     gameObjects.loadingCntr.add(gameObjectsTemp.loadingFailureText);
     gameObjects.loadingCntr.add(gameObjectsTemp.retryBtn);
     gameObjectsTemp.retryBtn.on("pointerdown", () => {
-        hideLoadingFailureUI();
-        setLoadingTextSafe(THEME.retryingText);
-        // Re-queue the recorded failures. Clearing the bookkeeping and calling
-        // start() on its own runs the loader on an empty queue, which completes
-        // instantly and boots the game with the assets still missing.
-        let reqs = [];
-        for (let key in assetRetry.failedReqs) reqs.push(assetRetry.failedReqs[key]);
-        assetRetry.counts = {};
-        assetRetry.failedReqs = {};
-        let queued = 0;
-        for (let i = 0; i < reqs.length; i++) {
-            if (requeueAsset(scene, reqs[i])) queued++;
-        }
-        if (queued === 0) {
-            // Nothing could be re-issued; keep the failure on screen rather than
-            // letting an empty batch report success.
-            for (let i = 0; i < reqs.length; i++) assetRetry.failedReqs[reqs[i].key] = reqs[i];
-            showLoadingFailureUI(scene);
-            return;
-        }
-        scene.load.start();
+        retryBootAssets(scene);
     });
 }
+function retryBootAssets(scene) {
+    hideLoadingFailureUI();
+    setLoadingTextSafe(THEME.retryingText);
+    // Re-queue the recorded failures. Clearing the bookkeeping and calling
+    // start() on its own runs the loader on an empty queue, which completes
+    // instantly and boots the game with the assets still missing.
+    let reqs = [];
+    for (let key in assetRetry.failedReqs) reqs.push(assetRetry.failedReqs[key]);
+    assetRetry.counts = {};
+    assetRetry.failedReqs = {};
+    let queued = 0;
+    for (let i = 0; i < reqs.length; i++) {
+        if (requeueAsset(scene, reqs[i])) queued++;
+    }
+    if (queued === 0) {
+        // Nothing could be re-issued; keep the failure on screen rather than
+        // letting an empty batch report success.
+        for (let i = 0; i < reqs.length; i++) assetRetry.failedReqs[reqs[i].key] = reqs[i];
+        showLoadingFailureUI(scene);
+        return;
+    }
+    scene.load.start();
+}
+
+// Back online: retry straight away instead of waiting for the player or a timer
+window.addEventListener("online", () => {
+    if (!globalScene || !globalScene.load) return;
+    if (gameObjectsTemp.retryBtn) {
+        retryBootAssets(globalScene);
+    } else if (bootLoadHandled && assetLoadHasFailures()) {
+        backgroundRetry.attempt = 0;
+        runBackgroundRetry(globalScene);
+    }
+});
 let bootLoadHandled = false;
 function onLoaderBatchComplete(a) {
     // Each retry runs the loader again, so "complete" fires several times. Only
@@ -483,6 +533,7 @@ function loadDeferredAudio(scene) {
         return;
     }
     deferredAudioLoaded = true;
+    deferredSetupDone = {};
     setupLoaderRetryHandlers(scene);
     for (let d = 0; d < deferredAudio.length; d++) scene.load.audio(deferredAudio[d][0], deferredAudio[d][1]);
     for (let t = 0; t < deferredSpriteSheets.length; t++)
@@ -495,52 +546,221 @@ function loadDeferredAudio(scene) {
             scene.load.once("complete", onDeferredComplete);
             return;
         }
-        for (let t = 0; t < deferredSpriteSheets.length; t++) {
-            let key = deferredSpriteSheets[t][0];
-            if (!scene.textures.exists(key)) {
-                console.warn("loadDeferredAudio: sprite sheet failed to load: " + key);
-            }
-        }
-        for (let i = 0; i < deferredImages.length; i++) {
-            let key = deferredImages[i][0];
-            if (!scene.textures.exists(key)) {
-                console.warn("loadDeferredAudio: image failed to load: " + key);
-            }
-        }
-        for (let d = 0; d < deferredAudio.length; d++) {
-            let key = deferredAudio[d][0];
-            if (scene.cache.audio.exists(key)) {
-                gameObjects.sounds[key] = scene.sound.add(key);
-            } else {
-                console.warn("loadDeferredAudio: audio failed to load: " + key);
-            }
-        }
-        // These were built during setupGame, before the sheets above existed, so
-        if (scene.textures.exists("flashScreens")) {
-            initFlashScreens();
-        } else {
-            console.warn("loadDeferredAudio: sprite sheet missing: flashScreens");
-        }
-        if (scene.textures.exists("staticScreens") || scene.textures.exists("staticLite")) {
-            initStaticScreens();
-        } else {
-            console.warn("loadDeferredAudio: sprite sheets missing: staticScreens / staticLite");
-        }
-        if (scene.textures.exists("roomClown2")) {
-            refreshCrawlClown();
-        } else {
-            console.warn("loadDeferredAudio: sprite sheet missing: roomClown2");
-        }
-        // candleDark and redlight are now loaded in the initial preload batch,
-        // so their textures are already set up by the time setupGame runs.
-        // No deferred setTexture needed here.
+        finishDeferredAssets(scene);
         deferredAssetsReady = true;
-        let callbacks = deferredReadyCallbacks;
-        deferredReadyCallbacks = [];
-        for (let i = 0; i < callbacks.length; i++) callbacks[i]();
+        flushDeferredReadyCallbacks();
+        // Anything still missing keeps being retried quietly in the background
+        if (assetLoadHasFailures()) scheduleBackgroundRetry(scene);
     };
     scene.load.once("complete", onDeferredComplete);
     scene.load.start();
+}
+
+// Which one-time setups (below) have run with their real assets this session.
+// Cleared when the deferred batch starts again (replay rebuilds the scene).
+let deferredSetupDone = {};
+
+// Puts whatever deferred assets have arrived to use. Safe to run again: after a
+// background retry it upgrades stand-ins to the real assets that just arrived.
+function finishDeferredAssets(scene) {
+    for (let d = 0; d < deferredAudio.length; d++) {
+        let key = deferredAudio[d][0];
+        let current = gameObjects.sounds[key];
+        if (scene.cache.audio.exists(key)) {
+            if (!current || current.isStandIn) gameObjects.sounds[key] = scene.sound.add(key);
+        } else if (!current) {
+            console.warn("loadDeferredAudio: audio failed to load, using silence: " + key);
+            gameObjects.sounds[key] = makeSilentSound(key);
+        }
+    }
+    for (let i = 0; i < deferredImages.length; i++) {
+        let key = deferredImages[i][0];
+        if (!scene.textures.exists(key) && !deferredSetupDone["warned:" + key]) {
+            // Drawn as nothing (config.images.missing) until a retry brings it in
+            deferredSetupDone["warned:" + key] = true;
+            console.warn("loadDeferredAudio: image failed to load, drawing nothing: " + key);
+        }
+    }
+    // These were built during setupGame, before the sheets above existed, so they
+    // are rebuilt now that the sheets are here. Sheets that failed entirely are
+    // skipped until a background retry brings them in.
+    runDeferredSetup(scene, "flashScreens", initFlashScreens);
+    if (!deferredSetupDone.staticScreens && scene.textures.exists("staticScreens") && scene.textures.exists("staticLite")) {
+        deferredSetupDone.staticScreens = true;
+        initStaticScreens();
+    }
+    runDeferredSetup(scene, "roomClown2", refreshCrawlClown);
+}
+function runDeferredSetup(scene, textureKey, setup) {
+    if (deferredSetupDone[textureKey] || !scene.textures.exists(textureKey)) return;
+    deferredSetupDone[textureKey] = true;
+    setup();
+}
+
+// Stands in for a sound that failed to load: every call is accepted and nothing
+// plays. It never fires "complete", so nothing may wait on one (nothing does).
+function makeSilentSound(key) {
+    return {
+        key: key,
+        isStandIn: true,
+        isPlaying: false,
+        isPaused: false,
+        volume: 1,
+        mute: false,
+        loop: false,
+        duration: 0,
+        play() {
+            return false;
+        },
+        stop() {
+            return false;
+        },
+        pause() {
+            return false;
+        },
+        resume() {
+            return false;
+        },
+        setVolume(v) {
+            this.volume = v;
+            return this;
+        },
+        setMute(m) {
+            this.mute = m;
+            return this;
+        },
+        setLoop(l) {
+            this.loop = l;
+            return this;
+        },
+        setRate() {
+            return this;
+        },
+        setDetune() {
+            return this;
+        },
+        setSeek() {
+            return this;
+        },
+        on() {
+            return this;
+        },
+        once() {
+            return this;
+        },
+        off() {
+            return this;
+        },
+        destroy() {}
+    };
+}
+
+// ---- Background retries for deferred assets ----
+// The loader already retries each file a few times within seconds. Whatever is
+// still missing after that is retried here, spaced further apart, and at once
+// when the browser reports it is back online. Only when these run out is the
+// player told, with a small non-blocking notice that has its own Retry.
+const BACKGROUND_RETRY_DELAYS = [5000, 15000, 30000, 60000, 120000];
+let backgroundRetry = {
+    attempt: 0,
+    timer: null
+};
+function scheduleBackgroundRetry(scene) {
+    if (backgroundRetry.timer) return;
+    if (backgroundRetry.attempt >= BACKGROUND_RETRY_DELAYS.length) {
+        showAssetFailureNotice(scene);
+        return;
+    }
+    let delay = BACKGROUND_RETRY_DELAYS[backgroundRetry.attempt];
+    backgroundRetry.timer = setTimeout(() => {
+        backgroundRetry.timer = null;
+        runBackgroundRetry(scene);
+    }, delay);
+}
+function runBackgroundRetry(scene) {
+    if (backgroundRetry.timer) {
+        clearTimeout(backgroundRetry.timer);
+        backgroundRetry.timer = null;
+    }
+    // The scene is gone (replay); the new run loads everything again anyway
+    if (!scene.sys || !scene.sys.isActive()) return;
+    if (scene.load.isLoading()) {
+        backgroundRetry.timer = setTimeout(() => {
+            backgroundRetry.timer = null;
+            runBackgroundRetry(scene);
+        }, 500);
+        return;
+    }
+    // Sheets that failed entirely are reloaded whole; single frames of sheets that
+    // were built with blank stand-ins stay blank until the page is reloaded.
+    let reqs = [];
+    for (let key in assetRetry.failedReqs) {
+        if (!isSpriteFrameImageKey(key)) reqs.push(assetRetry.failedReqs[key]);
+        delete assetRetry.failedReqs[key];
+    }
+    let queued = retryFailedSpriteSheets(scene);
+    for (let i = 0; i < reqs.length; i++) {
+        // One attempt each: the loader's quick retries were already used up
+        assetRetry.counts[reqs[i].key] = MAX_ASSET_RETRIES;
+        if (requeueAsset(scene, reqs[i])) queued++;
+    }
+    if (queued === 0) {
+        hideAssetFailureNotice();
+        return;
+    }
+    backgroundRetry.attempt++;
+    console.log("[AssetLoader] background retry " + backgroundRetry.attempt + ": " + queued + " asset(s)");
+    let onDone = () => {
+        if (assetRetry.pending > 0) {
+            scene.load.once("complete", onDone);
+            return;
+        }
+        finishDeferredAssets(scene);
+        if (assetLoadHasFailures()) {
+            scheduleBackgroundRetry(scene);
+        } else {
+            console.log("[AssetLoader] all assets recovered");
+            backgroundRetry.attempt = 0;
+            hideAssetFailureNotice();
+        }
+    };
+    scene.load.once("complete", onDone);
+    scene.load.start();
+}
+
+// Small corner notice, shown only after the background retries run out
+function showAssetFailureNotice(scene) {
+    if (gameObjectsTemp.assetFailureNotice) return;
+    let style = {
+        fontFamily: THEME.font,
+        fontSize: 18,
+        color: "#ffdddd",
+        backgroundColor: "#000000aa",
+        padding: {
+            x: 8,
+            y: 4
+        }
+    };
+    let text = scene.add.text(14, 14, THEME.assetsMissingText, style).setScrollFactor(0).setDepth(1001);
+    let retry = scene.add
+        .text(text.x + text.width + 6, 14, THEME.assetsRetryText, Object.assign({}, style, { color: "#ffffff" }))
+        .setScrollFactor(0)
+        .setDepth(1001)
+        .setInteractive({
+            useHandCursor: true
+        });
+    retry.on("pointerdown", () => {
+        hideAssetFailureNotice();
+        backgroundRetry.attempt = 0;
+        runBackgroundRetry(scene);
+    });
+    gameObjectsTemp.assetFailureNotice = [text, retry];
+}
+function hideAssetFailureNotice() {
+    let notice = gameObjectsTemp.assetFailureNotice;
+    if (!notice) return;
+    notice.forEach((o) => o.destroy());
+    gameObjectsTemp.assetFailureNotice = null;
 }
 function onLoadAnimComplete(scene) {
     scene.tweens.chain({

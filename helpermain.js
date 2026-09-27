@@ -1202,9 +1202,6 @@ function addScreenShake(e, t) {
     globalScene.cameras.main.x += e;
     globalScene.cameras.main.y += e;
 }
-function showFlashCustom(e) {
-    globalScene.add.image(0, 0, "imgName");
-}
 function flipEntryLights(e = 1) {
     let t = gameVars.horrorPoint ? 20 + 150 * Math.random() : 75;
     if ("brighten" === gameObjects.entrance.entryLights1.status) {
