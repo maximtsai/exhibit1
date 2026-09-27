@@ -30,8 +30,15 @@ const jsFiles = [
     'scripts/roomclown.js',
     'scripts/roomfinal.js',
     'scripts/save.js',
+    'scripts/atlasloader.js',
     'helpermain.js',
     'main.js'
+];
+
+// Scripts index.html loads during development only. They are not bundled and
+// their <script> tags are removed from dist/index.html.
+const devOnlyFiles = [
+    'scripts/debug.js'
 ];
 
 // Assets that exist in the repo but nothing loads. Kept on disk, kept out of dist.
@@ -124,10 +131,14 @@ function readLocalScriptTags(htmlContent) {
  * direct references to preload/create/update.
  */
 function minify(srcPath, outPath) {
+    // On Windows uglifyjs is a .cmd shim, so it runs through the shell, which
+    // splits unquoted paths at spaces (e.g. a project folder named "exhibit1 release").
+    const isWin = process.platform === 'win32';
+    const quote = p => (isWin ? '"' + p + '"' : p);
     try {
-        execFileSync('uglifyjs', [srcPath, '-o', outPath, '-c', '-m'], {
+        execFileSync('uglifyjs', [quote(srcPath), '-o', quote(outPath), '-c', '-m'], {
             stdio: ['ignore', 'ignore', 'pipe'],
-            shell: process.platform === 'win32'
+            shell: isWin
         });
     } catch (err) {
         const stderr = err.stderr ? err.stderr.toString().trim() : err.message;
@@ -157,6 +168,12 @@ function build() {
     console.log('Copying phaser.min.js...');
     fs.copyFileSync(phaserSrc, path.join(distDir, 'phaser.min.js'));
 
+    // raw/ is not copied into dist, so a build with raw sprites on would load nothing
+    const configSrc = fs.readFileSync(path.join(srcDir, 'scripts', 'config.js'), 'utf8');
+    if (/consts+USE_RAW_SPRITESs*=s*true/.test(configSrc)) {
+        fail('USE_RAW_SPRITES is true in scripts/config.js. Set it to false before building.');
+    }
+
     // 3. Validate script tags in index.html match jsFiles
     const htmlSrc = path.join(srcDir, 'index.html');
     if (!fs.existsSync(htmlSrc)) {
@@ -164,7 +181,7 @@ function build() {
     }
     let htmlContent = fs.readFileSync(htmlSrc, 'utf8');
 
-    const foundScripts = readLocalScriptTags(htmlContent);
+    const foundScripts = readLocalScriptTags(htmlContent).filter(f => !devOnlyFiles.includes(f));
     const missingFromBuild = foundScripts.filter(f => !jsFiles.includes(f));
     const missingFromHtml = jsFiles.filter(f => !foundScripts.includes(f));
     const orderMismatch = missingFromBuild.length === 0 && missingFromHtml.length === 0
@@ -236,6 +253,12 @@ function build() {
                  `  Leaving it in would execute that file twice in dist/.`);
         }
     }
+
+    for (const file of devOnlyFiles) {
+        const escaped = file.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+        htmlContent = htmlContent.replace(new RegExp('\\s*<script\\s+src="' + escaped + '"[^>]*></script>'), '');
+    }
+    htmlContent = htmlContent.replace(/\s*<!-- Dev-only:[^>]*-->/g, '');
 
     // Insert the single bundle where main.js used to be (end of <body>)
     htmlContent = htmlContent.replace(

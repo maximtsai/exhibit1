@@ -30,6 +30,7 @@
     <script src="scripts/roomclown.js"></script>
     <script src="scripts/roomfinal.js"></script>
     <script src="scripts/save.js"></script>
+    <script src="scripts/atlasloader.js"></script>
     <script src="helpermain.js"></script>
 
     <noscript>Enable JavaScript to play this game.</noscript>
@@ -46,6 +47,8 @@
             position: absolute;
         }
 
+        /* Border sizes and positions below are placeholders: handleBorders() in main.js
+           recomputes them from DISPLAY in scripts/config.js before the borders fade in. */
         #leftborder {
             margin: 0;
             opacity: 0;
@@ -143,6 +146,8 @@
     <div id="topborder"></div>
     <div id="bottomborder"></div>
     <script src="main.js"></script>
+    <!-- Dev-only: debug/self-test tools, inert unless the URL has ?debug. Left out of dist by build.js. -->
+    <script src="scripts/debug.js"></script>
     <div id="preload-notice">Loading Preloader ...</div>
 
 </body>

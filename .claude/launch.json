@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "devserver",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/devserver.js", "8125"],
+      "port": 8125
+    }
+  ]
+}

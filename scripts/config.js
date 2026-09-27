@@ -30,6 +30,23 @@ const THEME = {
     thanksText: "Thank you for playing"
 };
 
+// Load sprites from the individual PNGs in raw/ instead of the packed sheets in
+// sprites/, so an edited sprite shows up on refresh without repacking. See
+// scripts/atlasloader.js. ?rawsprites / ?norawsprites in the URL override this.
+// The release build doesn't include raw/, so this must be false when building.
+const USE_RAW_SPRITES = false;
+
+// Game resolution. All layout (gameVars.width/height/halfWidth/halfHeight) and the
+// canvas size come from here. Backgrounds are drawn centered at native size, so make
+// them larger than this by a margin (currently 1300x1000, i.e. 40px each side) to cover
+// the mouse drift and sway.
+const DISPLAY = {
+    width: 1220,
+    height: 920,
+    // Width of the decorative hand borders beside the canvas, in game pixels
+    borderWidth: 40
+};
+
 // The game refuses to run unless the page URL contains one of these.
 const SITE_LOCK = {
     allowed: ["itch", "localhost", "127.0.0.1"],

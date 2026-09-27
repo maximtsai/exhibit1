@@ -83,12 +83,25 @@ function saveAlive(o) {
 
 // Saves go to localStorage. saveStorageFallback keeps the save for this session
 // when localStorage is unavailable (e.g. some incognito modes).
+//
+// In a ?debug session (scripts/debug.js) saves are sandboxed: reads come from the
+// debug tools' chosen starting save and writes stay in memory, so testing never
+// touches the player's real save.
+function saveDebugSandbox() {
+    return typeof window !== "undefined" && window.gameDebug && window.gameDebug.sandbox;
+}
+
 function saveStorageSet(s) {
+    if (saveDebugSandbox()) {
+        window.gameDebug.lastSave = s;
+        return;
+    }
     saveStorageFallback[SAVE_STORAGE_KEY] = s;
     try { localStorage.setItem(SAVE_STORAGE_KEY, s); } catch (e) { /* incognito */ }
 }
 
 function saveStorageGet() {
+    if (saveDebugSandbox()) return window.gameDebug.saveOverride || null;
     var s = null;
     try { s = localStorage.getItem(SAVE_STORAGE_KEY); } catch (e) { /* ignore */ }
     if (s == null) s = saveStorageFallback[SAVE_STORAGE_KEY] || null;
@@ -184,6 +197,11 @@ function saveClear() {
         saveDebounceTimer = null;
     }
     saveKeyRegistry = {};
+    if (saveDebugSandbox()) {
+        window.gameDebug.lastSave = null;
+        window.gameDebug.saveOverride = null;
+        return;
+    }
     delete saveStorageFallback[SAVE_STORAGE_KEY];
     try { localStorage.removeItem(SAVE_STORAGE_KEY); } catch (e) { /* ignore */ }
 }
