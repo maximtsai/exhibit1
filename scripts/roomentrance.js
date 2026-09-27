@@ -167,27 +167,43 @@ function setupRoomEntrance(scene, roomIndex, roomContainer) {
         }
         if (1 === e && gameVars.darkPoint && !gameVars.clownRun) {
             gameVars.clownRun = true;
-            gameDelay(() => {
+            const crawl = () => {
                 gameObjects.crawlClown.setVisible(true);
                 gameObjects.crawlClown.play("clownCrawl");
                 playSound("clownhorn", undefined, 0.65);
+            };
+            gameDelay(() => {
+                if (deferredAssetsReady) {
+                    crawl();
+                    return;
+                }
+                // The crawl frames and horn are deferred assets, which a save
+                // restored straight into the dark lobby can beat. Wait for them,
+                // and if the player has left by then, re-arm for the next visit.
+                whenDeferredAssetsReady(() => {
+                    if (gameObjects.exhibit.getCurrentScene() === 1) {
+                        crawl();
+                    } else {
+                        gameVars.clownRun = false;
+                    }
+                });
             }, 2300);
         }
     });
 }
 
-// "roomClown2" is a deferred atlas, so setupRoomEntrance runs before it exists.
-// loadDeferredAudio calls this once the atlas is in the texture manager, which is
+// "roomClown2" is a deferred sprite sheet, so setupRoomEntrance runs before it
+// exists. loadDeferredAudio calls this once it is in the texture manager, which is
 // when the sprite and its animation actually get their frames.
 function refreshCrawlClown() {
     if (!gameObjects.crawlClown || !globalScene.textures.exists("roomClown2")) return;
-    gameObjects.crawlClown.setTexture("roomClown2", "frame0000.png");
+    gameObjects.crawlClown.setTexture("roomClown2", "frame0000");
     globalScene.anims.remove("clownCrawl");
     globalScene.anims.create({
         key: "clownCrawl",
         frames: globalScene.anims.generateFrameNames("roomClown2", {
             prefix: "frame",
-            suffix: ".png",
+            suffix: "",
             start: 0,
             end: 7,
             zeroPad: 4

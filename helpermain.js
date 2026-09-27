@@ -1028,11 +1028,11 @@ function createKey(e, t, a, s, o = true, c) {
 }
 function initFlashScreens() {
     // Safe to call twice: the first call runs before the deferred "flashScreens"
-    // atlas has landed, so it gets re-run once that load completes.
+    // sprite sheet has landed, so it gets re-run once that load completes.
     if (gameObjects.flashScreens)
         for (let e = 0; e < gameObjects.flashScreens.length; e++) gameObjects.flashScreens[e].destroy();
     gameObjects.flashScreens = [];
-    // Until the atlas lands, stand the images up on an already-loaded texture so a
+    // Until the sheet lands, stand the images up on an already-loaded texture so a
     // flash fired during that window shows nothing instead of a missing-texture box.
     let s = globalScene.textures.exists("flashScreens");
     for (let e = 0; e < 20; e++) {
@@ -1051,7 +1051,7 @@ function initStaticScreens() {
     gameObjects.staticScreens = [];
     let hasStaticScreens = globalScene && globalScene.textures && globalScene.textures.exists("staticScreens");
     if (!hasStaticScreens) {
-        console.warn("initStaticScreens: atlas 'staticScreens' is missing from texture manager");
+        console.warn("initStaticScreens: sprite sheet 'staticScreens' is missing from texture manager");
     }
     for (let e = 0; e < 4; e++) {
         let t = "static" + e;
@@ -1067,7 +1067,7 @@ function initStaticScreens() {
     gameObjects.staticLite = [];
     let hasStaticLite = globalScene && globalScene.textures && globalScene.textures.exists("staticLite");
     if (!hasStaticLite) {
-        console.warn("initStaticScreens: atlas 'staticLite' is missing from texture manager");
+        console.warn("initStaticScreens: sprite sheet 'staticLite' is missing from texture manager");
     }
     for (let e = 0; e < 12; e++) {
         gameObjects.staticLite[e] = [];
@@ -1122,6 +1122,12 @@ function showStaticRand(e = 1, t = false, a, s = 1, o = true) {
             volume: 0.1 * Math.random() + 0.1 * s
         });
     }
+    // The static images are deferred assets (initStaticScreens runs once they
+    // load). Until then skip the visual, but still finish the sequence.
+    if (!gameObjects.staticScreens) {
+        if (undefined !== a) a();
+        return;
+    }
     if (e >= 1) {
         let o = Math.floor(Math.random() * gameObjects.staticScreens.length);
         gameObjects.staticScreens[o].alpha = 1 === e ? Math.min(0.2, s) : Math.min(1, s + 0.2 * (Math.random() - 0.5));
@@ -1135,7 +1141,8 @@ function showStaticRand(e = 1, t = false, a, s = 1, o = true) {
     }
 }
 function showStaticLite(e = 4, t = 4, a = 2, s = 0.15) {
-    if (0 === e) return;
+    // Deferred assets, see showStaticRand
+    if (0 === e || !gameObjects.staticLite) return;
     let o = 0;
     for (; o < t;) {
         o++;

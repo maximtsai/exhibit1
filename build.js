@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const { execFileSync } = require('child_process');
+const { writeManifest } = require('./tools/sprite-manifest.js');
 
 const srcDir = __dirname;
 const distDir = path.join(srcDir, 'dist');
@@ -30,7 +31,8 @@ const jsFiles = [
     'scripts/roomclown.js',
     'scripts/roomfinal.js',
     'scripts/save.js',
-    'scripts/atlasloader.js',
+    'scripts/spritemanifest.js',
+    'scripts/spritesheets.js',
     'helpermain.js',
     'main.js'
 ];
@@ -43,7 +45,6 @@ const devOnlyFiles = [
 
 // Assets that exist in the repo but nothing loads. Kept on disk, kept out of dist.
 const excludedAssets = [
-    'sprites/altreality/Untitled-2.jpg',
     'audio/airpumpdeep.mp3',
     'audio/finaldoorslam.mp3',
     'audio/singbg.mp3'
@@ -159,7 +160,7 @@ function build() {
     // 2. Copy static asset directories and libraries
     console.log('Copying static assets...');
     copyRecursiveSync(path.join(srcDir, 'audio'), path.join(distDir, 'audio'));
-    copyRecursiveSync(path.join(srcDir, 'sprites'), path.join(distDir, 'sprites'));
+    copyRecursiveSync(path.join(srcDir, 'raw'), path.join(distDir, 'raw'));
 
     const phaserSrc = path.join(srcDir, 'phaser.min.js');
     if (!fs.existsSync(phaserSrc)) {
@@ -168,11 +169,8 @@ function build() {
     console.log('Copying phaser.min.js...');
     fs.copyFileSync(phaserSrc, path.join(distDir, 'phaser.min.js'));
 
-    // raw/ is not copied into dist, so a build with raw sprites on would load nothing
-    const configSrc = fs.readFileSync(path.join(srcDir, 'scripts', 'config.js'), 'utf8');
-    if (/consts+USE_RAW_SPRITESs*=s*true/.test(configSrc)) {
-        fail('USE_RAW_SPRITES is true in scripts/config.js. Set it to false before building.');
-    }
+    // The sprite list is generated from raw/; refresh it so the bundle matches the files
+    if (writeManifest()) console.log('Updated scripts/spritemanifest.js from raw/');
 
     // 3. Validate script tags in index.html match jsFiles
     const htmlSrc = path.join(srcDir, 'index.html');

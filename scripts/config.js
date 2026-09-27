@@ -30,12 +30,6 @@ const THEME = {
     thanksText: "Thank you for playing"
 };
 
-// Load sprites from the individual PNGs in raw/ instead of the packed sheets in
-// sprites/, so an edited sprite shows up on refresh without repacking. See
-// scripts/atlasloader.js. ?rawsprites / ?norawsprites in the URL override this.
-// The release build doesn't include raw/, so this must be false when building.
-const USE_RAW_SPRITES = false;
-
 // Game resolution. All layout (gameVars.width/height/halfWidth/halfHeight) and the
 // canvas size come from here. Backgrounds are drawn centered at native size, so make
 // them larger than this by a margin (currently 1300x1000, i.e. 40px each side) to cover
@@ -55,39 +49,45 @@ const SITE_LOCK = {
 
 // Loaded before the loading screen appears (needed to draw it).
 const PRELOAD_IMAGES = {
-    whitePixel: "sprites/white_pixel.png",
-    blackPixel: "sprites/black_pixel.png",
-    darkBluePixel: "sprites/dark_blue_pixel.png",
-    hand: "sprites/mouse.png",
-    handPoint: "sprites/mouse_point.png",
-    funbox: "sprites/funbox.png",
-    funlid: "sprites/funlid.png",
-    popup: "sprites/popup.png",
-    headphones: "sprites/headphones.png"
+    whitePixel: "raw/standalone/white_pixel.png",
+    blackPixel: "raw/standalone/black_pixel.png",
+    darkBluePixel: "raw/standalone/dark_blue_pixel.png",
+    hand: "raw/standalone/mouse.png",
+    handPoint: "raw/standalone/mouse_point.png",
+    funbox: "raw/standalone/funbox.png",
+    funlid: "raw/standalone/funlid.png",
+    popup: "raw/standalone/popup.png",
+    headphones: "raw/standalone/headphones.png"
 };
 
-// Loaded behind the loading bar, before the start button appears.
-const ATLASES = {
-    menu: "sprites/menu/menu.json",
-    loadingSS: "sprites/loading/loadingSS.json",
-    bgs: "sprites/backgrounds/backgrounds.json",
-    roomPump: "sprites/roompump/roompump.json",
-    roomFaucet: "sprites/roomfaucet/roomfaucet.json",
-    roomHandy: "sprites/roomhandy/roomhandy.json",
-    roomStretch: "sprites/roomstretch/roomstretch.json",
-    roomJack: "sprites/roomjack/roomjack.json",
-    roomClown: "sprites/clown/clown.json",
-    buttons: "sprites/buttons/buttons.json",
-    misc: "sprites/misc/misc.json"
+// Sprite sheets, loaded behind the loading bar before the start button appears.
+// Each is a texture built from every PNG in its raw/ folder; a frame is named after
+// its file without ".png" (e.g. raw/roomjack/doll.png is frame "doll" of roomJack).
+const SPRITE_SHEETS = {
+    menu: "raw/menu",
+    loadingSS: "raw/loading",
+    bgs: "raw/backgrounds",
+    roomPump: "raw/roompump",
+    roomFaucet: "raw/roomfaucet",
+    roomHandy: "raw/roomhandy",
+    roomStretch: "raw/roomstretch",
+    roomJack: "raw/roomjack",
+    roomClown: "raw/clown",
+    buttons: "raw/buttons",
+    misc: "raw/misc"
 };
+
+// Single images, loaded by path. Everything that isn't part of a sprite sheet
+// lives in raw/standalone/ (including the page background and border images that
+// index.html uses).
 
 const IMAGES = {
-    handPointBlood: "sprites/mouse_point_blood.png",
-    candleBright: "sprites/candleBright.png",
-    shinelight: "sprites/shinelight.png",
-    generalDim: "sprites/generalDim.png",
-    candleDark: "sprites/candleDark.webp",
-    redlight: "sprites/redlight.png"
+    handPointBlood: "raw/standalone/mouse_point_blood.png",
+    candleBright: "raw/standalone/candleBright.png",
+    shinelight: "raw/standalone/shinelight.png",
+    generalDim: "raw/standalone/generalDim.png",
+    candleDark: "raw/standalone/candleDark.webp",
+    redlight: "raw/standalone/redlight.png"
 };
 
 // Every audio key (early or deferred) becomes gameObjects.sounds[key], playable with playSound(key).
@@ -111,30 +111,30 @@ const AUDIO = {
 
 // Loaded in the background once gameplay begins, so the start screen appears sooner.
 // Only put things here that aren't needed in the first room.
-const DEFERRED_ATLASES = {
-    roomClown2: "sprites/clown/clown2.json",
-    flashScreens: "sprites/flashscreens/flashscreens.json",
-    staticScreens: "sprites/staticscreens/staticscreens.json",
-    staticLite: "sprites/staticscreens/staticlite.json"
+const DEFERRED_SPRITE_SHEETS = {
+    roomClown2: "raw/clown2",
+    flashScreens: "raw/flashscreens",
+    staticScreens: "raw/staticscreens",
+    staticLite: "raw/staticlite"
 };
 
 const DEFERRED_IMAGES = {
-    theEnd: "sprites/altreality/the_end.webp",
-    stretch1: "sprites/altreality/stretch1.jpg",
-    stretch2: "sprites/altreality/stretch2.jpg",
-    stretch3: "sprites/altreality/stretch3.jpg",
-    stretch4: "sprites/altreality/stretch4.jpg",
-    stretch5: "sprites/altreality/stretch5.jpg",
-    stretch6: "sprites/altreality/stretch6.jpg",
-    floaty1: "sprites/altreality/floaty1.jpg",
-    floaty2: "sprites/altreality/floaty2.jpg",
-    floaty3: "sprites/altreality/floaty3.jpg",
-    floaty4: "sprites/altreality/floaty4.jpg",
-    balloon1: "sprites/altreality/balloon1.jpg",
-    balloon2: "sprites/altreality/balloon2.jpg",
-    balloon3: "sprites/altreality/balloon3.jpg",
-    balloon4: "sprites/altreality/balloon4.jpg",
-    balloon5: "sprites/altreality/balloon5.jpg"
+    theEnd: "raw/standalone/the_end.webp",
+    stretch1: "raw/standalone/stretch1.jpg",
+    stretch2: "raw/standalone/stretch2.jpg",
+    stretch3: "raw/standalone/stretch3.jpg",
+    stretch4: "raw/standalone/stretch4.jpg",
+    stretch5: "raw/standalone/stretch5.jpg",
+    stretch6: "raw/standalone/stretch6.jpg",
+    floaty1: "raw/standalone/floaty1.jpg",
+    floaty2: "raw/standalone/floaty2.jpg",
+    floaty3: "raw/standalone/floaty3.jpg",
+    floaty4: "raw/standalone/floaty4.jpg",
+    balloon1: "raw/standalone/balloon1.jpg",
+    balloon2: "raw/standalone/balloon2.jpg",
+    balloon3: "raw/standalone/balloon3.jpg",
+    balloon4: "raw/standalone/balloon4.jpg",
+    balloon5: "raw/standalone/balloon5.jpg"
 };
 
 const DEFERRED_AUDIO = {

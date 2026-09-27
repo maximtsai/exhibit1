@@ -55,7 +55,7 @@ class Exhibit {
     // 3.90's Container renderer has no bounds culling and Camera.cull() never
     // reaches container children, so all ~220 sprites across all 16 rooms were
     // transformed and batched every frame - and because each room draws from its
-    // own atlas, that also forced a texture rebind per room. Only the current
+    // own textures, that also forced texture rebinds per room. Only the current
     // room, plus the one sliding off during a transition, can ever be seen.
     updateVisibility(outgoingIdx) {
         for (let i = 0; i < this.listOfLists.length; i++) {

@@ -166,23 +166,7 @@ Replication:
      ```
 
 --------------------------------------------------------------------------------
-7. TELEMETRY BOOT SEQUENCING (FIRST FRAME PAINT)
---------------------------------------------------------------------------------
-Context: Ensure the browser completes a paint iteration before sending telemetries/Game Ready hooks to avoid timing validation errors in standard embed-test frameworks.
-Replication:
-  Wait one layout frame using `requestAnimationFrame` before dispatching ready and initialization stop signals:
-  ```javascript
-  requestAnimationFrame(() => {
-      // First paint completed
-      SDK.firstFrameReady();
-      preloadAssets().then(() => {
-          SDK.gameReady();
-      });
-  });
-  ```
-
---------------------------------------------------------------------------------
-8. ASSET FILENAME SANITIZATION
+7. ASSET FILENAME SANITIZATION
 --------------------------------------------------------------------------------
 Context: Avoid using white spaces in filenames to prevent HTTP 404 errors on server implementations that fail to decode url-encoded spaces correctly.
 Replication:
@@ -190,18 +174,7 @@ Replication:
   B) Keep asset mapping references in configuration files aligned with the sanitized filesystem names.
 
 --------------------------------------------------------------------------------
-9. SCORE INVERSION FOR DESCENDING LEADERBOARDS
---------------------------------------------------------------------------------
-Context: When tracking speedrun metrics (completion time in seconds, where smaller is better) in SDK systems that only support descending sorting configurations.
-Replication:
-  Invert the completion time relative to a maximum value before dispatching leaderboard metrics:
-  ```javascript
-  const score = Math.max(0, LEADERBOARD_MAX_LIMIT_SECS - completionSecs);
-  SDK.submitScore(score); // Faster times yield higher score ranks
-  ```
-
---------------------------------------------------------------------------------
-10. HITBOX ENLARGEMENT FOR TOUCH TARGET ACCESSIBILITY
+8. HITBOX ENLARGEMENT FOR TOUCH TARGET ACCESSIBILITY
 --------------------------------------------------------------------------------
 Context: Expand button hitboxes on small mobile screens without modifying visual padding/layout flow.
 Replication:
@@ -222,16 +195,16 @@ Replication:
   ```
 
 --------------------------------------------------------------------------------
-11. CASE-SENSITIVE PATH ALIGNMENT
+9. CASE-SENSITIVE PATH ALIGNMENT
 --------------------------------------------------------------------------------
 Context: Unix/Linux environments are case-sensitive, causing asset loads to crash if file capitalization on disk does not perfectly match CSS/JS requests.
 Replication:
   Audit all stylesheet declarations (`url(...)`) and script loader paths to ensure exact casing match (e.g. `assets/fonts/Fredoka-VariableFont.ttf`).
 
 --------------------------------------------------------------------------------
-12. DEFENSIVE COORDINATE EXTRACTION FOR MOCK TOUCH EVENTS
+10. DEFENSIVE COORDINATE EXTRACTION FOR MOCK TOUCH EVENTS
 --------------------------------------------------------------------------------
-Context: Automated testing scripts, browser emulators, and SDK frames sometimes send fake touch profiles lacking standard event coordinate vectors.
+Context: Automated testing scripts, browser emulators, and embedding iframes sometimes send fake touch profiles lacking standard event coordinate vectors.
 Replication:
   A) Ensure fallback protections are active when retrieving pointer metrics:
   ```javascript
@@ -250,48 +223,7 @@ Replication:
   ```
 
 --------------------------------------------------------------------------------
-13. REWARDED AD INTEGRITY VERIFICATION
---------------------------------------------------------------------------------
-Context: Block loopholes where ads could be closed early but still trigger a successful reward callback.
-Replication:
-  Check resolved boolean feedback vectors inside the reward listener, block button spamming, and implement a defensive request timeout fallback (e.g., 10 seconds) to prevent permanent interface locks if the SDK hangs before launching:
-  ```javascript
-  button.classList.add('requesting'); // Lock user interaction
-  
-  let adResolved = false;
-  // Safety timeout fallback: unlock user interaction if ad takes too long to launch/respond
-  const adTimeout = setTimeout(() => {
-      if (!adResolved) {
-          adResolved = true;
-          button.classList.remove('requesting');
-          showError('ad_timeout');
-      }
-  }, 10000);
-
-  SDK.requestRewardedAd({
-      onStarted: () => {
-          clearTimeout(adTimeout); // Ad started successfully, clear initial request timeout
-      }
-  }).then(completed => {
-      clearTimeout(adTimeout); // Guard in case onStarted was omitted by SDK
-      if (adResolved) return;
-      adResolved = true;
-      if (completed) {
-          triggerReward();
-      } else {
-          showEarlyCloseWarning();
-      }
-  }).catch(err => {
-      clearTimeout(adTimeout);
-      if (adResolved) return;
-      adResolved = true;
-      button.classList.remove('requesting');
-      showError('ad_failed');
-  });
-  ```
-
---------------------------------------------------------------------------------
-14. CANVAS FOCUS OUTLINE & KEYBOARD ACCESSIBILITY
+11. CANVAS FOCUS OUTLINE & KEYBOARD ACCESSIBILITY
 --------------------------------------------------------------------------------
 Context: Canvases do not receive focus by default, causing standard keyboard listeners to ignore clicks on the canvas.
 Replication:
@@ -313,7 +245,7 @@ Replication:
      ```
 
 --------------------------------------------------------------------------------
-15. COMBINATION SILENT AND DECOY SITELOCK PROTECTION
+12. COMBINATION SILENT AND DECOY SITELOCK PROTECTION
 --------------------------------------------------------------------------------
 Context: Defensive sitelock logic designed to detect mirrors without alerting unauthorized publishers/crackers.
 Replication:
@@ -323,7 +255,7 @@ Replication:
   Suggestion: Silent sitelock checks carry a risk of false-positives (e.g. localized testing, offline plays in web archives, or sandboxed frames with blocked referrers). To prevent players from reporting legitimate play options as "buggy" or "poorly balanced", always ensure safe-listing parameters are fully validated, or fallback to standard, informative error blocks rather than silent gameplay nerfing if the portal environment is highly ambiguous.
 
 --------------------------------------------------------------------------------
-16. HYBRID DECODEAUDIODATA COMPATIBILITY (LEGACY SAFARI SUPPORT)
+13. HYBRID DECODEAUDIODATA COMPATIBILITY (LEGACY SAFARI SUPPORT)
 --------------------------------------------------------------------------------
 Context: Prevent AudioContext.decodeAudioData failures on legacy iOS Safari / webview builds that lack standard Promise support and only resolve via callback functions.
 Replication:
@@ -349,7 +281,7 @@ Replication:
 
 
 --------------------------------------------------------------------------------
-17. FONTS PRE-LOADING IN CANVAS GAME LOOPS
+14. FONTS PRE-LOADING IN CANVAS GAME LOOPS
 --------------------------------------------------------------------------------
 Context: Avoid fallback font "unstyled text pop-in" flashes when rendering text on HTML5 Canvas layers immediately during initial layout cycles.
 Replication:
@@ -381,7 +313,7 @@ Replication:
   ```
 
 --------------------------------------------------------------------------------
-18. DEFERRED / LAZY BACKGROUND ASSET LOADING
+15. DEFERRED / LAZY BACKGROUND ASSET LOADING
 --------------------------------------------------------------------------------
 Context: Accelerate boot speed and reduce network loading time by preloading only critical assets on startup and downloading remaining heavier resources in the background.
 Replication:
@@ -443,7 +375,7 @@ Replication:
         needs download + decode time.
 
 --------------------------------------------------------------------------------
-19. RESIZEOBSERVER COMPATIBILITY FALLBACK
+16. RESIZEOBSERVER COMPATIBILITY FALLBACK
 --------------------------------------------------------------------------------
 Context: Prevent ReferenceError crashes on older mobile/desktop browsers (e.g. iOS < 13.4, Safari < 13.1) that do not support the ResizeObserver API.
 Replication:
@@ -467,7 +399,7 @@ Replication:
   ```
 
 --------------------------------------------------------------------------------
-20. SAFE LOCALSTORAGE ACCESS FOR INCOGNITO & IFRAME ACCESSIBILITY
+17. SAFE LOCALSTORAGE ACCESS FOR INCOGNITO & IFRAME ACCESSIBILITY
 --------------------------------------------------------------------------------
 Context: Prevent security exception crashes (DOMException: SecurityError) when accessing localStorage in browsers running in private/incognito mode, or sandboxed within third-party game portal iframes.
 Replication:
@@ -501,7 +433,7 @@ Replication:
   ```
 
 --------------------------------------------------------------------------------
-21. HTML5 AUDIO GESTURE UNLOCKING FOR GAME LOOPS
+18. HTML5 AUDIO GESTURE UNLOCKING FOR GAME LOOPS
 --------------------------------------------------------------------------------
 Context: Mobile browsers reject `.play()` calls on HTML5 Audio elements inside asynchronous requestAnimationFrame game loops. They must be pre-unlocked during a synchronous user gesture callback.
 Replication:
@@ -528,7 +460,7 @@ Replication:
       ```
 
 -------------------------------------------------------------------------------
-22. FULL GAME I18N / L10N TRANSLATION SYSTEM
+19. FULL GAME I18N / L10N TRANSLATION SYSTEM
 -------------------------------------------------------------------------------
 Context: Implement a complete internationalization system for all user-facing text (dialog, UI, announcements, garage, etc.) that is easily extensible for new languages.
 
@@ -635,9 +567,6 @@ applyTranslations() {
   this.hud.querySelector('#lpjGarageTitle').textContent = T.get('button.chooseVehicle');
   this.hud.querySelector('#lpjGhostPickupText').textContent = T.get('fox.dock.pickUp');
   this.hud.querySelector('#lpjFoxRideText').textContent = T.get('fox.dock.ride');
-  // ad overlay
-  this.hud.querySelector('#lpjAdTitle').textContent = T.get('garage.adTitle');
-  subtitleEl.textContent = T.get('garage.adSubtitle', { skin: skinName });
   // skin names
   label.textContent = T.get('vehicle.' + v.id) || v.name;
 }
@@ -668,7 +597,7 @@ G) Language stubs added: `es`, `zh-CN`, `zh-TW`, `fr`, `ru`, `de`, `ja`, `ko` (e
 Files modified: `translations.js` (new), `index.html`, `game.js`, `ui.js`, `grave.js`
 
 --------------------------------------------------------------------------------
-23. WEB AUDIO API GAPLESS LOOPING WRAPPER WITH LAZY LOADING & HTML5 FALLBACK
+20. WEB AUDIO API GAPLESS LOOPING WRAPPER WITH LAZY LOADING & HTML5 FALLBACK
 --------------------------------------------------------------------------------
 Context: Avoid audio loops having audible cutoffs, latency, or dropouts when resetting `currentTime` on standard HTML5 `<audio>` tags.
 Replication:
@@ -753,7 +682,7 @@ Replication:
   E) Implement delayed background pre-fetching (e.g. 5 seconds after gameplay start) to populate the browser's HTTP disk cache, eliminating network latency when lazy-loading new tracks.
 
 --------------------------------------------------------------------------------
-24. DYNAMIC FLOATING VIRTUAL JOYSTICK WITH PERSPECTIVE CORRECTION
+21. DYNAMIC FLOATING VIRTUAL JOYSTICK WITH PERSPECTIVE CORRECTION
 --------------------------------------------------------------------------------
 Context: Fixed joystick nodes cause hand fatigue and muscle memory drift on mobile. A dynamic/floating joystick improves ergonomics, but when projecting camera axes onto a sphere, perspective squash and raw cross-products can warp steer alignment.
 Replication:
@@ -804,111 +733,7 @@ Replication:
   D) Enforce zero-input safety triggers: track touch events globally, resetting joystick inputs the moment the screen touches drop to zero (`e.touches.length === 0`), avoiding stuck inputs.
 
 --------------------------------------------------------------------------------
-25. HOST-CONTAINER MUTE ENFORCEMENT (EMBEDDED PLATFORM SDK AUDIO)
---------------------------------------------------------------------------------
-Context: Embedded game platforms (YouTube Playables, CrazyGames, Poki) own a mute control outside the game and require the game to honour it — certification fails if any audio is audible while the host reports audio disabled. Suspending the AudioContext alone is NOT sufficient: every `resume()` call site (tap-to-unlock handlers, unpause, per-gesture resumes) silently un-mutes already-playing loops, and relying on the host's change event alone breaks when the mute is toggled during the load screen, before listeners are registered. This section supersedes the unconditional resume pattern shown in section 3B.
-Replication:
-  A) Route every sound through a single master GainNode instead of connecting sources straight to `destination`. A zeroed master gain cannot be undone by a stray `resume()`; a suspended context can:
-     ```javascript
-     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-     const masterGain = audioCtx.createGain();
-     masterGain.gain.value = 1;
-     masterGain.connect(audioCtx.destination);
-
-     function playSound(buffer, volume, loop) {
-         applyHostAudioState();           // self-correct before every sound
-         if (!hostAudioEnabled) return null;
-         const source = audioCtx.createBufferSource();
-         const gain = audioCtx.createGain();
-         source.buffer = buffer;
-         source.loop = !!loop;
-         gain.gain.value = volume;
-         source.connect(gain);
-         gain.connect(masterGain);        // never audioCtx.destination
-         source.start(0);
-         return { source, gain };
-     }
-     ```
-  B) Collapse the host check into ONE reconciliation function and call it from every site that previously called `resume()` directly (pointerdown, button handlers, unpause). Duplicating the check inline at each call site is leak-by-default — one missed site restores all playing loops:
-     ```javascript
-     let hostAudioEnabled = true;
-     let audioUnlocked = false;          // set true on first user gesture
-
-     function isHostAudioEnabled() {
-         if (!window.GameSDK || typeof window.GameSDK.isAudioEnabled !== 'function') return true;
-         try { return window.GameSDK.isAudioEnabled() !== false; } catch (e) { return true; }
-     }
-
-     function applyHostAudioState(forced) {
-         const enabled = typeof forced === 'boolean' ? forced : isHostAudioEnabled();
-         const wasEnabled = hostAudioEnabled;
-         hostAudioEnabled = enabled;
-
-         const target = enabled ? 1 : 0;
-         if (Math.abs(masterGain.gain.value - target) > 0.001) {
-             const now = audioCtx.currentTime;
-             masterGain.gain.cancelScheduledValues(now);
-             masterGain.gain.setValueAtTime(masterGain.gain.value, now);
-             masterGain.gain.linearRampToValueAtTime(target, now + 0.03);
-         }
-
-         if (!enabled) {
-             if (audioCtx.state === 'running') {
-                 // Deferred — see the warning below.
-                 setTimeout(() => {
-                     if (!hostAudioEnabled && audioCtx.state === 'running') {
-                         audioCtx.suspend().catch(() => {});
-                     }
-                 }, 60);
-             }
-             return;
-         }
-         if (audioUnlocked && audioCtx.state === 'suspended') {
-             audioCtx.resume().catch(() => {});
-         }
-         if (!wasEnabled && musicPendingHostUnmute) {   // see (D)
-             musicPendingHostUnmute = false;
-             startMusic();
-         }
-     }
-     ```
-     Warning: A short (~30ms) `linearRampToValueAtTime` avoids an audible click when muting mid-playback, but `suspend()` freezes `currentTime`, so calling it immediately after scheduling the ramp can strand the gain part-way (e.g. 0.5) with no clock left to finish the ramp. That silently reduces the design back to suspend-only enforcement — the exact single point of failure the master gain removes. Always let the fade land (defer the suspend past the ramp duration) before freezing the context.
-  C) Register the host's change event AND enforce the current state immediately — the mute may already have been toggled while assets were loading. Add a low-frequency poll as a safety net so the graph self-corrects even if the event never fires:
-     ```javascript
-     window.GameSDK.onAudioEnabledChange((enabled) => applyHostAudioState(enabled !== false));
-     applyHostAudioState();                                     // enforce state at startup
-     if (typeof window.GameSDK.isAudioEnabled === 'function') {
-         setInterval(() => applyHostAudioState(), 1000);        // fallback reconciliation
-     }
-     ```
-     Note: 1000ms is only the worst-case latency for an idle game — the change event handles the common case instantly, and `playSound` (A) re-checks before every discrete sound.
-  D) Do not silently drop background music that was requested while muted. Record the intent and start it on the unmute edge, otherwise fixing the mute trades one failure for "no music after unmute":
-     ```javascript
-     function startMusic() {
-         audioUnlocked = true;
-         if (!isHostAudioEnabled()) {
-             if (!bgMusic) musicPendingHostUnmute = true;
-             applyHostAudioState(false);
-             return;
-         }
-         if (!bgMusic) bgMusic = playSound(musicBuffer, 0.2, true);
-     }
-     ```
-  E) Never enforce the host mute by zeroing the player's stored volume preferences. Those are typically persisted to a cloud save and would permanently mute the player after the host re-enables audio. Mute at the graph level (master gain + context) and leave the preference values untouched.
-  F) Make the local/dev SDK adapter stateful so the mute path is reproducible without the real platform. A mock whose `isAudioEnabled()` hardcodes `true` and whose change hook only invokes the callback makes the host-mute bug invisible in development:
-     ```javascript
-     isAudioEnabled() { return this._audioEnabled !== false; }   // no console.log — this is polled
-     onAudioEnabledChange(cb) {
-         window.__mockAudioEnabledChange = (enabled) => {
-             this._audioEnabled = enabled !== false;   // getter flips FIRST, mirroring the real host
-             cb(this._audioEnabled);
-         };
-     }
-     ```
-     Verification matrix (all must hold): mute then tap → context `suspended`, master gain `0`, no music; mute via the getter without firing the event → poll silences within its interval; muted + repeated taps + pause/resume cycle → stays silenced; unmute → context `running`, gain `1`, music resumes.
-
---------------------------------------------------------------------------------
-26. SPRITESHEET FRAME EXTRACTION: CACHE CANVASES, NOT IMAGES
+22. SPRITESHEET FRAME EXTRACTION: CACHE CANVASES, NOT IMAGES
 --------------------------------------------------------------------------------
 Context: When slicing a packed spritesheet into individual frames at load time, the common pattern is to draw each frame onto a scratch canvas and then convert it into an `Image` via `toDataURL()`. This costs one full PNG encode plus one asynchronous decode per frame (~100+ for a typical atlas) and introduces a race: `img.src = dataURL` decodes asynchronously, so frames can draw blank for the first frames after "loading complete".
 Replication:
@@ -934,7 +759,7 @@ Replication:
 
 
 --------------------------------------------------------------------------------
-27. POINTER EVENTS FALLBACK FOR IOS < 13 (TOUCH EVENT COMPATIBILITY)
+23. POINTER EVENTS FALLBACK FOR IOS < 13 (TOUCH EVENT COMPATIBILITY)
 --------------------------------------------------------------------------------
 Context: iOS Safari added PointerEvent support in iOS 13 (Sept 2019). Games that exclusively listen for `pointerdown`/`pointermove`/`pointerup` receive zero input on older iOS devices. The game appears to load but is completely unplayable.
 Replication:
@@ -990,7 +815,7 @@ Replication:
   E) Mark touch event listeners as `{ passive: true }` to avoid blocking the scroll thread — the canvas should already have `touch-action: none` in CSS, but passive:true prevents warnings in Chrome and avoids potential scroll jank on mobile.
 
 --------------------------------------------------------------------------------
-28. HIGH-DPI (RETINA) CANVAS RENDERING VIA DEVICEPIXELRATIO + CTX TRANSFORM
+24. HIGH-DPI (RETINA) CANVAS RENDERING VIA DEVICEPIXELRATIO + CTX TRANSFORM
 --------------------------------------------------------------------------------
 Context: A 2D canvas whose backing store is sized in CSS pixels (canvas.width =
 element.clientWidth) renders a low-resolution bitmap that the browser then
@@ -1129,7 +954,7 @@ Replication:
      pixel work by ~55%.
 
 --------------------------------------------------------------------------------
-29. ASSET LOADER FAILURE HANDLING AND AUTOMATIC RETRY
+25. ASSET LOADER FAILURE HANDLING AND AUTOMATIC RETRY
 --------------------------------------------------------------------------------
 Context: Flaky mobile connections, CDN hiccups and captive-portal proxies drop
 individual asset requests. Nearly every loader (Phaser 3's LoaderPlugin, PIXI
@@ -1221,7 +1046,7 @@ Replication:
      bootLoadHandled = true;
      ```
      The same applies to any secondary `load.once("complete", ...)` handler (for
-     example a deferred/lazy batch registering its sounds - see section 18). If
+     example a deferred/lazy batch registering its sounds - see section 15). If
      retries are outstanding when it fires, it must re-arm itself rather than
      write the assets off as failed:
      ```javascript

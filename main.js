@@ -82,9 +82,22 @@ setTimeout(() => {
 // Asset lists live in scripts/config.js. Each entry is [key, path].
 let earlyAudio = Object.entries(AUDIO);
 let deferredAudio = Object.entries(DEFERRED_AUDIO);
-let deferredAtlases = Object.entries(DEFERRED_ATLASES);
+let deferredSpriteSheets = Object.entries(DEFERRED_SPRITE_SHEETS);
 let deferredImages = Object.entries(DEFERRED_IMAGES);
 let deferredAudioLoaded = false;
+
+// True once the deferred assets above have arrived (loadDeferredAudio). A save
+// restores before they load, so anything restore can trigger that needs them
+// should wait with whenDeferredAssetsReady.
+let deferredAssetsReady = false;
+let deferredReadyCallbacks = [];
+function whenDeferredAssetsReady(callback) {
+    if (deferredAssetsReady) {
+        callback();
+        return;
+    }
+    deferredReadyCallbacks.push(callback);
+}
 const MAX_ASSET_RETRIES = 3;
 let assetRetry = {
     installed: false,
@@ -97,35 +110,22 @@ let assetRetry = {
     onPermanentFailure: null
 };
 
-// Phaser reports the individual file that failed, which for a multiatlas is a
-// sub-file: either the manifest json, or a texture page under an internal
-// "MA<n>_<path>" key. Re-adding that sub-file would not rebuild the atlas, so
-// walk the multiFile back-pointer to the request the game actually made.
+// Everything the game loads is a single image or audio file, so the file that
+// failed is exactly the request to repeat.
 function getAssetRequest(file) {
-    let owner = file.multiFile || file;
-    let url = owner.url;
-    if (url === undefined && owner.files && owner.files.length) {
-        url = owner.files[0].url;
-    }
     return {
-        key: owner.key,
-        type: owner.type,
-        url: url === undefined ? file.url : url
+        key: file.key,
+        type: file.type,
+        url: file.url
     };
 }
 function requeueAsset(scene, req) {
     switch (req.type) {
-        case "multiatlas":
-            scene.load.multiatlas(req.key, req.url);
-            return true;
         case "audio":
             scene.load.audio(req.key, req.url);
             return true;
         case "image":
             scene.load.image(req.key, req.url);
-            return true;
-        case "json":
-            scene.load.json(req.key, req.url);
             return true;
     }
     console.warn(`[AssetLoader] no retry rule for type "${req.type}" (${req.key})`);
@@ -380,8 +380,8 @@ function onPreloadComplete(scene) {
     scene.load.on("complete", () => {
         onLoaderBatchComplete(scene);
     });
-    for (let key in ATLASES) {
-        loadAtlas(scene, key, ATLASES[key]);
+    for (let key in SPRITE_SHEETS) {
+        loadSpriteSheet(scene, key, SPRITE_SHEETS[key]);
     }
     for (let key in IMAGES) {
         scene.load.image(key, IMAGES[key]);
@@ -485,8 +485,8 @@ function loadDeferredAudio(scene) {
     deferredAudioLoaded = true;
     setupLoaderRetryHandlers(scene);
     for (let d = 0; d < deferredAudio.length; d++) scene.load.audio(deferredAudio[d][0], deferredAudio[d][1]);
-    for (let t = 0; t < deferredAtlases.length; t++)
-        loadAtlas(scene, deferredAtlases[t][0], deferredAtlases[t][1]);
+    for (let t = 0; t < deferredSpriteSheets.length; t++)
+        loadSpriteSheet(scene, deferredSpriteSheets[t][0], deferredSpriteSheets[t][1]);
     for (let i = 0; i < deferredImages.length; i++) scene.load.image(deferredImages[i][0], deferredImages[i][1]);
     let onDeferredComplete = () => {
         // A retry re-runs the loader; wait for the pass that follows it, or the
@@ -495,10 +495,10 @@ function loadDeferredAudio(scene) {
             scene.load.once("complete", onDeferredComplete);
             return;
         }
-        for (let t = 0; t < deferredAtlases.length; t++) {
-            let key = deferredAtlases[t][0];
+        for (let t = 0; t < deferredSpriteSheets.length; t++) {
+            let key = deferredSpriteSheets[t][0];
             if (!scene.textures.exists(key)) {
-                console.warn("loadDeferredAudio: atlas failed to load: " + key);
+                console.warn("loadDeferredAudio: sprite sheet failed to load: " + key);
             }
         }
         for (let i = 0; i < deferredImages.length; i++) {
@@ -515,25 +515,29 @@ function loadDeferredAudio(scene) {
                 console.warn("loadDeferredAudio: audio failed to load: " + key);
             }
         }
-        // These were built during setupGame, before the atlases above existed, so
+        // These were built during setupGame, before the sheets above existed, so
         if (scene.textures.exists("flashScreens")) {
             initFlashScreens();
         } else {
-            console.warn("loadDeferredAudio: atlas missing: flashScreens");
+            console.warn("loadDeferredAudio: sprite sheet missing: flashScreens");
         }
         if (scene.textures.exists("staticScreens") || scene.textures.exists("staticLite")) {
             initStaticScreens();
         } else {
-            console.warn("loadDeferredAudio: atlases missing: staticScreens / staticLite");
+            console.warn("loadDeferredAudio: sprite sheets missing: staticScreens / staticLite");
         }
         if (scene.textures.exists("roomClown2")) {
             refreshCrawlClown();
         } else {
-            console.warn("loadDeferredAudio: atlas missing: roomClown2");
+            console.warn("loadDeferredAudio: sprite sheet missing: roomClown2");
         }
         // candleDark and redlight are now loaded in the initial preload batch,
         // so their textures are already set up by the time setupGame runs.
         // No deferred setTexture needed here.
+        deferredAssetsReady = true;
+        let callbacks = deferredReadyCallbacks;
+        deferredReadyCallbacks = [];
+        for (let i = 0; i < callbacks.length; i++) callbacks[i]();
     };
     scene.load.once("complete", onDeferredComplete);
     scene.load.start();
@@ -992,11 +996,10 @@ function beginGameplay(scene) {
         if (!gameVarsTemp.hasMoved) {
             ftueMoveButton();
         }
-    }, 4000); // Everything drawn from the "loadingSS" atlas (the welcome images, the
-    // circles, brightLight, and the two transparent_pixel click blockers) has
+    }, 4000); // Everything drawn from the "loadingSS" sprite sheet (the welcome images,
+    // the circles, brightLight, and the two transparent_pixel click blockers) has
     // just been destroyed above, and nothing outside the intro references it.
-    // It is 1810x1656 - ~11MB of GPU memory that would otherwise sit there for
-    // the rest of the session.
+    // Its images would otherwise sit in GPU memory for the rest of the session.
     releaseTextures(["loadingSS"]);
 }
 function updateWelcomeFollower() {

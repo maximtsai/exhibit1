@@ -8,6 +8,7 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const { buildManifestSource, writeManifest } = require("./sprite-manifest.js");
 
 const root = path.resolve(__dirname, "..");
 const port = parseInt(process.argv[2], 10) || 8125;
@@ -61,6 +62,13 @@ http.createServer((req, res) => {
         return saveSnapshot(req, res, decodeURIComponent(url.pathname.slice("/__snapshot/".length)));
     }
     if (req.method !== "GET" && req.method !== "HEAD") return send(res, 405, "method not allowed");
+
+    // Generated fresh (and saved) on every load, so PNGs added to or removed from
+    // raw/ take effect on refresh
+    if (url.pathname === "/scripts/spritemanifest.js") {
+        writeManifest();
+        return send(res, 200, buildManifestSource(), TYPES[".js"]);
+    }
 
     const filePath = path.resolve(root, "." + decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname));
     if (!filePath.startsWith(root + path.sep)) return send(res, 403, "forbidden");

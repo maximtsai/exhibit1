@@ -392,7 +392,7 @@
         p.set("phase", item.phase);
         p.set("capture", item.name);
         if (item.settle !== undefined) p.set("settle", item.settle);
-        // Extra URL flags, e.g. {extra: "rawsprites"}
+        // Extra URL flags, e.g. {extra: "speed=2"}
         const extra = item.extra ? "&" + item.extra : "";
         return window.location.pathname + "?" + p.toString().replace("debug=&", "debug&") + extra;
     }

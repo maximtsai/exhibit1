@@ -19,7 +19,6 @@ It does nothing unless the URL has `?debug`.
 | `index.html?debug&room=13&phase=horror` | Skip the menu and intro, start in room 13 in the horror phase |
 | `&phase=normal` / `dark` / `horror` | Story phase for `room=` |
 | `&speed=3` | Run tweens and game timers 3x faster |
-| `&rawsprites` | Load sprites from `raw/` instead of the packed sheets (see below) |
 | `&nosandbox` | Let saves use the real save slot (by default debug sessions never touch it) |
 
 Rooms: 1 lobby, 2 pump, 3 faucet, 4 clown 1, 5 handy, 6 stretch, 7 clown 2,
@@ -48,19 +47,20 @@ Lists which screenshots changed and writes highlighted diffs to
 `tools/snapshots/current/_diff/`. Each capture also saves a `.json` fingerprint
 (errors, warnings, random-number trace) next to its PNG.
 
-## Editing sprites without repacking
+## Sprites live in raw/
 
-Set `USE_RAW_SPRITES = true` in `scripts/config.js` (or add `&rawsprites` to the
-URL) and the game loads each frame from `raw/<sheet folder>/<frame>.png` instead of
-the packed sheets. Edit a PNG, refresh, done; new sizes work too. Frame names still
-come from the sheet's `.json`, so a brand-new sprite needs an entry there.
+All game art is loaded straight from `raw/`:
 
-Set it back to `false` before `node build.js` (the build refuses otherwise, since
-`dist/` doesn't include `raw/`).
+- **Sprite sheets** are folders, e.g. `raw/roomjack/`. Every PNG in the folder is a
+  frame named after the file (`raw/roomjack/doll.png` is frame `doll` of the
+  `roomJack` sheet). Which folder feeds which sheet is set in `SPRITE_SHEETS` /
+  `DEFERRED_SPRITE_SHEETS` in `scripts/config.js`.
+- **Single images** (cursors, lighting overlays, full-screen images, the page
+  background and border images, the favicon) are in `raw/standalone/`, loaded by
+  the paths in `PRELOAD_IMAGES` / `IMAGES` / `DEFERRED_IMAGES` in `scripts/config.js`.
 
-```
-node tools/check-raw-sprites.js
-```
-
-Checks every sheet frame has a matching file in `raw/` and lists frames whose raw
-art no longer matches the sheet.
+To change a sprite, edit its PNG (any size) and refresh. To add one, drop the PNG
+in the folder and refresh: `tools/devserver.js` regenerates the frame list
+(`scripts/spritemanifest.js`) on every page load, and `node build.js` does too.
+With another static server, run `node tools/sprite-manifest.js` after adding or
+removing files.

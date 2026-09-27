@@ -366,6 +366,13 @@ function runEpilogue(background) {
                                                                                         // sounds never get re-registered after a replay.
                                                                                         bootLoadHandled = false;
                                                                                         deferredAudioLoaded = false;
+                                                                                        // The deferred assets load again after the restart. Until they
+                                                                                        // do, anything waiting on them must wait again, and the static
+                                                                                        // effects must not reach for images the restart destroyed.
+                                                                                        deferredAssetsReady = false;
+                                                                                        deferredReadyCallbacks = [];
+                                                                                        gameObjects.staticScreens = undefined;
+                                                                                        gameObjects.staticLite = undefined;
 
                                                                                         // The scene shutdown tears the loader's listeners down, but the
                                                                                         // `installed` latch would stop them being re-registered, which
